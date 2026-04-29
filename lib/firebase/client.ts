@@ -12,8 +12,11 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
 };
 
-const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
+// apiKey가 없으면(빌드 타임 SSR) 초기화 건너뜀
+const app = firebaseConfig.apiKey
+  ? getApps().length ? getApp() : initializeApp(firebaseConfig)
+  : null;
 
-export const auth = getAuth(app);
-export const db = getFirestore(app);
-export const storage = getStorage(app);
+export const auth = app ? getAuth(app) : (null as unknown as ReturnType<typeof getAuth>);
+export const db = app ? getFirestore(app) : (null as unknown as ReturnType<typeof getFirestore>);
+export const storage = app ? getStorage(app) : (null as unknown as ReturnType<typeof getStorage>);
