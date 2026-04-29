@@ -21,6 +21,7 @@ export default function NewBoardPage() {
   const { user, isOperator, loading, signInWithGoogle } = useOperatorAuth();
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<BoardTemplate>('free');
+  const [allowChat, setAllowChat] = useState(true);
   const [step, setStep] = useState<1 | 2>(1);
   const [creating, setCreating] = useState(false);
 
@@ -38,7 +39,7 @@ export default function NewBoardPage() {
         ownerId: user.uid,
         workspaceId: 'default',
         settings: {
-          allowChat: true,
+          allowChat,
           retainChatLog: true,
           lockedAt: null,
         },
@@ -122,6 +123,27 @@ export default function NewBoardPage() {
                 <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
                 <TemplateSelector value={template} onChange={setTemplate} />
               </div>
+              <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">실시간 채팅</p>
+                  <p className="text-xs text-gray-400">참여자들이 보드 옆에서 채팅할 수 있습니다.</p>
+                </div>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={allowChat}
+                  onClick={() => setAllowChat((v) => !v)}
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${
+                    allowChat ? 'bg-blue-600' : 'bg-gray-200'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow ring-0 transition-transform ${
+                      allowChat ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
+                </button>
+              </div>
               <Button
                 type="submit"
                 disabled={!title.trim()}
@@ -171,6 +193,13 @@ export default function NewBoardPage() {
                     ]}
                   </span>
                 </div>
+              </div>
+              <div className="rounded-xl border border-gray-200 px-4 py-4 flex items-center justify-between">
+                <div>
+                  <span className="text-xs text-gray-400 uppercase tracking-wide block mb-1">채팅</span>
+                  <p className="font-semibold text-gray-900">{allowChat ? '사용' : '사용 안 함'}</p>
+                </div>
+                <button onClick={() => setStep(1)} className="text-xs text-blue-600 hover:underline">변경</button>
               </div>
               <form onSubmit={handleCreate}>
                 <Button

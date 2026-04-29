@@ -100,6 +100,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
   const displayCode = board?.boardCode ?? '';
   const isLocked = !!board?.settings?.lockedAt;
+  const allowChat = board?.settings?.allowChat !== false;
   const canPost = role === 'host' || !isLocked;
   const template = getTemplate(board?.template ?? 'free');
   const isFreeLayout = template.columns === null;
@@ -232,7 +233,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         </div>
 
         {/* 데스크톱 채팅 패널 */}
-        <div className="hidden lg:flex w-80 flex-col flex-shrink-0">
+        {allowChat && <div className="hidden lg:flex w-80 flex-col flex-shrink-0">
           <ChatPanel
             messages={messages}
             loading={msgsLoading}
@@ -242,11 +243,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             currentRole={role}
             boardId={boardId}
           />
-        </div>
+        </div>}
       </div>
 
       {/* 모바일 채팅 버튼 */}
-      <div className="lg:hidden fixed bottom-5 right-5">
+      {allowChat && <div className="lg:hidden fixed bottom-5 right-5">
         <button
           onClick={() => setShowChat(true)}
           className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg text-xl focus-visible:outline focus-visible:outline-2"
@@ -254,10 +255,10 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         >
           💬
         </button>
-      </div>
+      </div>}
 
       {/* 모바일 채팅 오버레이 */}
-      {showChat && (
+      {allowChat && showChat && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-white">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="font-semibold text-gray-900">채팅</span>
