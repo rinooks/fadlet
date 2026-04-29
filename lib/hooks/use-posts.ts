@@ -34,6 +34,8 @@ export function usePosts(boardId: string) {
     authorName: string;
     content: string;
     color: PostColor;
+    imageUrl?: string;
+    columnId?: string;
   }) {
     await addDoc(collection(db, postsPath(boardId)), {
       ...params,

@@ -4,6 +4,7 @@ import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { NewPostDialog } from '@/components/board/new-post-dialog';
 import { PostCard } from '@/components/board/post-card';
+import { PostDetailModal } from '@/components/board/post-detail-modal';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { ShareDialog } from '@/components/shared/share-dialog';
 import { useAuth } from '@/lib/hooks/use-auth';
@@ -12,7 +13,8 @@ import { useLockBoard } from '@/lib/hooks/use-lock-board';
 import { useMessages } from '@/lib/hooks/use-messages';
 import { useParticipants } from '@/lib/hooks/use-participants';
 import { usePosts } from '@/lib/hooks/use-posts';
-import type { PostColor, UserRole } from '@/lib/types';
+import type { Post, PostColor, UserRole } from '@/lib/types';
+import { uploadPostImage } from '@/lib/utils/upload-file';
 
 interface PageProps {
   params: Promise<{ boardId: string }>;
@@ -29,6 +31,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [showChat, setShowChat] = useState(false);
   const [showNewPost, setShowNewPost] = useState(false);
   const [showShare, setShowShare] = useState(false);
+  const [detailPost, setDetailPost] = useState<Post | null>(null);
   const [joined, setJoined] = useState(false);
 
   const { board, loading: boardLoading, error: boardError } = useBoard(boardId);
@@ -62,9 +65,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     };
   }, [uid, joined, setOffline]);
 
-  async function handleAddPost(content: string, color: PostColor) {
+  async function handleAddPost(content: string, color: PostColor, imageFile?: File) {
     if (!uid || !nickname) return;
-    await addPost({ authorId: uid, authorName: nickname, content, color });
+    let imageUrl: string | undefined;
+    if (imageFile) imageUrl = await uploadPostImage(imageFile, boardId);
+    await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl });
   }
 
   async function handleSendMessage(content: string) {
@@ -185,6 +190,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                   isHost={role === 'host'}
                   onUpdate={updatePost}
                   onDelete={deletePost}
+                  onOpenDetail={setDetailPost}
                 />
               ))}
             </div>
@@ -246,6 +252,18 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           open={showNewPost}
           onClose={() => setShowNewPost(false)}
           onSubmit={handleAddPost}
+        />
+      )}
+
+      {detailPost && (
+        <PostDetailModal
+          post={detailPost}
+          boardId={boardId}
+          currentUid={uid ?? ''}
+          currentNickname={nickname}
+          isHost={role === 'host'}
+          onClose={() => setDetailPost(null)}
+          onDelete={deletePost}
         />
       )}
 

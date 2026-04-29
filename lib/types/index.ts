@@ -2,8 +2,9 @@ import { Timestamp } from 'firebase/firestore';
 
 export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray';
 export type UserRole = 'host' | 'member';
-export type MessageType = 'text';
-export type BoardTemplate = 'free';
+export type MessageType = 'text' | 'image' | 'file' | 'link';
+export type BoardTemplate = 'free' | 'brainstorming' | 'kpt' | '4f' | 'qna' | 'nineWindow';
+export type EmojiType = 'thumbsup' | 'heart' | 'party' | 'bulb' | 'thinking';
 
 export interface BoardSettings {
   allowChat: boolean;
@@ -28,10 +29,34 @@ export interface Post {
   authorId: string;
   authorName: string;
   content: string;
+  imageUrl?: string;
   color: PostColor;
+  columnId?: string;
   position: { x: number; y: number } | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
+}
+
+export interface Comment {
+  id: string;
+  authorId: string;
+  authorName: string;
+  content: string;
+  createdAt: Timestamp;
+}
+
+export interface Reaction {
+  userId: string;
+  emoji: EmojiType;
+  createdAt: Timestamp;
+}
+
+export interface LinkPreview {
+  url: string;
+  title: string;
+  description: string;
+  image: string;
+  siteName: string;
 }
 
 export interface Message {
@@ -41,6 +66,10 @@ export interface Message {
   role: UserRole;
   type: MessageType;
   content: string;
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  linkPreview?: LinkPreview;
   createdAt: Timestamp;
 }
 
