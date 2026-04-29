@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray';
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
-export type BoardTemplate = 'free' | 'brainstorming' | 'kpt' | '4f' | 'qna' | 'nineWindow';
+export type BoardTemplate = 'free' | 'brainstorming' | 'proscons' | 'kpt' | '4f' | 'qna' | 'nineWindow';
 export type EmojiType = 'thumbsup' | 'heart' | 'party' | 'bulb' | 'thinking';
 
 export interface BoardSettings {

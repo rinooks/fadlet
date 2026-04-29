@@ -9,15 +9,19 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { TemplateSelector } from '@/components/board/template-selector';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
+import type { BoardTemplate } from '@/lib/types';
 
 export default function NewBoardPage() {
   const router = useRouter();
   const { user, isOperator, loading, signInWithGoogle } = useOperatorAuth();
   const [title, setTitle] = useState('');
+  const [template, setTemplate] = useState<BoardTemplate>('free');
+  const [step, setStep] = useState<1 | 2>(1);
   const [creating, setCreating] = useState(false);
 
   async function handleCreate(e: React.FormEvent) {
@@ -30,7 +34,7 @@ export default function NewBoardPage() {
       const docRef = await addDoc(collection(db, boardsPath()), {
         title: title.trim(),
         boardCode,
-        template: 'free',
+        template,
         ownerId: user.uid,
         workspaceId: 'default',
         settings: {
@@ -86,33 +90,100 @@ export default function NewBoardPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
+    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4 py-8">
+      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-2xl">
         <div className="flex items-center justify-between mb-1">
           <h1 className="text-2xl font-bold text-gray-900">새 보드 만들기</h1>
           <Link href="/dashboard" className="text-xs text-blue-600 hover:underline">
             내 보드 목록
           </Link>
         </div>
-        <p className="text-gray-400 text-sm mb-6">보드 제목을 입력하면 6자리 코드가 자동으로 발급됩니다.</p>
-        <form onSubmit={handleCreate} className="flex flex-col gap-4">
-          <Input
-            placeholder="예: Q1 회고 워크숍"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            maxLength={60}
-            required
-            autoFocus
-            className="text-base"
-          />
-          <Button
-            type="submit"
-            disabled={creating || !title.trim()}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
-          >
-            {creating ? '생성 중...' : '보드 만들기'}
-          </Button>
-        </form>
+
+        {step === 1 && (
+          <>
+            <p className="text-gray-400 text-sm mb-6">보드 제목을 입력하고 템플릿을 선택하세요.</p>
+            <form
+              onSubmit={(e) => { e.preventDefault(); if (title.trim()) setStep(2); }}
+              className="flex flex-col gap-6"
+            >
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">보드 제목</label>
+                <Input
+                  placeholder="예: Q1 회고 워크숍"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  maxLength={60}
+                  required
+                  autoFocus
+                  className="text-base"
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
+                <TemplateSelector value={template} onChange={setTemplate} />
+              </div>
+              <Button
+                type="submit"
+                disabled={!title.trim()}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+              >
+                다음 →
+              </Button>
+            </form>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <p className="text-gray-400 text-sm mb-6">내용을 확인하고 보드를 생성하세요.</p>
+            <div className="flex flex-col gap-4">
+              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">보드 제목</span>
+                  <button
+                    onClick={() => setStep(1)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    수정
+                  </button>
+                </div>
+                <p className="font-semibold text-gray-900">{title}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">템플릿</span>
+                  <button
+                    onClick={() => setStep(1)}
+                    className="text-xs text-blue-600 hover:underline"
+                  >
+                    변경
+                  </button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">
+                    {['✏️','💡','⚖️','🔄','📋','❓','🔲'][
+                      ['free','brainstorming','proscons','kpt','4f','qna','nineWindow'].indexOf(template)
+                    ]}
+                  </span>
+                  <span className="font-semibold text-gray-900">
+                    {['자유형','브레인스토밍','찬성 / 반대','KPT 회고','4F 회고','Q&A','9칸 윈도우'][
+                      ['free','brainstorming','proscons','kpt','4f','qna','nineWindow'].indexOf(template)
+                    ]}
+                  </span>
+                </div>
+              </div>
+              <form onSubmit={handleCreate}>
+                <Button
+                  type="submit"
+                  disabled={creating}
+                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+                >
+                  {creating ? '생성 중...' : '보드 만들기'}
+                </Button>
+              </form>
+            </div>
+          </>
+        )}
       </div>
     </main>
   );

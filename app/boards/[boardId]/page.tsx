@@ -2,11 +2,13 @@
 
 import { use, useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { ColumnBoard } from '@/components/board/column-board';
 import { NewPostDialog } from '@/components/board/new-post-dialog';
 import { PostCard } from '@/components/board/post-card';
 import { PostDetailModal } from '@/components/board/post-detail-modal';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { ShareDialog } from '@/components/shared/share-dialog';
+import { getTemplate } from '@/lib/templates';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useBoard } from '@/lib/hooks/use-board';
 import { useLockBoard } from '@/lib/hooks/use-lock-board';
@@ -50,7 +52,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       setNickname(savedNickname);
       joinBoard({ userId: uid, nickname: savedNickname, role: savedRole }).catch(() => {});
       setJoined(true);
-      // 보드 생성 직후(code 쿼리 파라미터 있음)에는 공유 다이얼로그 자동 오픈
       if (code && savedRole === 'host') setShowShare(true);
     }
   }, [uid, boardId, joined, joinBoard, code]);
@@ -65,11 +66,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     };
   }, [uid, joined, setOffline]);
 
-  async function handleAddPost(content: string, color: PostColor, imageFile?: File) {
+  async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string) {
     if (!uid || !nickname) return;
     let imageUrl: string | undefined;
     if (imageFile) imageUrl = await uploadPostImage(imageFile, boardId);
-    await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl });
+    await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl, columnId });
   }
 
   async function handleSendMessage(content: string, fileAttachment?: { url: string; name: string; size: number; type: 'image' | 'file' }) {
@@ -100,6 +101,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const displayCode = board?.boardCode ?? '';
   const isLocked = !!board?.settings?.lockedAt;
   const canPost = role === 'host' || !isLocked;
+  const template = getTemplate(board?.template ?? 'free');
+  const isFreeLayout = template.columns === null;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
@@ -108,6 +111,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         <div className="flex items-center gap-3 min-w-0">
           <span className="text-blue-600 font-bold text-lg flex-shrink-0">Fadlet</span>
           <h1 className="text-sm font-semibold text-gray-900 truncate">{board?.title}</h1>
+          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline">
+            {template.emoji} {template.label}
+          </span>
           {isLocked && (
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0">
               🔒 잠김
@@ -150,54 +156,78 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       <div className="flex flex-1 overflow-hidden">
         {/* 보드 캔버스 */}
         <div className="flex-1 overflow-y-auto p-4">
-          <div className="flex items-center justify-between mb-4">
-            <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
-            {canPost && (
-              <Button
-                onClick={() => setShowNewPost(true)}
-                size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-              >
-                + 새 포스트
-              </Button>
-            )}
-          </div>
+          {isFreeLayout ? (
+            /* 자유형 / 브레인스토밍 */
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                {canPost && (
+                  <Button
+                    onClick={() => setShowNewPost(true)}
+                    size="sm"
+                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                  >
+                    + 새 포스트
+                  </Button>
+                )}
+              </div>
 
-          {isLocked && role !== 'host' && (
-            <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
-            </div>
-          )}
-
-          {postsLoading ? (
-            <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
-          ) : posts.length === 0 ? (
-            <div className="text-center py-16">
-              <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
-              {canPost && (
-                <Button
-                  onClick={() => setShowNewPost(true)}
-                  variant="outline"
-                  size="sm"
-                >
-                  첫 번째 포스트 작성하기
-                </Button>
+              {isLocked && role !== 'host' && (
+                <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
+                </div>
               )}
-            </div>
+
+              {postsLoading ? (
+                <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
+              ) : posts.length === 0 ? (
+                <div className="text-center py-16">
+                  <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
+                  {canPost && (
+                    <Button onClick={() => setShowNewPost(true)} variant="outline" size="sm">
+                      첫 번째 포스트 작성하기
+                    </Button>
+                  )}
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                  {posts.map((post) => (
+                    <PostCard
+                      key={post.id}
+                      post={post}
+                      currentUid={uid ?? ''}
+                      isHost={role === 'host'}
+                      onUpdate={updatePost}
+                      onDelete={deletePost}
+                      onOpenDetail={setDetailPost}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-              {posts.map((post) => (
-                <PostCard
-                  key={post.id}
-                  post={post}
+            /* 컬럼형 템플릿 */
+            <>
+              <div className="flex items-center justify-between mb-4">
+                <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+              </div>
+              {postsLoading ? (
+                <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
+              ) : (
+                <ColumnBoard
+                  template={template}
+                  posts={posts}
+                  canPost={canPost}
                   currentUid={uid ?? ''}
                   isHost={role === 'host'}
-                  onUpdate={updatePost}
-                  onDelete={deletePost}
+                  isLocked={isLocked}
+                  onAddPost={handleAddPost}
+                  onUpdatePost={updatePost}
+                  onDeletePost={deletePost}
                   onOpenDetail={setDetailPost}
                 />
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
 
@@ -253,7 +283,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         </div>
       )}
 
-      {canPost && (
+      {isFreeLayout && canPost && (
         <NewPostDialog
           open={showNewPost}
           onClose={() => setShowNewPost(false)}

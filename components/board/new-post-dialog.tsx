@@ -22,11 +22,13 @@ interface NewPostDialogProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (content: string, color: PostColor, imageFile?: File) => Promise<void>;
+  defaultColor?: PostColor;
+  columnLabel?: string;
 }
 
-export function NewPostDialog({ open, onClose, onSubmit }: NewPostDialogProps) {
+export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLabel }: NewPostDialogProps) {
   const [content, setContent] = useState('');
-  const [color, setColor] = useState<PostColor>('yellow');
+  const [color, setColor] = useState<PostColor>(defaultColor ?? 'yellow');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -69,7 +71,9 @@ export function NewPostDialog({ open, onClose, onSubmit }: NewPostDialogProps) {
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>새 포스트 작성</DialogTitle>
+          <DialogTitle>
+            {columnLabel ? `${columnLabel} — 포스트 작성` : '새 포스트 작성'}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <Textarea
