@@ -12,7 +12,9 @@ import {
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { messagesPath } from '@/lib/firebase/collections';
-import type { Message, UserRole } from '@/lib/types';
+import type { LinkPreview, Message, MessageType, UserRole } from '@/lib/types';
+
+const URL_REGEX = /https?:\/\/[^\s]+/g;
 
 export function useMessages(boardId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -36,12 +38,34 @@ export function useMessages(boardId: string) {
     authorName: string;
     role: UserRole;
     content: string;
+    type?: MessageType;
+    fileUrl?: string;
+    fileName?: string;
+    fileSize?: number;
   }) {
-    await addDoc(collection(db, messagesPath(boardId)), {
-      ...params,
-      type: 'text',
-      createdAt: serverTimestamp(),
-    });
+    const { type = 'text', ...rest } = params;
+    const data: Record<string, unknown> = { ...rest, type, createdAt: serverTimestamp() };
+
+    // URL 자동 감지 → OG 미리보기
+    if (type === 'text') {
+      const urls = params.content.match(URL_REGEX);
+      if (urls?.[0]) {
+        try {
+          const res = await fetch(`/api/og-preview?url=${encodeURIComponent(urls[0])}`);
+          if (res.ok) {
+            const preview: LinkPreview = await res.json();
+            if (preview.title) {
+              data.type = 'link';
+              data.linkPreview = preview;
+            }
+          }
+        } catch {
+          // OG 실패 시 일반 텍스트로 전송
+        }
+      }
+    }
+
+    await addDoc(collection(db, messagesPath(boardId)), data);
   }
 
   return { messages, loading, sendMessage };

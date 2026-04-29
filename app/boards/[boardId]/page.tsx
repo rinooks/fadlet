@@ -72,9 +72,13 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl });
   }
 
-  async function handleSendMessage(content: string) {
+  async function handleSendMessage(content: string, fileAttachment?: { url: string; name: string; size: number; type: 'image' | 'file' }) {
     if (!uid || !nickname) return;
-    await sendMessage({ authorId: uid, authorName: nickname, role, content });
+    if (fileAttachment) {
+      await sendMessage({ authorId: uid, authorName: nickname, role, content, type: fileAttachment.type, fileUrl: fileAttachment.url, fileName: fileAttachment.name, fileSize: fileAttachment.size });
+    } else {
+      await sendMessage({ authorId: uid, authorName: nickname, role, content });
+    }
   }
 
   if (authLoading || boardLoading) {
@@ -206,6 +210,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             onSend={handleSendMessage}
             currentUid={uid ?? ''}
             currentRole={role}
+            boardId={boardId}
           />
         </div>
       </div>
@@ -242,6 +247,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               onSend={handleSendMessage}
               currentUid={uid ?? ''}
               currentRole={role}
+              boardId={boardId}
             />
           </div>
         </div>

@@ -1,35 +1,76 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { Paperclip, X } from 'lucide-react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { MessageAttachment } from './message-attachment';
+import { uploadChatFile } from '@/lib/utils/upload-file';
 import type { Message, UserRole } from '@/lib/types';
+
+interface FileAttachment {
+  url: string;
+  name: string;
+  size: number;
+  type: 'image' | 'file';
+}
 
 interface ChatPanelProps {
   messages: Message[];
   loading: boolean;
   onlineCount: number;
-  onSend: (content: string) => Promise<void>;
+  onSend: (content: string, fileAttachment?: FileAttachment) => Promise<void>;
   currentUid: string;
   currentRole: UserRole;
+  boardId: string;
 }
 
-export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, currentRole }: ChatPanelProps) {
+export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, currentRole, boardId }: ChatPanelProps) {
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const [attachment, setAttachment] = useState<FileAttachment | null>(null);
+  const [uploading, setUploading] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
+  async function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      toast.error('파일은 20MB 이하만 업로드할 수 있습니다.');
+      return;
+    }
+    setUploading(true);
+    try {
+      const { url, name, size } = await uploadChatFile(file, boardId);
+      const isImage = file.type.startsWith('image/');
+      setAttachment({ url, name, size, type: isImage ? 'image' : 'file' });
+    } catch {
+      toast.error('파일 업로드에 실패했습니다.');
+    } finally {
+      setUploading(false);
+      if (fileInputRef.current) fileInputRef.current.value = '';
+    }
+  }
+
+  function removeAttachment() {
+    setAttachment(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
-    if (!input.trim() || sending) return;
+    if ((!input.trim() && !attachment) || sending) return;
     setSending(true);
     try {
-      await onSend(input.trim());
+      await onSend(input.trim(), attachment ?? undefined);
       setInput('');
+      setAttachment(null);
     } finally {
       setSending(false);
     }
@@ -79,15 +120,15 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                 </span>
               )}
               <div
-                className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm break-words ${
+                className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm ${
                   isMine
                     ? 'bg-blue-600 text-white rounded-br-sm'
                     : isHost
                     ? 'bg-blue-50 text-gray-900 border-l-4 border-blue-500 rounded-bl-sm'
                     : 'bg-gray-100 text-gray-900 rounded-bl-sm'
-                }`}
+                } ${msg.type === 'image' || msg.type === 'link' ? 'p-0 overflow-hidden' : ''}`}
               >
-                {msg.content}
+                <MessageAttachment msg={msg} isMine={isMine} />
               </div>
               <span className="text-[10px] text-gray-400 mt-0.5 mx-1">{formatTime(msg)}</span>
             </div>
@@ -97,6 +138,14 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
       </div>
 
       <form onSubmit={handleSend} className="px-3 pb-3 pt-2 border-t border-gray-100">
+        {attachment && (
+          <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-blue-50 rounded-lg text-xs text-blue-700">
+            <span className="flex-1 truncate">{attachment.name}</span>
+            <button type="button" onClick={removeAttachment} className="flex-shrink-0 hover:text-red-500" aria-label="첨부 제거">
+              <X size={14} />
+            </button>
+          </div>
+        )}
         <Textarea
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -106,14 +155,32 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
           rows={2}
           className="resize-none text-sm mb-2"
         />
-        <Button
-          type="submit"
-          disabled={sending || !input.trim()}
-          size="sm"
-          className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-        >
-          전송
-        </Button>
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1 rounded focus-visible:outline focus-visible:outline-2 disabled:opacity-50"
+            aria-label="파일 첨부"
+          >
+            <Paperclip size={18} />
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip"
+            className="hidden"
+            onChange={handleFileSelect}
+          />
+          <Button
+            type="submit"
+            disabled={sending || uploading || (!input.trim() && !attachment)}
+            size="sm"
+            className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+          >
+            {uploading ? '업로드 중...' : sending ? '전송 중...' : '전송'}
+          </Button>
+        </div>
       </form>
     </div>
   );
