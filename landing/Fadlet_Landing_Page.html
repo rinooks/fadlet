@@ -1,0 +1,1731 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fadlet — 워크숍 운영자를 위한 협업 보드</title>
+<meta name="description" content="가입 없이 6자리 코드로 즉시 합류. 보드와 채팅, 타이머를 한 화면에서. 한국 워크숍을 위한 협업 보드 Fadlet.">
+<meta property="og:title" content="Fadlet — 워크숍 운영자를 위한 협업 보드">
+<meta property="og:description" content="Facilitator-friendly Padlet. 한국 워크숍을 위해 새로 만든 협업 보드.">
+<meta property="og:type" content="website">
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet">
+
+<style>
+:root {
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-200: #bfdbfe;
+  --blue-300: #93c5fd;
+  --blue-400: #60a5fa;
+  --blue-500: #3b82f6;
+  --blue-600: #2563eb;
+  --blue-700: #1d4ed8;
+  --blue-800: #1e40af;
+  --blue-900: #1e3a8a;
+  --red-500: #dc2626;
+  --red-600: #b91c1c;
+  --gray-50: #f9fafb;
+  --gray-100: #f3f4f6;
+  --gray-200: #e5e7eb;
+  --gray-300: #d1d5db;
+  --gray-400: #9ca3af;
+  --gray-500: #6b7280;
+  --gray-600: #4b5563;
+  --gray-700: #374151;
+  --gray-800: #1f2937;
+  --gray-900: #111827;
+  --bg: #ffffff;
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 30px rgba(0,0,0,0.08);
+  --shadow-xl: 0 20px 50px rgba(59,130,246,0.15);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  color: var(--gray-900);
+  background: var(--bg);
+  line-height: 1.6;
+  letter-spacing: -0.01em;
+  font-feature-settings: "ss01", "ss02";
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+.container { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+
+a { color: inherit; text-decoration: none; }
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ========== NAV ========== */
+nav {
+  position: sticky;
+  top: 0;
+  background: rgba(255,255,255,0.85);
+  backdrop-filter: saturate(180%) blur(12px);
+  -webkit-backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--gray-200);
+  z-index: 100;
+}
+
+.nav-inner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--gray-900);
+}
+
+.logo-mark {
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-700) 100%);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.nav-links {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.nav-links a:not(.btn) {
+  font-size: 14px;
+  color: var(--gray-600);
+  font-weight: 500;
+  transition: color 0.15s;
+}
+
+.nav-links a:not(.btn):hover { color: var(--gray-900); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--blue-600);
+  color: white;
+  box-shadow: 0 4px 14px rgba(59,130,246,0.35);
+}
+
+.btn-primary:hover {
+  background: var(--blue-700);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(59,130,246,0.5);
+}
+
+.btn-ghost {
+  color: var(--gray-700);
+}
+
+.btn-ghost:hover { color: var(--blue-600); }
+
+.btn-large {
+  padding: 16px 32px;
+  font-size: 16px;
+  border-radius: 10px;
+}
+
+.btn-arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+}
+
+.btn:hover .btn-arrow { transform: translateX(3px); }
+
+/* ========== HERO ========== */
+.hero {
+  position: relative;
+  padding: 80px 0 60px;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -200px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1200px;
+  height: 800px;
+  background: radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 60%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+}
+
+.hero-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-700);
+  background: var(--blue-50);
+  border: 1px solid var(--blue-100);
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+  letter-spacing: 0.02em;
+}
+
+.hero-tag .dot {
+  width: 6px;
+  height: 6px;
+  background: var(--blue-500);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(1.4); }
+}
+
+.hero h1 {
+  font-size: 52px;
+  font-weight: 800;
+  line-height: 1.1;
+  letter-spacing: -0.035em;
+  margin-bottom: 22px;
+  color: var(--gray-900);
+}
+
+.hero h1 .accent {
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-700) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.hero-sub {
+  font-size: 18px;
+  color: var(--gray-600);
+  line-height: 1.65;
+  margin-bottom: 36px;
+  max-width: 480px;
+}
+
+.hero-sub strong {
+  color: var(--gray-900);
+  font-weight: 600;
+}
+
+.hero-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.hero-meta {
+  margin-top: 20px;
+  font-size: 13px;
+  color: var(--gray-500);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hero-meta-dot {
+  width: 4px;
+  height: 4px;
+  background: var(--gray-400);
+  border-radius: 50%;
+}
+
+/* Hero visual - mock product */
+.hero-visual {
+  position: relative;
+  perspective: 1000px;
+}
+
+.product-mockup {
+  background: white;
+  border-radius: 16px;
+  box-shadow: var(--shadow-xl);
+  border: 1px solid var(--gray-200);
+  overflow: hidden;
+  transform: rotateY(-3deg) rotateX(2deg);
+  transition: transform 0.6s ease;
+}
+
+.product-mockup:hover {
+  transform: rotateY(0) rotateX(0);
+}
+
+.mockup-titlebar {
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-200);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mockup-titlebar .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--gray-300);
+}
+.mockup-titlebar .dot:nth-child(1) { background: #ef4444; }
+.mockup-titlebar .dot:nth-child(2) { background: #f59e0b; }
+.mockup-titlebar .dot:nth-child(3) { background: #10b981; }
+
+.mockup-titlebar .url {
+  flex: 1;
+  text-align: center;
+  font-size: 11px;
+  color: var(--gray-500);
+  font-weight: 500;
+}
+
+.mockup-content {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  height: 380px;
+}
+
+.mockup-board {
+  padding: 16px;
+  background: var(--gray-50);
+  border-right: 1px solid var(--gray-200);
+  position: relative;
+}
+
+.mockup-board-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.mockup-board-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-900);
+}
+
+.mockup-board-code {
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--blue-700);
+  background: var(--blue-50);
+  padding: 4px 8px;
+  border-radius: 4px;
+  letter-spacing: 0.05em;
+  font-family: ui-monospace, monospace;
+}
+
+.mockup-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.post-card {
+  background: white;
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 10px;
+  color: var(--gray-700);
+  border: 1px solid;
+  line-height: 1.4;
+  animation: cardFloat 3s ease-in-out infinite;
+}
+
+@keyframes cardFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-2px); }
+}
+
+.post-card:nth-child(1) { background: #fef3c7; border-color: #fde68a; animation-delay: 0s; }
+.post-card:nth-child(2) { background: #dbeafe; border-color: #bfdbfe; animation-delay: 0.3s; }
+.post-card:nth-child(3) { background: #fce7f3; border-color: #fbcfe8; animation-delay: 0.6s; }
+.post-card:nth-child(4) { background: #d1fae5; border-color: #a7f3d0; animation-delay: 0.9s; }
+.post-card:nth-child(5) { background: #ede9fe; border-color: #ddd6fe; animation-delay: 1.2s; }
+.post-card:nth-child(6) { background: #fef3c7; border-color: #fde68a; animation-delay: 1.5s; }
+
+.post-author {
+  font-weight: 700;
+  color: var(--gray-900);
+  font-size: 9px;
+  display: block;
+  margin-bottom: 2px;
+}
+
+.mockup-chat {
+  background: white;
+  display: flex;
+  flex-direction: column;
+}
+
+.mockup-chat-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--gray-200);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mockup-chat-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--gray-700);
+}
+
+.online-indicator {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  color: #10b981;
+  font-weight: 600;
+}
+
+.online-dot {
+  width: 6px;
+  height: 6px;
+  background: #10b981;
+  border-radius: 50%;
+}
+
+.mockup-messages {
+  flex: 1;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow: hidden;
+}
+
+.msg {
+  background: var(--gray-50);
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 10px;
+  color: var(--gray-700);
+  line-height: 1.4;
+  opacity: 0;
+  animation: msgIn 0.5s ease forwards;
+}
+
+.msg .author {
+  font-weight: 700;
+  color: var(--gray-900);
+  font-size: 9px;
+  display: block;
+  margin-bottom: 1px;
+}
+
+.msg.host {
+  background: var(--blue-50);
+  border-left: 2px solid var(--blue-500);
+}
+
+.msg.host .author { color: var(--blue-700); }
+
+.msg:nth-child(1) { animation-delay: 0.4s; }
+.msg:nth-child(2) { animation-delay: 0.8s; }
+.msg:nth-child(3) { animation-delay: 1.2s; }
+.msg:nth-child(4) { animation-delay: 1.6s; }
+
+@keyframes msgIn {
+  from { opacity: 0; transform: translateX(10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+.mockup-input {
+  margin: 12px;
+  padding: 8px 12px;
+  background: var(--gray-100);
+  border-radius: 16px;
+  font-size: 10px;
+  color: var(--gray-400);
+}
+
+/* ========== SECTIONS ========== */
+section {
+  padding: 100px 0;
+  position: relative;
+}
+
+.section-tag {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--blue-600);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+h2 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+}
+
+.section-sub {
+  font-size: 17px;
+  color: var(--gray-600);
+  line-height: 1.6;
+  max-width: 640px;
+  margin-bottom: 60px;
+}
+
+.section-header.centered {
+  text-align: center;
+  max-width: 720px;
+  margin: 0 auto 60px;
+}
+
+.section-header.centered .section-sub { margin: 16px auto 0; }
+
+/* ========== PROBLEM SECTION ========== */
+.problem-section {
+  background: var(--gray-50);
+  border-top: 1px solid var(--gray-200);
+  border-bottom: 1px solid var(--gray-200);
+}
+
+.pain-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.pain-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  padding: 28px 22px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.pain-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 3px;
+  background: var(--red-500);
+  opacity: 0.6;
+}
+
+.pain-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.pain-num {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--red-500);
+  letter-spacing: 0.08em;
+  margin-bottom: 14px;
+  text-transform: uppercase;
+}
+
+.pain-card h3 {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 12px;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+}
+
+.pain-card p {
+  font-size: 13.5px;
+  color: var(--gray-600);
+  line-height: 1.65;
+}
+
+/* ========== SOLUTION SECTION ========== */
+.solution-stack {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.solution-piece {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 36px 28px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.solution-piece:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--blue-200);
+}
+
+.solution-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 20px;
+  background: linear-gradient(135deg, var(--blue-500) 0%, var(--blue-700) 100%);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  box-shadow: 0 8px 20px rgba(59,130,246,0.3);
+}
+
+.solution-icon svg { width: 26px; height: 26px; }
+
+.solution-piece h3 {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+  letter-spacing: -0.01em;
+}
+
+.solution-piece p {
+  font-size: 14.5px;
+  color: var(--gray-600);
+  line-height: 1.6;
+}
+
+/* ========== FEATURES SECTION ========== */
+.features-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.feature-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 36px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card:hover {
+  border-color: var(--blue-300);
+  box-shadow: var(--shadow-md);
+}
+
+.feat-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue-700);
+  background: var(--blue-50);
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 16px;
+  letter-spacing: 0.06em;
+}
+
+.feature-card h3 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 8px;
+  letter-spacing: -0.015em;
+}
+
+.feat-sub {
+  font-size: 14.5px;
+  color: var(--blue-600);
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.feature-card p {
+  font-size: 14.5px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* ========== COMPARISON SECTION ========== */
+.compare-section { background: var(--gray-50); }
+
+.compare-table {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.compare-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1fr;
+  border-bottom: 1px solid var(--gray-200);
+  transition: background 0.15s;
+}
+
+.compare-row:last-child { border-bottom: none; }
+.compare-row:hover:not(.header) { background: var(--gray-50); }
+
+.compare-row.header {
+  background: var(--gray-50);
+}
+
+.compare-row > div {
+  padding: 18px 24px;
+  font-size: 14.5px;
+  border-right: 1px solid var(--gray-200);
+  display: flex;
+  align-items: center;
+}
+
+.compare-row > div:last-child { border-right: none; }
+
+.compare-row.header > div {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.compare-row.header .col-fadlet {
+  color: var(--blue-700);
+  background: var(--blue-50);
+}
+
+.col-label { font-weight: 600; color: var(--gray-700); }
+.col-padlet { color: var(--gray-500); }
+.col-fadlet {
+  color: var(--blue-700);
+  background: var(--blue-50);
+  font-weight: 500;
+}
+
+.col-fadlet::before {
+  content: '✓';
+  margin-right: 8px;
+  color: var(--blue-500);
+  font-weight: 800;
+}
+
+/* ========== USE CASES SECTION ========== */
+.scenario-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.scenario-card {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 32px 28px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.scenario-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--blue-200);
+}
+
+.scenario-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--blue-700);
+  background: var(--blue-50);
+  padding: 4px 10px;
+  border-radius: 100px;
+  margin-bottom: 14px;
+  letter-spacing: 0.05em;
+}
+
+.scenario-card h3 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 14px;
+  letter-spacing: -0.01em;
+}
+
+.scenario-quote {
+  font-size: 14px;
+  color: var(--gray-600);
+  line-height: 1.7;
+  font-style: italic;
+  padding-left: 14px;
+  border-left: 3px solid var(--blue-200);
+  margin-bottom: 18px;
+}
+
+.scenario-feat {
+  font-size: 12.5px;
+  color: var(--gray-700);
+  padding-top: 14px;
+  border-top: 1px solid var(--gray-200);
+}
+
+.scenario-feat strong {
+  color: var(--blue-700);
+  font-weight: 700;
+}
+
+/* ========== TRUST SECTION ========== */
+.trust-section { background: var(--gray-50); }
+
+.trust-card {
+  background: linear-gradient(135deg, white 0%, var(--blue-50) 100%);
+  border: 1px solid var(--blue-100);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+
+.trust-card h3 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 16px;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+}
+
+.trust-card p {
+  font-size: 16px;
+  color: var(--gray-600);
+  line-height: 1.7;
+  max-width: 660px;
+  margin: 0 auto 32px;
+}
+
+.client-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+.client-tag {
+  background: white;
+  border: 1px solid var(--gray-200);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--gray-700);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.client-tag:hover {
+  border-color: var(--blue-300);
+  color: var(--blue-700);
+}
+
+/* ========== PRICING SECTION ========== */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.plan {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 16px;
+  padding: 32px 26px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.plan:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.plan.featured {
+  border-color: var(--blue-500);
+  border-width: 2px;
+  background: linear-gradient(180deg, white 0%, var(--blue-50) 100%);
+  transform: scale(1.02);
+}
+
+.plan.featured::before {
+  content: 'POPULAR';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--blue-500);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 100px;
+  letter-spacing: 0.08em;
+  box-shadow: 0 4px 12px rgba(59,130,246,0.4);
+}
+
+.plan-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--gray-500);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 12px;
+}
+
+.plan-price {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--gray-900);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+}
+
+.plan-price .unit {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--gray-500);
+}
+
+.plan-target {
+  font-size: 13px;
+  color: var(--gray-500);
+  margin-bottom: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--gray-200);
+  min-height: 38px;
+}
+
+.plan-tagline {
+  font-size: 13.5px;
+  color: var(--gray-700);
+  font-style: italic;
+  line-height: 1.6;
+}
+
+/* ========== FAQ SECTION ========== */
+.faq-section { background: var(--gray-50); }
+
+.faq-list {
+  max-width: 800px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-item {
+  background: white;
+  border: 1px solid var(--gray-200);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+}
+
+.faq-item:hover { border-color: var(--blue-200); }
+
+.faq-question {
+  width: 100%;
+  text-align: left;
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--gray-900);
+  background: white;
+  transition: background 0.15s;
+}
+
+.faq-question:hover { background: var(--gray-50); }
+
+.faq-icon {
+  flex-shrink: 0;
+  margin-left: 16px;
+  color: var(--blue-500);
+  transition: transform 0.3s ease;
+}
+
+.faq-item.open .faq-icon { transform: rotate(45deg); }
+
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.faq-item.open .faq-answer { max-height: 300px; }
+
+.faq-answer-inner {
+  padding: 0 24px 20px;
+  font-size: 14.5px;
+  color: var(--gray-600);
+  line-height: 1.7;
+}
+
+/* ========== FINAL CTA ========== */
+.final-cta-section {
+  padding: 80px 0;
+}
+
+.final-cta {
+  background: linear-gradient(135deg, var(--blue-600) 0%, var(--blue-800) 100%);
+  border-radius: 24px;
+  padding: 70px 40px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.final-cta::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  right: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.final-cta::after {
+  content: '';
+  position: absolute;
+  bottom: -50%;
+  left: -20%;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.final-cta h2 {
+  font-size: 36px;
+  font-weight: 800;
+  color: white;
+  margin-bottom: 16px;
+  letter-spacing: -0.025em;
+  position: relative;
+  line-height: 1.3;
+}
+
+.final-cta p {
+  font-size: 17px;
+  color: rgba(255,255,255,0.85);
+  margin-bottom: 36px;
+  max-width: 580px;
+  margin-left: auto;
+  margin-right: auto;
+  position: relative;
+  line-height: 1.6;
+}
+
+.final-cta .btn-large {
+  background: white;
+  color: var(--blue-700);
+  font-weight: 700;
+  position: relative;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+}
+
+.final-cta .btn-large:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 40px rgba(0,0,0,0.25);
+}
+
+.final-cta-meta {
+  margin-top: 20px;
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.7);
+  position: relative;
+}
+
+/* ========== FOOTER ========== */
+footer {
+  background: var(--gray-900);
+  color: white;
+  padding: 60px 0 30px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: 40px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--gray-700);
+  margin-bottom: 30px;
+}
+
+.footer-brand .logo {
+  color: white;
+  margin-bottom: 14px;
+}
+
+.footer-brand p {
+  font-size: 14px;
+  color: var(--gray-400);
+  line-height: 1.7;
+  max-width: 280px;
+}
+
+.footer-col h4 {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: white;
+  margin-bottom: 14px;
+}
+
+.footer-col ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.footer-col a {
+  font-size: 14px;
+  color: var(--gray-400);
+  transition: color 0.15s;
+}
+
+.footer-col a:hover { color: white; }
+
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--gray-500);
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.footer-bottom .brand-tag { color: var(--gray-400); }
+
+/* ========== ANIMATIONS ========== */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 968px) {
+  .hero-grid { grid-template-columns: 1fr; gap: 40px; }
+  .product-mockup { transform: none; }
+  .pain-grid { grid-template-columns: repeat(2, 1fr); }
+  .pricing-grid { grid-template-columns: repeat(2, 1fr); }
+  .plan.featured { transform: none; }
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 30px; }
+}
+
+@media (max-width: 768px) {
+  .container { padding: 0 20px; }
+  .nav-links a:not(.btn) { display: none; }
+  .hero { padding: 50px 0 40px; }
+  .hero h1 { font-size: 36px; }
+  .hero-sub { font-size: 16px; }
+  section { padding: 70px 0; }
+  h2 { font-size: 28px; }
+  .section-sub { font-size: 15px; margin-bottom: 40px; }
+  .pain-grid, .solution-stack, .features-grid, .scenario-grid, .pricing-grid {
+    grid-template-columns: 1fr;
+  }
+  .compare-row { grid-template-columns: 1.4fr 1fr 1fr; }
+  .compare-row > div { padding: 12px 14px; font-size: 13px; }
+  .trust-card { padding: 40px 24px; }
+  .trust-card h3 { font-size: 22px; }
+  .final-cta { padding: 50px 24px; }
+  .final-cta h2 { font-size: 26px; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .footer-bottom { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============== NAV ============== -->
+<nav>
+  <div class="container">
+    <div class="nav-inner">
+      <a href="#" class="logo">
+        <div class="logo-mark">F</div>
+        Fadlet
+      </a>
+      <div class="nav-links">
+        <a href="#features">기능</a>
+        <a href="#scenarios">활용 사례</a>
+        <a href="#pricing">요금제</a>
+        <a href="#faq">FAQ</a>
+        <a href="#cta" class="btn btn-primary">무료 시작 <span class="btn-arrow">→</span></a>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<!-- ============== HERO ============== -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-grid">
+      <div>
+        <div class="hero-tag">
+          <span class="dot"></span>
+          Facilitator-friendly Padlet
+        </div>
+        <h1>
+          워크숍이 끝날 때까지<br>
+          <span class="accent">운영에만 집중</span>하세요.
+        </h1>
+        <p class="hero-sub">
+          참여자는 가입 없이 6자리 코드로 즉시 합류.<br>
+          운영자는 <strong>보드와 채팅, 타이머를 한 화면</strong>에서 관리.<br>
+          한국 워크숍을 위한 협업 보드, Fadlet입니다.
+        </p>
+        <div class="hero-cta-row">
+          <a href="#cta" class="btn btn-primary btn-large">
+            무료로 시작하기 <span class="btn-arrow">→</span>
+          </a>
+          <a href="#features" class="btn btn-ghost btn-large">제품 둘러보기</a>
+        </div>
+        <div class="hero-meta">
+          신용카드 없이 30일 무료
+          <span class="hero-meta-dot"></span>
+          1분 안에 첫 보드 생성
+        </div>
+      </div>
+
+      <div class="hero-visual">
+        <div class="product-mockup">
+          <div class="mockup-titlebar">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="url">fadlet.io / boards / K3F2X9</span>
+          </div>
+          <div class="mockup-content">
+            <div class="mockup-board">
+              <div class="mockup-board-header">
+                <div class="mockup-board-title">Q1 회고 워크숍 — KPT</div>
+                <div class="mockup-board-code">K3F2X9</div>
+              </div>
+              <div class="mockup-cards">
+                <div class="post-card">
+                  <span class="post-author">박지영</span>
+                  새로운 협업 도구 도입한 게 효율 높였어요
+                </div>
+                <div class="post-card">
+                  <span class="post-author">이수민</span>
+                  데일리 스탠드업 형식이 잘 맞았습니다
+                </div>
+                <div class="post-card">
+                  <span class="post-author">최영준</span>
+                  팀원 간 소통이 활발해진 것 같아요
+                </div>
+                <div class="post-card">
+                  <span class="post-author">김도현</span>
+                  미팅 시간 좀 줄였으면 좋겠어요
+                </div>
+                <div class="post-card">
+                  <span class="post-author">정혜린</span>
+                  업무 분배가 균형있지 않았어요
+                </div>
+                <div class="post-card">
+                  <span class="post-author">한지우</span>
+                  회고 주기를 격주로 가져가요
+                </div>
+              </div>
+            </div>
+            <div class="mockup-chat">
+              <div class="mockup-chat-header">
+                <div class="mockup-chat-title">실시간 채팅</div>
+                <div class="online-indicator">
+                  <span class="online-dot"></span>
+                  12명
+                </div>
+              </div>
+              <div class="mockup-messages">
+                <div class="msg host">
+                  <span class="author">운영자 · 김매니저</span>
+                  10분 후 발표 시작합니다 🙌
+                </div>
+                <div class="msg">
+                  <span class="author">박지영</span>
+                  템플릿은 어떻게 추가하나요?
+                </div>
+                <div class="msg">
+                  <span class="author">이수민</span>
+                  상단 + 버튼 누르세요
+                </div>
+                <div class="msg">
+                  <span class="author">최영준</span>
+                  👍 감사합니다
+                </div>
+              </div>
+              <div class="mockup-input">메시지 입력...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PROBLEM ============== -->
+<section class="problem-section">
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">PROBLEM</span>
+      <h2>워크숍 운영, 이런 고민 한 번쯤 해보셨나요?</h2>
+      <p class="section-sub">패들렛, 미로, 뮤랄을 써봤지만 무언가 부족하다고 느끼셨다면 — Fadlet이 그 자리를 채웁니다.</p>
+    </div>
+
+    <div class="pain-grid">
+      <div class="pain-card reveal">
+        <div class="pain-num">PAIN 01</div>
+        <h3>"가입하라고 하면<br>참여자가 이탈해요"</h3>
+        <p>워크숍 시작 전 5-10분이 매번 가입 안내로 사라집니다. 30대 이상 학습자는 그 자리에서 포기하기도 합니다.</p>
+      </div>
+      <div class="pain-card reveal">
+        <div class="pain-num">PAIN 02</div>
+        <h3>"카카오 오픈채팅방<br>매번 만드느라 분주해요"</h3>
+        <p>차수마다 새 오픈채팅방 생성, 링크 공유, 입장 안내, 끝나면 정리까지. 본 워크숍보다 채팅방 관리에 시간을 더 씁니다.</p>
+      </div>
+      <div class="pain-card reveal">
+        <div class="pain-num">PAIN 03</div>
+        <h3>"보드 보랴, 채팅 보랴<br>정신이 없어요"</h3>
+        <p>줌으로 진행하면서 보드는 패들렛, 채팅은 카톡, 자료는 메일로. 운영자 한 명이 4개 도구를 동시에 관리합니다.</p>
+      </div>
+      <div class="pain-card reveal">
+        <div class="pain-num">PAIN 04</div>
+        <h3>"한국어가 어색해서<br>설명을 또 해야 해요"</h3>
+        <p>"칠판 추가" "섹션 만들기" 같은 번역체 메뉴가 학습자를 헷갈리게 합니다. 결제도 해외 카드로만, 세금계산서도 어렵습니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== SOLUTION ============== -->
+<section>
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">SOLUTION</span>
+      <h2>하나의 화면에서,<br>워크숍의 모든 흐름을.</h2>
+      <p class="section-sub">참여자의 보드 작성, 학습자 간 실시간 소통, 운영자의 진행 관리 — 분산되어 있던 워크숍의 세 흐름을 하나로 통합했습니다.</p>
+    </div>
+
+    <div class="solution-stack">
+      <div class="solution-piece reveal">
+        <div class="solution-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="9" y1="3" x2="9" y2="21"/>
+            <line x1="15" y1="3" x2="15" y2="21"/>
+          </svg>
+        </div>
+        <h3>보드 캔버스</h3>
+        <p>포스트잇 스타일 협업,<br>HRD 표준 템플릿 내장</p>
+      </div>
+      <div class="solution-piece reveal">
+        <div class="solution-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <h3>실시간 채팅</h3>
+        <p>우측 패널에서 즉각<br>질문·반응 교환</p>
+      </div>
+      <div class="solution-piece reveal">
+        <div class="solution-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <polyline points="12 6 12 12 16 14"/>
+          </svg>
+        </div>
+        <h3>Facilitator 모드</h3>
+        <p>타이머·단계 진행·<br>모더레이션 한 화면</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FEATURES ============== -->
+<section id="features" style="background: var(--gray-50); border-top: 1px solid var(--gray-200); border-bottom: 1px solid var(--gray-200);">
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">KEY FEATURES</span>
+      <h2>운영자가 사랑하는 4가지 기능</h2>
+      <p class="section-sub">"이 제품이면 내 워크숍에 정말 도움이 되겠다"는 확신을 주는 기능들.</p>
+    </div>
+
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <span class="feat-tag">FEATURE 01</span>
+        <h3>30초 합류, 6자리 코드</h3>
+        <div class="feat-sub">참여자 가입 안내에 5-10분 소비, 이제 끝.</div>
+        <p>운영자가 만든 6자리 코드와 닉네임만 입력하면 즉시 보드 진입. 가입도, 로그인도, 비밀번호도 없습니다. 학습자 누구도 도구 때문에 워크숍에서 빠지지 않습니다.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feat-tag">FEATURE 02</span>
+        <h3>보드와 채팅, 한 화면에</h3>
+        <div class="feat-sub">분산되어 있던 흐름을 하나로.</div>
+        <p>좌측 보드 캔버스 + 우측 채팅 패널. 운영자가 카톡과 줌 채팅을 따로 켤 필요가 없습니다. 텍스트, 이미지, 파일, 링크 미리보기까지 자연스럽게 흐릅니다.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feat-tag">FEATURE 03</span>
+        <h3>HRD 표준 템플릿 내장</h3>
+        <div class="feat-sub">KPT, 4F, 9 Window — 처음부터 한국 워크숍을 위해.</div>
+        <p>한국 HRD 현장에서 자주 쓰이는 회고·아이디어·액션러닝 템플릿을 기본 제공. 빈 보드부터 시작하지 않고, 검증된 구조 위에서 시작합니다.</p>
+      </div>
+      <div class="feature-card reveal">
+        <span class="feat-tag">FEATURE 04</span>
+        <h3>Facilitator 모드</h3>
+        <div class="feat-sub">패들렛에는 없는, 운영자만의 권한.</div>
+        <p>타이머로 단계 진행, 채팅 공지 고정, 부적절한 메시지 모더레이션, 보드 잠금. 운영자가 워크숍 흐름을 완벽하게 통제할 수 있도록 설계된 권한 시스템.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== COMPARISON ============== -->
+<section class="compare-section">
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">COMPARISON</span>
+      <h2>왜 운영자들은 Fadlet을 선택할까요?</h2>
+      <p class="section-sub">패들렛은 글로벌 표준입니다. Fadlet은 한국 운영자의 표준입니다.</p>
+    </div>
+
+    <div class="compare-table reveal">
+      <div class="compare-row header">
+        <div>비교 항목</div>
+        <div class="col-padlet">Padlet</div>
+        <div class="col-fadlet">Fadlet</div>
+      </div>
+      <div class="compare-row">
+        <div class="col-label">참여자 진입</div>
+        <div class="col-padlet">회원가입 또는 인증</div>
+        <div class="col-fadlet">코드 + 닉네임만</div>
+      </div>
+      <div class="compare-row">
+        <div class="col-label">실시간 채팅</div>
+        <div class="col-padlet">댓글만 가능</div>
+        <div class="col-fadlet">전용 채팅 패널</div>
+      </div>
+      <div class="compare-row">
+        <div class="col-label">한국어 UI</div>
+        <div class="col-padlet">기계 번역체</div>
+        <div class="col-fadlet">HRD 현업 용어</div>
+      </div>
+      <div class="compare-row">
+        <div class="col-label">워크숍 템플릿</div>
+        <div class="col-padlet">일반 보드만</div>
+        <div class="col-fadlet">KPT · 4F · 9 Window</div>
+      </div>
+      <div class="compare-row">
+        <div class="col-label">운영자 모드</div>
+        <div class="col-padlet">없음</div>
+        <div class="col-fadlet">타이머 · 단계 · 모더레이션</div>
+      </div>
+      <div class="compare-row">
+        <div class="col-label">결제 · 세금계산서</div>
+        <div class="col-padlet">해외 결제, 영문 견적</div>
+        <div class="col-fadlet">국내 카드, 세금계산서</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== USE CASES ============== -->
+<section id="scenarios">
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">USE CASES</span>
+      <h2>이런 워크숍에서 빛납니다</h2>
+      <p class="section-sub">방문자가 "내 워크숍에 어떻게 쓸 수 있을지" 구체적으로 상상할 수 있도록.</p>
+    </div>
+
+    <div class="scenario-grid">
+      <div class="scenario-card reveal">
+        <span class="scenario-tag">SCENE 01 · 분기 회고</span>
+        <h3>KPT 회고 워크숍</h3>
+        <div class="scenario-quote">3개 컬럼에 익명으로 의견을 모으고, 채팅으로 즉석 토론. 보드 잠금 후 PDF로 정리.</div>
+        <div class="scenario-feat"><strong>활용 기능</strong><br>KPT 템플릿 + 익명 모드 + 채팅 + PDF 내보내기</div>
+      </div>
+      <div class="scenario-card reveal">
+        <span class="scenario-tag">SCENE 02 · 신입 교육</span>
+        <h3>온보딩 첫날 아이스브레이킹</h3>
+        <div class="scenario-quote">닉네임으로 부담 없이 자기소개. 채팅으로 친밀감 형성. 운영자 공지로 일정 안내.</div>
+        <div class="scenario-feat"><strong>활용 기능</strong><br>자유 보드 + 닉네임 + 채팅 공지</div>
+      </div>
+      <div class="scenario-card reveal">
+        <span class="scenario-tag">SCENE 03 · 액션러닝</span>
+        <h3>9 Window 문제해결 워크숍</h3>
+        <div class="scenario-quote">체계적 사고 프레임으로 문제 분해. 단계별 타이머로 시간 관리. 결과를 바로 출력.</div>
+        <div class="scenario-feat"><strong>활용 기능</strong><br>9 Window 템플릿 + 타이머 + 단계 진행</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== TRUST ============== -->
+<section class="trust-section">
+  <div class="container">
+    <div class="trust-card reveal">
+      <span class="section-tag">TRUST</span>
+      <h3>워크숍을 가장 잘 아는 회사가<br>만든 협업 보드</h3>
+      <p>Fadlet은 8년간 100여 개 대기업의 HRD 부서와 함께해온 레퍼런스HRD가 자체 워크숍에서 직접 검증한 도구입니다. 이론으로 만든 기능이 아니라, 현장에서 매주 쌓인 운영자의 목소리에서 출발했습니다.</p>
+      <div class="client-row">
+        <span class="client-tag">현대자동차그룹</span>
+        <span class="client-tag">기아</span>
+        <span class="client-tag">LG</span>
+        <span class="client-tag">삼성</span>
+        <span class="client-tag">LS그룹</span>
+        <span class="client-tag">한국타이어</span>
+        <span class="client-tag">+ 100여 개 기업</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== PRICING ============== -->
+<section id="pricing">
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">PRICING</span>
+      <h2>팀 규모에 맞춰 시작하세요</h2>
+      <p class="section-sub">개인 강사부터 대기업 HRD 부서까지, 단계별로 준비된 플랜.</p>
+    </div>
+
+    <div class="pricing-grid">
+      <div class="plan reveal">
+        <div class="plan-name">FREE</div>
+        <div class="plan-price">0원</div>
+        <div class="plan-target">처음 써보는 강사·교사</div>
+        <p class="plan-tagline">"우선 한 번 써보세요. 카드 등록도 필요 없습니다."</p>
+      </div>
+      <div class="plan featured reveal">
+        <div class="plan-name">TEAM</div>
+        <div class="plan-price">49,000원<span class="unit">/월</span></div>
+        <div class="plan-target">소규모 강사·팀</div>
+        <p class="plan-tagline">"월 1-2회 워크숍을 직접 진행하시는 분께."</p>
+      </div>
+      <div class="plan reveal">
+        <div class="plan-name">BUSINESS</div>
+        <div class="plan-price">199,000원<span class="unit">/월</span></div>
+        <div class="plan-target">중견기업 HRD부서</div>
+        <p class="plan-tagline">"여러 운영자가 함께 쓰는 워크스페이스."</p>
+      </div>
+      <div class="plan reveal">
+        <div class="plan-name">ENTERPRISE</div>
+        <div class="plan-price">별도 견적</div>
+        <div class="plan-target">대기업 · 공공기관</div>
+        <p class="plan-tagline">"보안·SSO·화이트라벨링 등 맞춤 구성."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FAQ ============== -->
+<section id="faq" class="faq-section">
+  <div class="container">
+    <div class="section-header centered reveal">
+      <span class="section-tag">FAQ</span>
+      <h2>자주 묻는 질문</h2>
+      <p class="section-sub">결정 전 가장 많이 받는 5가지 질문에 답합니다.</p>
+    </div>
+
+    <div class="faq-list">
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>회원가입 없이 정말 참여가 가능한가요?</span>
+          <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">네, 가능합니다. 운영자가 만든 6자리 보드 코드와 닉네임만 입력하면 즉시 보드에 진입합니다. 별도 계정 생성, 비밀번호, 이메일 인증이 필요 없습니다.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>기업 보안 정책에 적합한가요?</span>
+          <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">Fadlet은 보드 단위 데이터 격리, Firebase Security Rules 기반 권한 관리, 보드 코드 brute force 방어 등 기업 환경에 맞는 보안 체계를 갖추고 있습니다. 엔터프라이즈 플랜에서는 ISMS 인증, 온프레미스 옵션도 지원합니다.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>세금계산서 발행이 가능한가요?</span>
+          <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">네, BUSINESS 플랜 이상에서 세금계산서를 자동으로 발행해 드립니다. 토스페이먼츠를 통한 국내 카드·계좌이체 결제를 지원하며, 회계 부서에서 별도로 처리할 필요가 없습니다.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>패들렛에서 데이터를 옮길 수 있나요?</span>
+          <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">패들렛에서 Fadlet으로의 마이그레이션 도구를 준비 중입니다. 정식 출시 시점에 1-클릭으로 보드를 옮길 수 있는 기능을 제공할 예정입니다.</div>
+        </div>
+      </div>
+      <div class="faq-item reveal">
+        <button class="faq-question" onclick="toggleFaq(this)">
+          <span>모바일에서도 잘 되나요?</span>
+          <svg class="faq-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </button>
+        <div class="faq-answer">
+          <div class="faq-answer-inner">네, Fadlet은 처음부터 모바일 우선으로 설계되었습니다. PC에서는 보드+채팅 분할 화면, 모바일에서는 토글 방식으로 자연스럽게 전환됩니다. 워크숍 참여자의 60% 이상이 모바일로 접속한다는 점을 고려해 설계했습니다.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FINAL CTA ============== -->
+<section id="cta" class="final-cta-section">
+  <div class="container">
+    <div class="final-cta reveal">
+      <h2>다음 워크숍, Fadlet과 함께<br>시작하세요</h2>
+      <p>가입 후 1분이면 첫 보드를 만들 수 있습니다.<br>30일 무료 체험으로 직접 확인해보세요.</p>
+      <a href="#" class="btn btn-large">
+        무료로 시작하기 <span class="btn-arrow">→</span>
+      </a>
+      <div class="final-cta-meta">신용카드 등록 없이 시작 · 언제든 취소 가능</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer>
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="logo">
+          <div class="logo-mark">F</div>
+          Fadlet
+        </div>
+        <p>워크숍 운영자를 위한 협업 보드. 한국 HRD 현장의 목소리에서 시작된 도구입니다.</p>
+      </div>
+      <div class="footer-col">
+        <h4>제품</h4>
+        <ul>
+          <li><a href="#features">기능</a></li>
+          <li><a href="#scenarios">활용 사례</a></li>
+          <li><a href="#pricing">요금제</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>회사</h4>
+        <ul>
+          <li><a href="#">레퍼런스HRD</a></li>
+          <li><a href="#">블로그</a></li>
+          <li><a href="#">고객 문의</a></li>
+          <li><a href="#">파트너십</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>법적 고지</h4>
+        <ul>
+          <li><a href="#">이용약관</a></li>
+          <li><a href="#">개인정보처리방침</a></li>
+          <li><a href="#">사업자정보</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div class="brand-tag">REFERENCE HRD · 고객의 물음표를 느낌표로!</div>
+      <div>© 2026 REFERENCE HRD. All Rights Reserved.</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// FAQ Toggle
+function toggleFaq(button) {
+  const item = button.parentElement;
+  const isOpen = item.classList.contains('open');
+  document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+  if (!isOpen) item.classList.add('open');
+}
+
+// Scroll Reveal Animation
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+
+</body>
+</html>
