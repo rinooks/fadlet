@@ -188,17 +188,37 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
+  function handleSendError(err: unknown) {
+    if (!(err instanceof Error) || err.message !== 'banned') {
+      const msg = err instanceof Error ? err.message : '알 수 없는 오류';
+      toast.error(`전송 실패: ${msg}`);
+      console.error('[chat-send]', err);
+    }
+  }
+
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if ((!input.trim() && !attachment) || sending) return;
-    setSending(true);
-    try {
-      await onSend(input.trim(), attachment ?? undefined);
-      setInput('');
-      setAttachment(null);
-    } finally {
-      setSending(false);
+
+    if (attachment) {
+      // 첨부 파일은 업로드 결과까지 기다림
+      setSending(true);
+      try {
+        await onSend(input.trim(), attachment);
+        setInput('');
+        setAttachment(null);
+      } catch (err) {
+        handleSendError(err);
+      } finally {
+        setSending(false);
+      }
+      return;
     }
+
+    // 텍스트만: 낙관적 UI — 입력창을 즉시 비우고 백그라운드에서 전송
+    const promise = onSend(input.trim(), undefined);
+    setInput('');
+    promise.catch(handleSendError);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {

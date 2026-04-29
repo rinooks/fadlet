@@ -52,19 +52,41 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
     if (fileInputRef.current) fileInputRef.current.value = '';
   }
 
+  function handleError(err: unknown) {
+    if (!(err instanceof Error) || err.message !== 'banned') {
+      const msg = err instanceof Error ? err.message : '알 수 없는 오류';
+      toast.error(`포스트 저장 실패: ${msg}`);
+      console.error('[new-post]', err);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!content.trim() && !imageFile) return;
-    setLoading(true);
-    try {
-      await onSubmit(content.trim(), color, imageFile ?? undefined);
-      setContent('');
-      setColor('yellow');
-      removeImage();
-      onClose();
-    } finally {
-      setLoading(false);
+
+    if (imageFile) {
+      // 이미지 업로드는 끝까지 기다림
+      setLoading(true);
+      try {
+        await onSubmit(content.trim(), color, imageFile);
+        setContent('');
+        setColor('yellow');
+        removeImage();
+        onClose();
+      } catch (err) {
+        handleError(err);
+      } finally {
+        setLoading(false);
+      }
+      return;
     }
+
+    // 텍스트 전용: 낙관적 UI — 다이얼로그를 즉시 닫고 백그라운드에서 저장
+    const promise = onSubmit(content.trim(), color, undefined);
+    setContent('');
+    setColor('yellow');
+    onClose();
+    promise.catch(handleError);
   }
 
   return (
