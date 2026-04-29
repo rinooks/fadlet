@@ -53,6 +53,19 @@ export default function DashboardPage() {
           <span className="text-sm text-gray-600 font-medium">내 보드</span>
         </div>
         <div className="flex items-center gap-3">
+          <Link
+            href="/workspaces"
+            className="text-xs text-blue-600 hover:underline font-semibold"
+          >
+            👥 워크스페이스
+          </Link>
+          <Link
+            href="/help"
+            className="text-xs text-blue-600 hover:underline font-semibold"
+          >
+            📖 가이드
+          </Link>
+          <span className="text-gray-300">|</span>
           <span className="text-sm text-gray-500">{user?.displayName ?? user?.email}</span>
           <Button variant="outline" size="sm" onClick={logout} className="text-xs">
             로그아웃

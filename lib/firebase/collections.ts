@@ -6,6 +6,8 @@ export const COLLECTIONS = {
   POSTS: 'posts',
   MESSAGES: 'messages',
   PARTICIPANTS: 'participants',
+  REPORTS: 'reports',
+  MEMBERS: 'members',
 } as const;
 
 export function boardsPath(wsId = WORKSPACE_ID) {
@@ -22,4 +24,20 @@ export function messagesPath(boardId: string, wsId = WORKSPACE_ID) {
 
 export function participantsPath(boardId: string, wsId = WORKSPACE_ID) {
   return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.PARTICIPANTS}`;
+}
+
+export function reportsPath(boardId: string, wsId = WORKSPACE_ID) {
+  return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.REPORTS}`;
+}
+
+export function workspacesCollectionPath() {
+  return COLLECTIONS.WORKSPACES;
+}
+
+export function workspaceDocPath(wsId: string) {
+  return `${COLLECTIONS.WORKSPACES}/${wsId}`;
+}
+
+export function workspaceMembersPath(wsId: string) {
+  return `${COLLECTIONS.WORKSPACES}/${wsId}/${COLLECTIONS.MEMBERS}`;
 }

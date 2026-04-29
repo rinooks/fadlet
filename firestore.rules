@@ -10,33 +10,66 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/workspaces/$(wsId)/boards/$(boardId)).data.ownerId == request.auth.uid;
     }
 
-    match /workspaces/{wsId}/boards/{boardId} {
+    function isWorkspaceOwner(wsId) {
+      return exists(/databases/$(database)/documents/workspaces/$(wsId)) &&
+        get(/databases/$(database)/documents/workspaces/$(wsId)).data.ownerUid == request.auth.uid;
+    }
+
+    match /workspaces/{wsId} {
       allow read: if true;
       allow create: if isAuthenticated()
-        && request.resource.data.ownerId == request.auth.uid;
+        && request.resource.data.ownerUid == request.auth.uid;
       allow update, delete: if isAuthenticated()
-        && resource.data.ownerId == request.auth.uid;
+        && resource.data.ownerUid == request.auth.uid;
 
-      match /posts/{postId} {
-        allow read: if true;
+      match /members/{memberUid} {
+        allow read: if isAuthenticated();
         allow create: if isAuthenticated()
-          && request.resource.data.authorId == request.auth.uid;
-        allow update, delete: if isAuthenticated()
-          && (resource.data.authorId == request.auth.uid || isOwner(wsId, boardId));
+          && request.auth.uid == memberUid
+          && request.resource.data.uid == memberUid;
+        allow update: if isAuthenticated()
+          && (request.auth.uid == memberUid || isWorkspaceOwner(wsId));
+        allow delete: if isAuthenticated()
+          && (request.auth.uid == memberUid || isWorkspaceOwner(wsId));
       }
 
-      match /messages/{messageId} {
+      match /boards/{boardId} {
         allow read: if true;
         allow create: if isAuthenticated()
-          && request.resource.data.authorId == request.auth.uid;
+          && request.resource.data.ownerId == request.auth.uid;
         allow update, delete: if isAuthenticated()
-          && (resource.data.authorId == request.auth.uid || isOwner(wsId, boardId));
-      }
+          && resource.data.ownerId == request.auth.uid;
 
-      match /participants/{userId} {
-        allow read: if true;
-        allow write: if isAuthenticated()
-          && request.auth.uid == userId;
+        match /posts/{postId} {
+          allow read: if true;
+          allow create: if isAuthenticated()
+            && request.resource.data.authorId == request.auth.uid;
+          allow update, delete: if isAuthenticated()
+            && (resource.data.authorId == request.auth.uid || isOwner(wsId, boardId));
+        }
+
+        match /messages/{messageId} {
+          allow read: if true;
+          allow create: if isAuthenticated()
+            && request.resource.data.authorId == request.auth.uid;
+          allow update, delete: if isAuthenticated()
+            && (resource.data.authorId == request.auth.uid || isOwner(wsId, boardId));
+        }
+
+        match /participants/{userId} {
+          allow read: if true;
+          allow write: if isAuthenticated()
+            && request.auth.uid == userId;
+        }
+
+        match /reports/{reportId} {
+          allow read: if isAuthenticated() && isOwner(wsId, boardId);
+          allow create: if isAuthenticated()
+            && request.resource.data.reporterId == request.auth.uid
+            && request.resource.data.status == 'open';
+          allow update: if isAuthenticated() && isOwner(wsId, boardId);
+          allow delete: if isAuthenticated() && isOwner(wsId, boardId);
+        }
       }
     }
   }

@@ -1,0 +1,106 @@
+'use client';
+
+import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { db } from '@/lib/firebase/client';
+import { boardsPath } from '@/lib/firebase/collections';
+import type { TimerState } from '@/lib/types';
+
+const IDLE: TimerState = {
+  stageId: null,
+  status: 'idle',
+  startedAt: null,
+  pausedAt: null,
+  accumulatedMs: 0,
+};
+
+export function useTimer(boardId: string, timer?: TimerState) {
+  async function selectStage(stageId: string) {
+    const next: TimerState = { ...IDLE, stageId };
+    await updateDoc(doc(db, boardsPath(), boardId), {
+      timer: next,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async function startTimer(stageId: string) {
+    const now = Date.now();
+    const next: TimerState = {
+      stageId,
+      status: 'running',
+      startedAt: now,
+      pausedAt: null,
+      accumulatedMs: 0,
+    };
+    await updateDoc(doc(db, boardsPath(), boardId), {
+      timer: next,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async function pauseTimer() {
+    if (!timer || timer.status !== 'running') return;
+    const now = Date.now();
+    const elapsed = timer.startedAt ? now - timer.startedAt : 0;
+    const next: TimerState = {
+      ...timer,
+      status: 'paused',
+      pausedAt: now,
+      accumulatedMs: timer.accumulatedMs + elapsed,
+    };
+    await updateDoc(doc(db, boardsPath(), boardId), {
+      timer: next,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async function resumeTimer() {
+    if (!timer || timer.status !== 'paused') return;
+    const next: TimerState = {
+      ...timer,
+      status: 'running',
+      startedAt: Date.now(),
+      pausedAt: null,
+    };
+    await updateDoc(doc(db, boardsPath(), boardId), {
+      timer: next,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async function stopTimer() {
+    await updateDoc(doc(db, boardsPath(), boardId), {
+      timer: IDLE,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  return { selectStage, startTimer, pauseTimer, resumeTimer, stopTimer };
+}
+
+export function elapsedMs(timer?: TimerState): number {
+  if (!timer || timer.status === 'idle') return 0;
+  if (timer.status === 'paused') return timer.accumulatedMs;
+  if (timer.status === 'running' && timer.startedAt) {
+    return timer.accumulatedMs + (Date.now() - timer.startedAt);
+  }
+  return timer.accumulatedMs;
+}
+
+export function useTickingElapsed(timer?: TimerState, intervalMs = 500): number {
+  const [now, setNow] = useState(() => Date.now());
+  const running = timer?.status === 'running';
+
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(id);
+  }, [running, intervalMs]);
+
+  if (!timer || timer.status === 'idle') return 0;
+  if (timer.status === 'paused') return timer.accumulatedMs;
+  if (timer.status === 'running' && timer.startedAt) {
+    return timer.accumulatedMs + (now - timer.startedAt);
+  }
+  return timer.accumulatedMs;
+}

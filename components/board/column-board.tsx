@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { PostCard } from './post-card';
+import { useDroppable } from '@dnd-kit/core';
+import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortablePostCard } from './sortable-post-card';
 import { NewPostDialog } from './new-post-dialog';
 import type { TemplateDefinition } from '@/lib/templates';
 import type { Post, PostColor } from '@/lib/types';
@@ -17,6 +19,30 @@ interface ColumnBoardProps {
   onUpdatePost: (postId: string, content: string) => Promise<void>;
   onDeletePost: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
+}
+
+interface DroppableColumnProps {
+  columnId: string;
+  isGrid: boolean;
+  postIds: string[];
+  children: React.ReactNode;
+}
+
+function DroppableColumn({ columnId, isGrid, postIds, children }: DroppableColumnProps) {
+  const { setNodeRef, isOver } = useDroppable({ id: `col-${columnId}`, data: { columnId, type: 'column' } });
+
+  return (
+    <SortableContext items={postIds} strategy={verticalListSortingStrategy}>
+      <div
+        ref={setNodeRef}
+        className={`flex-1 p-2 space-y-2 overflow-y-auto rounded-b-xl transition-colors ${
+          isOver ? 'bg-blue-50' : ''
+        } ${isGrid ? 'min-h-[120px]' : 'min-h-[200px]'}`}
+      >
+        {children}
+      </div>
+    </SortableContext>
+  );
 }
 
 export function ColumnBoard({
@@ -55,6 +81,7 @@ export function ColumnBoard({
       <div className={containerClass} style={containerStyle}>
         {columns.map((col) => {
           const colPosts = posts.filter((p) => p.columnId === col.id);
+          const postIds = colPosts.map((p) => p.id);
           return (
             <div
               key={col.id}
@@ -67,13 +94,14 @@ export function ColumnBoard({
                 <span className="text-xs opacity-70">{colPosts.length}</span>
               </div>
 
-              <div className="flex-1 p-2 space-y-2 overflow-y-auto">
+              <DroppableColumn columnId={col.id} isGrid={isGrid} postIds={postIds}>
                 {colPosts.map((post) => (
-                  <PostCard
+                  <SortablePostCard
                     key={post.id}
                     post={post}
                     currentUid={currentUid}
                     isHost={isHost}
+                    canDrag={!isLocked || isHost}
                     onUpdate={onUpdatePost}
                     onDelete={onDeletePost}
                     onOpenDetail={onOpenDetail}
@@ -82,7 +110,7 @@ export function ColumnBoard({
                 {colPosts.length === 0 && (
                   <p className="text-xs text-gray-400 text-center py-4">포스트가 없습니다</p>
                 )}
-              </div>
+              </DroppableColumn>
 
               {canPost && (
                 <div className="px-2 pb-2">

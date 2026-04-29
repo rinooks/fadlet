@@ -2,14 +2,15 @@
 
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
-import { X } from 'lucide-react';
+import { Flag, X } from 'lucide-react';
 import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { ReportDialog } from '@/components/shared/report-dialog';
 import { useComments } from '@/lib/hooks/use-comments';
 import { useReactions } from '@/lib/hooks/use-reactions';
-import type { EmojiType, Post } from '@/lib/types';
+import type { Comment, EmojiType, Post } from '@/lib/types';
 
 const EMOJIS: { type: EmojiType; label: string }[] = [
   { type: 'thumbsup', label: '👍' },
@@ -51,6 +52,9 @@ export function PostDetailModal({
   const { toggleReaction, getCount, myEmoji } = useReactions(boardId, post.id);
   const [commentText, setCommentText] = useState('');
   const [sending, setSending] = useState(false);
+  const [reportComment, setReportComment] = useState<Comment | null>(null);
+  const [reportingPost, setReportingPost] = useState(false);
+  const canReportPost = post.authorId !== currentUid && !isHost;
 
   async function handleComment(e: React.FormEvent) {
     e.preventDefault();
@@ -101,14 +105,25 @@ export function PostDetailModal({
           </div>
           <div className="flex items-center justify-between mt-3">
             <span className="text-xs text-gray-500 font-medium">{post.authorName} · {formatTime(post.createdAt)}</span>
-            {(post.authorId === currentUid || isHost) && (
-              <button
-                onClick={() => { onDelete(post.id); onClose(); }}
-                className="text-xs text-red-400 hover:text-red-600 focus-visible:outline focus-visible:outline-2 rounded"
-              >
-                삭제
-              </button>
-            )}
+            <div className="flex items-center gap-2">
+              {canReportPost && (
+                <button
+                  onClick={() => setReportingPost(true)}
+                  className="flex items-center gap-1 text-xs text-gray-400 hover:text-red-500 focus-visible:outline focus-visible:outline-2 rounded"
+                  aria-label="포스트 신고"
+                >
+                  <Flag size={11} /> 신고
+                </button>
+              )}
+              {(post.authorId === currentUid || isHost) && (
+                <button
+                  onClick={() => { onDelete(post.id); onClose(); }}
+                  className="text-xs text-red-400 hover:text-red-600 focus-visible:outline focus-visible:outline-2 rounded"
+                >
+                  삭제
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -139,24 +154,39 @@ export function PostDetailModal({
           {comments.length === 0 && (
             <p className="text-xs text-gray-400 text-center py-4">아직 댓글이 없습니다.</p>
           )}
-          {comments.map((c) => (
-            <div key={c.id} className="flex gap-2">
-              <div className="flex-1 bg-gray-50 rounded-xl px-3 py-2">
-                <div className="flex items-center justify-between mb-0.5">
-                  <span className="text-xs font-semibold text-gray-700">{c.authorName}</span>
-                  {(c.authorId === currentUid || isHost) && (
-                    <button
-                      onClick={() => deleteComment(c.id)}
-                      className="text-[10px] text-gray-400 hover:text-red-500 focus-visible:outline focus-visible:outline-2 rounded"
-                    >
-                      삭제
-                    </button>
-                  )}
+          {comments.map((c) => {
+            const canReportComment = c.authorId !== currentUid && !isHost;
+            return (
+              <div key={c.id} className="flex gap-2 group">
+                <div className="flex-1 bg-gray-50 rounded-xl px-3 py-2">
+                  <div className="flex items-center justify-between mb-0.5">
+                    <span className="text-xs font-semibold text-gray-700">{c.authorName}</span>
+                    <div className="flex items-center gap-1.5">
+                      {canReportComment && (
+                        <button
+                          onClick={() => setReportComment(c)}
+                          className="text-[10px] text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 rounded"
+                          aria-label="댓글 신고"
+                          title="신고"
+                        >
+                          <Flag size={10} />
+                        </button>
+                      )}
+                      {(c.authorId === currentUid || isHost) && (
+                        <button
+                          onClick={() => deleteComment(c.id)}
+                          className="text-[10px] text-gray-400 hover:text-red-500 focus-visible:outline focus-visible:outline-2 rounded"
+                        >
+                          삭제
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-sm text-gray-800 break-words">{c.content}</p>
                 </div>
-                <p className="text-sm text-gray-800 break-words">{c.content}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* 댓글 입력 */}
@@ -182,6 +212,32 @@ export function PostDetailModal({
           </Button>
         </form>
       </div>
+
+      {reportingPost && (
+        <ReportDialog
+          open={reportingPost}
+          onClose={() => setReportingPost(false)}
+          boardId={boardId}
+          targetType="post"
+          targetId={post.id}
+          targetSnapshot={post.content || ''}
+          reporterId={currentUid}
+          reporterName={currentNickname}
+        />
+      )}
+
+      {reportComment && (
+        <ReportDialog
+          open={!!reportComment}
+          onClose={() => setReportComment(null)}
+          boardId={boardId}
+          targetType="post"
+          targetId={`${post.id}/comments/${reportComment.id}`}
+          targetSnapshot={reportComment.content || ''}
+          reporterId={currentUid}
+          reporterName={currentNickname}
+        />
+      )}
     </div>
   );
 }

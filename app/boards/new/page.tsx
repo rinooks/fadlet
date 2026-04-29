@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -13,15 +13,19 @@ import { TemplateSelector } from '@/components/board/template-selector';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
+import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import type { BoardTemplate } from '@/lib/types';
 
 export default function NewBoardPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isOperator, loading, signInWithGoogle } = useOperatorAuth();
+  const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<BoardTemplate>('free');
   const [allowChat, setAllowChat] = useState(true);
+  const [workspaceId, setWorkspaceId] = useState<string>(searchParams.get('workspaceId') ?? 'default');
   const [step, setStep] = useState<1 | 2>(1);
   const [creating, setCreating] = useState(false);
 
@@ -37,7 +41,7 @@ export default function NewBoardPage() {
         boardCode,
         template,
         ownerId: user.uid,
-        workspaceId: 'default',
+        workspaceId,
         settings: {
           allowChat,
           retainChatLog: true,
@@ -119,6 +123,23 @@ export default function NewBoardPage() {
                   className="text-base"
                 />
               </div>
+              {workspaces.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-700">워크스페이스</label>
+                  <select
+                    value={workspaceId}
+                    onChange={(e) => setWorkspaceId(e.target.value)}
+                    className="h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-blue-400"
+                  >
+                    <option value="default">개인 (워크스페이스 없음)</option>
+                    {workspaces.map((ws) => (
+                      <option key={ws.id} value={ws.id}>
+                        {ws.name} ({ws.workspaceCode})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
                 <TemplateSelector value={template} onChange={setTemplate} />

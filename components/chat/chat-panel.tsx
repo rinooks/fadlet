@@ -1,14 +1,16 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { Paperclip, X, Images } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { Paperclip, X, Images, Search, Pin, PinOff, Flag } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageAttachment } from './message-attachment';
 import { MediaGallery } from './media-gallery';
+import { ReportDialog } from '@/components/shared/report-dialog';
+import { useAnnouncement } from '@/lib/hooks/use-announcement';
 import { uploadChatFile } from '@/lib/utils/upload-file';
-import type { Message, UserRole } from '@/lib/types';
+import type { Message, PinnedAnnouncement, UserRole } from '@/lib/types';
 
 type Tab = 'chat' | 'media';
 
@@ -25,24 +27,101 @@ interface ChatPanelProps {
   onlineCount: number;
   onSend: (content: string, fileAttachment?: FileAttachment) => Promise<void>;
   currentUid: string;
+  currentName: string;
   currentRole: UserRole;
   boardId: string;
+  pinnedAnnouncement?: PinnedAnnouncement | null;
 }
 
-export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, currentRole, boardId }: ChatPanelProps) {
+export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, currentName, currentRole, boardId, pinnedAnnouncement }: ChatPanelProps) {
   const [tab, setTab] = useState<Tab>('chat');
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
   const [attachment, setAttachment] = useState<FileAttachment | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+  const [showSearch, setShowSearch] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const storageKey = `chat-last-read-${boardId}`;
+  const viewerIsHost = currentRole === 'host';
+  const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
+  const [reportTarget, setReportTarget] = useState<Message | null>(null);
+
+  async function handlePinMessage(msg: Message) {
+    try {
+      await pinAnnouncement(msg.content || msg.fileName || '(빈 메시지)', currentUid, currentName);
+      toast.success('공지로 고정했습니다.');
+    } catch {
+      toast.error('공지 고정 실패');
+    }
+  }
+  const [lastReadAt, setLastReadAt] = useState<number>(() => {
+    if (typeof window === 'undefined') return 0;
+    return Number(localStorage.getItem(storageKey) ?? '0');
+  });
+  const [atBottom, setAtBottom] = useState(true);
   const bottomRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dragCounter = useRef(0);
+  const initialScrollDone = useRef(false);
+
+  function markReadIfBottom(currentMessages: Message[], isBottom: boolean) {
+    if (!isBottom || currentMessages.length === 0) return;
+    const latest = currentMessages[currentMessages.length - 1].createdAt?.toMillis?.() ?? 0;
+    if (latest > lastReadAt) {
+      localStorage.setItem(storageKey, String(latest));
+      setLastReadAt(latest);
+    }
+  }
+
+  const filteredMessages = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return messages;
+    return messages.filter(
+      (m) =>
+        m.content?.toLowerCase().includes(q) ||
+        m.authorName?.toLowerCase().includes(q) ||
+        m.fileName?.toLowerCase().includes(q),
+    );
+  }, [messages, searchQuery]);
+
+  const unreadCount = useMemo(() => {
+    if (!lastReadAt) return 0;
+    return messages.filter((m) => {
+      if (m.authorId === currentUid) return false;
+      const ts = m.createdAt?.toMillis?.() ?? 0;
+      return ts > lastReadAt;
+    }).length;
+  }, [messages, lastReadAt, currentUid]);
 
   useEffect(() => {
-    if (tab === 'chat') bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, tab]);
+    if (tab !== 'chat' || loading || messages.length === 0) return;
+    if (!initialScrollDone.current) {
+      initialScrollDone.current = true;
+      const firstUnread = messages.find((m) => (m.createdAt?.toMillis?.() ?? 0) > lastReadAt && m.authorId !== currentUid);
+      if (firstUnread && unreadCount > 3) {
+        document.getElementById(`msg-${firstUnread.id}`)?.scrollIntoView({ block: 'start' });
+      } else {
+        bottomRef.current?.scrollIntoView();
+      }
+      return;
+    }
+    if (atBottom) bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, tab, loading, lastReadAt, unreadCount, atBottom, currentUid]);
+
+  function handleScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    const nowAtBottom = distanceFromBottom < 40;
+    setAtBottom(nowAtBottom);
+    if (tab === 'chat') markReadIfBottom(messages, nowAtBottom);
+  }
+
+  function jumpToBottom() {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
 
   async function processFile(file: File) {
     if (file.size > 20 * 1024 * 1024) {
@@ -184,11 +263,73 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             )}
           </button>
         </div>
-        <span className="flex items-center gap-1 text-xs text-gray-400 flex-shrink-0">
-          <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-          {onlineCount}명
-        </span>
+        <div className="flex items-center gap-2 flex-shrink-0">
+          {tab === 'chat' && (
+            <button
+              type="button"
+              onClick={() => {
+                setShowSearch((v) => {
+                  const next = !v;
+                  if (!next) setSearchQuery('');
+                  return next;
+                });
+              }}
+              className={`p-1 rounded transition-colors focus-visible:outline focus-visible:outline-2 ${
+                showSearch ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-600'
+              }`}
+              aria-label={showSearch ? '검색 닫기' : '메시지 검색'}
+              aria-pressed={showSearch}
+            >
+              <Search size={14} />
+            </button>
+          )}
+          <span className="flex items-center gap-1 text-xs text-gray-400">
+            <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
+            {onlineCount}명
+          </span>
+        </div>
       </div>
+
+      {tab === 'chat' && showSearch && (
+        <div className="px-3 py-2 border-b border-gray-100 bg-gray-50">
+          <div className="relative">
+            <Search size={12} className="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="메시지·작성자·파일명 검색"
+              autoFocus
+              className="w-full text-xs pl-7 pr-2 py-1.5 bg-white border border-gray-200 rounded-md focus:outline-none focus:border-blue-400"
+            />
+          </div>
+          {searchQuery && (
+            <p className="text-[10px] text-gray-500 mt-1 px-1">{filteredMessages.length}건 일치</p>
+          )}
+        </div>
+      )}
+
+      {/* 공지 배너 */}
+      {tab === 'chat' && pinnedAnnouncement && (
+        <div className="flex items-start gap-2 px-3 py-2 bg-amber-50 border-b border-amber-200">
+          <Pin size={12} className="text-amber-600 mt-0.5 flex-shrink-0" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs text-amber-900 whitespace-pre-wrap break-words">{pinnedAnnouncement.content}</p>
+            <p className="text-[10px] text-amber-700 mt-0.5">— {pinnedAnnouncement.byName}</p>
+          </div>
+          {viewerIsHost && (
+            <button
+              type="button"
+              onClick={() => unpinAnnouncement().catch(() => toast.error('공지 해제 실패'))}
+              className="flex-shrink-0 text-amber-600 hover:text-amber-900 p-0.5"
+              aria-label="공지 해제"
+              title="공지 해제"
+            >
+              <PinOff size={12} />
+            </button>
+          )}
+        </div>
+      )}
 
       {/* 탭 컨텐츠 */}
       {tab === 'media' ? (
@@ -197,16 +338,21 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
         </div>
       ) : (
         <>
-          <div className="flex-1 overflow-y-auto px-3 py-3 space-y-2">
+          <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-3 py-3 space-y-2 relative">
             {loading && <p className="text-xs text-gray-400 text-center py-4">불러오는 중...</p>}
             {!loading && messages.length === 0 && (
               <p className="text-xs text-gray-400 text-center py-4">아직 메시지가 없습니다.</p>
             )}
-            {messages.map((msg) => {
+            {!loading && filteredMessages.length === 0 && messages.length > 0 && (
+              <p className="text-xs text-gray-400 text-center py-4">검색 결과가 없습니다.</p>
+            )}
+            {filteredMessages.map((msg) => {
               const isHost = msg.role === 'host';
               const isMine = msg.authorId === currentUid;
+              const canPin = viewerIsHost && (msg.type === 'text' || (msg.content && msg.content.trim().length > 0));
+              const canReport = !isMine && !isHost;
               return (
-                <div key={msg.id} className={`flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
+                <div id={`msg-${msg.id}`} key={msg.id} className={`group flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
                   {!isMine && (
                     <span className="text-xs text-gray-500 mb-0.5 ml-1">
                       {isHost ? (
@@ -216,16 +362,40 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                       )}
                     </span>
                   )}
-                  <div
-                    className={`px-3 py-2 rounded-2xl max-w-[85%] text-sm ${
-                      isMine
-                        ? 'bg-blue-600 text-white rounded-br-sm'
-                        : isHost
-                        ? 'bg-blue-50 text-gray-900 border-l-4 border-blue-500 rounded-bl-sm'
-                        : 'bg-gray-100 text-gray-900 rounded-bl-sm'
-                    } ${msg.type === 'image' || msg.type === 'link' ? 'p-0 overflow-hidden' : ''}`}
-                  >
-                    <MessageAttachment msg={msg} isMine={isMine} />
+                  <div className={`flex items-center gap-1 max-w-[85%] ${isMine ? 'flex-row-reverse' : ''}`}>
+                    <div
+                      className={`px-3 py-2 rounded-2xl text-sm ${
+                        isMine
+                          ? 'bg-blue-600 text-white rounded-br-sm'
+                          : isHost
+                          ? 'bg-blue-50 text-gray-900 border-l-4 border-blue-500 rounded-bl-sm'
+                          : 'bg-gray-100 text-gray-900 rounded-bl-sm'
+                      } ${msg.type === 'image' || msg.type === 'link' ? 'p-0 overflow-hidden' : ''}`}
+                    >
+                      <MessageAttachment msg={msg} isMine={isMine} />
+                    </div>
+                    {canPin && (
+                      <button
+                        type="button"
+                        onClick={() => handlePinMessage(msg)}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-gray-400 hover:text-amber-600 p-1 rounded transition-opacity focus-visible:outline focus-visible:outline-2"
+                        aria-label="공지로 고정"
+                        title="공지로 고정"
+                      >
+                        <Pin size={12} />
+                      </button>
+                    )}
+                    {canReport && (
+                      <button
+                        type="button"
+                        onClick={() => setReportTarget(msg)}
+                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-gray-400 hover:text-red-500 p-1 rounded transition-opacity focus-visible:outline focus-visible:outline-2"
+                        aria-label="메시지 신고"
+                        title="신고"
+                      >
+                        <Flag size={12} />
+                      </button>
+                    )}
                   </div>
                   <span className="text-[10px] text-gray-400 mt-0.5 mx-1">{formatTime(msg)}</span>
                 </div>
@@ -233,6 +403,16 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             })}
             <div ref={bottomRef} />
           </div>
+
+          {!atBottom && unreadCount > 0 && !searchQuery && (
+            <button
+              type="button"
+              onClick={jumpToBottom}
+              className="absolute left-1/2 -translate-x-1/2 bottom-32 z-10 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5"
+            >
+              ↓ {unreadCount}개 안 읽은 메시지
+            </button>
+          )}
 
           <form onSubmit={handleSend} className="px-3 pb-3 pt-2 border-t border-gray-100">
             {attachment && (
@@ -281,6 +461,19 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             </div>
           </form>
         </>
+      )}
+
+      {reportTarget && (
+        <ReportDialog
+          open={!!reportTarget}
+          onClose={() => setReportTarget(null)}
+          boardId={boardId}
+          targetType="message"
+          targetId={reportTarget.id}
+          targetSnapshot={reportTarget.content || reportTarget.fileName || ''}
+          reporterId={currentUid}
+          reporterName={currentName}
+        />
       )}
     </div>
   );
