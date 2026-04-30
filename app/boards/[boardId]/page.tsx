@@ -16,6 +16,7 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import { Button } from '@/components/ui/button';
 import { ColumnBoard } from '@/components/board/column-board';
 import { FacilitatorPanel } from '@/components/board/facilitator-panel';
+import { HostActionsMenu } from '@/components/board/host-actions-menu';
 import { HostOnboarding } from '@/components/board/host-onboarding';
 import { NewPostDialog } from '@/components/board/new-post-dialog';
 import { ReportsPanel } from '@/components/board/reports-panel';
@@ -89,6 +90,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
   );
 
+  // sessionStorage는 브라우저 전용이라 lazy init하면 SSR/CSR hydration mismatch가 나서
+  // 의도적으로 effect에서 한 번만 동기화한다. uid 도착 + !joined 조건으로 1회 실행 보장.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (!uid || joined) return;
     const savedRole = (sessionStorage.getItem(`board-role-${boardId}`) ?? 'member') as UserRole;
@@ -102,6 +106,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       if (code && savedRole === 'host') setShowShare(true);
     }
   }, [uid, boardId, joined, joinBoard, code]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
     if (!uid || !joined) return;
@@ -222,10 +227,10 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const skin = board?.skin ?? 'standard';
 
   return (
-    <div data-skin={skin} className="skin-root flex flex-col h-screen bg-gray-50">
+    <div data-skin={skin} className="skin-root flex flex-col h-screen h-dvh bg-gray-50">
       {/* 헤더 */}
-      <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
-        <div className="flex items-center gap-3 min-w-0">
+      <header className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Link
             href={role === 'host' ? '/dashboard' : '/'}
             className="text-blue-600 font-bold text-lg flex-shrink-0 hover:text-blue-700 focus-visible:outline focus-visible:outline-2 rounded"
@@ -251,9 +256,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             </span>
           )}
         </div>
-        <div className="flex items-center gap-2 flex-shrink-0">
+        <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           <span
-            className="flex items-center gap-1 text-xs text-gray-500 px-2"
+            className="flex items-center gap-1 text-xs text-gray-500 px-1.5 sm:px-2"
             title={`현재 접속자 ${onlineCount}명`}
             aria-label={`현재 접속자 ${onlineCount}명`}
           >
@@ -269,47 +274,61 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               {displayCode}
             </button>
           )}
-          <ExportMenu boardId={boardId} />
+          <div className="hidden md:flex items-center gap-2">
+            <ExportMenu boardId={boardId} />
+            {role === 'host' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowReports(true)}
+                  className="relative text-xs h-7 px-3"
+                  aria-label={`신고 ${openReportCount > 0 ? `${openReportCount}건 미처리` : '없음'}`}
+                >
+                  🚩 신고
+                  {openReportCount > 0 && (
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
+                      {openReportCount > 99 ? '99+' : openReportCount}
+                    </span>
+                  )}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setShowFacilitator(true)}
+                  className="text-xs h-7 px-3"
+                >
+                  🎛 운영
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={isLocked ? unlockBoard : lockBoard}
+                  className="text-xs h-7 px-3"
+                >
+                  {isLocked ? '🔓 잠금 해제' : '🔒 잠금'}
+                </Button>
+                <Button
+                  size="sm"
+                  onClick={() => setShowShare(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-7 px-3"
+                >
+                  공유
+                </Button>
+              </>
+            )}
+          </div>
           {role === 'host' && (
-            <>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowReports(true)}
-                className="relative text-xs h-7 px-3"
-                aria-label={`신고 ${openReportCount > 0 ? `${openReportCount}건 미처리` : '없음'}`}
-              >
-                🚩 신고
-                {openReportCount > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full bg-red-600 text-white text-[10px] font-bold flex items-center justify-center">
-                    {openReportCount > 99 ? '99+' : openReportCount}
-                  </span>
-                )}
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setShowFacilitator(true)}
-                className="text-xs h-7 px-3"
-              >
-                🎛 운영
-              </Button>
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={isLocked ? unlockBoard : lockBoard}
-                className="text-xs h-7 px-3"
-              >
-                {isLocked ? '🔓 잠금 해제' : '🔒 잠금'}
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setShowShare(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-7 px-3"
-              >
-                공유
-              </Button>
-            </>
+            <div className="md:hidden">
+              <HostActionsMenu
+                isLocked={isLocked}
+                openReportCount={openReportCount}
+                onOpenReports={() => setShowReports(true)}
+                onOpenFacilitator={() => setShowFacilitator(true)}
+                onToggleLock={() => (isLocked ? unlockBoard() : lockBoard())}
+                onOpenShare={() => setShowShare(true)}
+              />
+            </div>
           )}
         </div>
       </header>

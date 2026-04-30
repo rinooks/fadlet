@@ -99,11 +99,11 @@ export default function NewBoardPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4 py-8">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-2xl">
-        <div className="flex items-center justify-between mb-1">
-          <h1 className="text-2xl font-bold text-gray-900">새 보드 만들기</h1>
-          <Link href="/dashboard" className="text-xs text-blue-600 hover:underline">
+    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4 py-6 sm:py-8">
+      <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8 w-full max-w-2xl">
+        <div className="flex items-center justify-between mb-1 gap-2">
+          <h1 className="text-xl sm:text-2xl font-bold text-gray-900">새 보드 만들기</h1>
+          <Link href="/dashboard" className="text-xs text-blue-600 hover:underline flex-shrink-0">
             내 보드 목록
           </Link>
         </div>

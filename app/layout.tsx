@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
 import './skins.css';
@@ -9,6 +9,16 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 export const metadata: Metadata = {
   title: 'Fadlet — 워크숍 운영자를 위한 협업 보드',
   description: '가입 없이 6자리 코드로 즉시 합류. 보드와 채팅을 한 화면에서.',
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ffffff' },
+    { media: '(prefers-color-scheme: dark)', color: '#0a0a0b' },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
