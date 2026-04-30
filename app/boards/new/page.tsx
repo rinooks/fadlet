@@ -5,7 +5,7 @@ export const dynamic = 'force-dynamic';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,22 +19,38 @@ import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import { getSkinMeta } from '@/lib/skins';
 import type { BoardSkin, BoardTemplate } from '@/lib/types';
 
-export default function NewBoardPage() {
+function NewBoardForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isOperator, loading, signInWithGoogle } = useOperatorAuth();
-  const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
+  const { workspaces, loading: wsLoading } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
+  const queryWsId = searchParams.get('workspaceId');
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<BoardTemplate>('free');
   const [skin, setSkin] = useState<BoardSkin>('standard');
   const [allowChat, setAllowChat] = useState(true);
-  const [workspaceId, setWorkspaceId] = useState<string>(searchParams.get('workspaceId') ?? 'default');
+  const [workspaceId, setWorkspaceId] = useState<string>(queryWsId ?? '');
   const [step, setStep] = useState<1 | 2>(1);
   const [creating, setCreating] = useState(false);
+
+  // 워크스페이스 목록이 로드되면 기본값을 첫 번째로 세팅 (쿼리 파람이 우선)
+  if (!workspaceId && workspaces.length > 0) {
+    const fallback = queryWsId && workspaces.some((w) => w.id === queryWsId)
+      ? queryWsId
+      : workspaces[0].id;
+    if (fallback !== workspaceId) {
+      // 동기 렌더 중 setState는 React가 즉시 재렌더로 처리
+      setWorkspaceId(fallback);
+    }
+  }
 
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !title.trim()) return;
+    if (!workspaceId || workspaceId === 'default') {
+      toast.error('워크스페이스를 선택하세요.');
+      return;
+    }
 
     setCreating(true);
     try {
@@ -67,7 +83,7 @@ export default function NewBoardPage() {
     }
   }
 
-  if (loading) {
+  if (loading || (isOperator && wsLoading)) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-gray-400">로딩 중...</p>
@@ -93,6 +109,35 @@ export default function NewBoardPage() {
             <Link href="/boards/join" className="text-blue-600 hover:underline">코드로 입장</Link>
             하세요.
           </p>
+        </div>
+      </main>
+    );
+  }
+
+  if (workspaces.length === 0) {
+    return (
+      <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4 py-6">
+        <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 w-full max-w-md text-center">
+          <div className="text-4xl mb-4">👥</div>
+          <h1 className="text-xl font-bold text-gray-900 mb-2">워크스페이스가 필요합니다</h1>
+          <p className="text-gray-500 text-sm mb-6 leading-relaxed">
+            보드는 워크스페이스 안에서만 만들 수 있습니다.<br />
+            먼저 워크스페이스를 만들거나 초대 코드로 참여하세요.
+          </p>
+          <div className="flex flex-col gap-2">
+            <Link
+              href="/workspaces"
+              className="inline-flex items-center justify-center h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors"
+            >
+              워크스페이스로 이동
+            </Link>
+            <Link
+              href="/dashboard"
+              className="inline-flex items-center justify-center h-11 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-colors"
+            >
+              대시보드
+            </Link>
+          </div>
         </div>
       </main>
     );
@@ -127,23 +172,20 @@ export default function NewBoardPage() {
                   className="text-base"
                 />
               </div>
-              {workspaces.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-700">워크스페이스</label>
-                  <select
-                    value={workspaceId}
-                    onChange={(e) => setWorkspaceId(e.target.value)}
-                    className="h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-blue-400"
-                  >
-                    <option value="default">개인 (워크스페이스 없음)</option>
-                    {workspaces.map((ws) => (
-                      <option key={ws.id} value={ws.id}>
-                        {ws.name} ({ws.workspaceCode})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">워크스페이스</label>
+                <select
+                  value={workspaceId}
+                  onChange={(e) => setWorkspaceId(e.target.value)}
+                  className="h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-blue-400"
+                >
+                  {workspaces.map((ws) => (
+                    <option key={ws.id} value={ws.id}>
+                      {ws.name} ({ws.workspaceCode})
+                    </option>
+                  ))}
+                </select>
+              </div>
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
                 <TemplateSelector value={template} onChange={setTemplate} />
@@ -199,6 +241,15 @@ export default function NewBoardPage() {
                   </button>
                 </div>
                 <p className="font-semibold text-gray-900">{title}</p>
+              </div>
+              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">워크스페이스</span>
+                  <button onClick={() => setStep(1)} className="text-xs text-blue-600 hover:underline">변경</button>
+                </div>
+                <p className="font-semibold text-gray-900">
+                  {workspaces.find((w) => w.id === workspaceId)?.name ?? '—'}
+                </p>
               </div>
               <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
@@ -258,5 +309,19 @@ export default function NewBoardPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function NewBoardPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <p className="text-gray-400">로딩 중...</p>
+        </div>
+      }
+    >
+      <NewBoardForm />
+    </Suspense>
   );
 }

@@ -10,13 +10,16 @@ import { Button } from '@/components/ui/button';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
+import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import type { Board } from '@/lib/types';
 
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isOperator, loading, logout } = useOperatorAuth();
+  const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
+  const hasWorkspace = workspaces.length > 0;
 
   useEffect(() => {
     if (!loading && !isOperator) router.replace('/login');
@@ -95,13 +98,24 @@ export default function DashboardPage() {
         <div className="flex items-center justify-between mb-5 sm:mb-6 gap-3">
           <h2 className="text-base sm:text-lg font-bold text-gray-900">내 보드 목록</h2>
           <Button
-            onClick={() => router.push('/boards/new')}
+            onClick={() => router.push(hasWorkspace ? '/boards/new' : '/workspaces')}
             className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex-shrink-0"
           >
-            <span className="sm:hidden">+ 새 보드</span>
-            <span className="hidden sm:inline">+ 새 보드 만들기</span>
+            <span className="sm:hidden">{hasWorkspace ? '+ 새 보드' : '+ 워크스페이스'}</span>
+            <span className="hidden sm:inline">{hasWorkspace ? '+ 새 보드 만들기' : '+ 워크스페이스 만들기'}</span>
           </Button>
         </div>
+
+        {!hasWorkspace && (
+          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 mb-5 flex items-start gap-3">
+            <span className="text-xl">💡</span>
+            <div className="text-sm text-blue-900 leading-relaxed">
+              보드는 워크스페이스 안에서만 만들 수 있습니다. 먼저{' '}
+              <Link href="/workspaces" className="underline font-semibold">워크스페이스</Link>를
+              만들거나 초대 코드로 참여하세요.
+            </div>
+          </div>
+        )}
 
         {boardsLoading ? (
           <p className="text-gray-400 text-sm text-center py-16">불러오는 중...</p>
@@ -109,10 +123,10 @@ export default function DashboardPage() {
           <div className="text-center py-16">
             <p className="text-gray-400 text-sm mb-4">아직 만든 보드가 없습니다.</p>
             <Button
-              onClick={() => router.push('/boards/new')}
+              onClick={() => router.push(hasWorkspace ? '/boards/new' : '/workspaces')}
               variant="outline"
             >
-              첫 번째 보드 만들기
+              {hasWorkspace ? '첫 번째 보드 만들기' : '워크스페이스 먼저 만들기'}
             </Button>
           </div>
         ) : (
