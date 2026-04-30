@@ -1,0 +1,211 @@
+/* ──────────────────────────────────────────────────────────
+   보드 스킨 시스템
+   - .skin-root[data-skin="..."] 셀렉터로 핵심 시각 요소를 오버라이드
+   - Tailwind 유틸리티에 영향이 가지 않도록 자식 셀렉터에 한정
+   ────────────────────────────────────────────────────────── */
+
+/* 공통 변수 (standard 기본값) */
+.skin-root {
+  --skin-bg:        #FAFAF9;
+  --skin-elev:      #FFFFFF;
+  --skin-elev-2:    #F4F4F5;
+  --skin-border:    #E4E4E7;
+  --skin-fg:        #18181B;
+  --skin-muted:     #71717A;
+  --skin-brand:     #6366F1;
+  --skin-brand-dk:  #4F46E5;
+  --skin-accent-bg: #EEF0FF;
+  --skin-accent-fg: #4F46E5;
+}
+
+/* ============ STANDARD: 기존 톤을 인디고로 살짝 끌어올림 ============ */
+.skin-root[data-skin="standard"] {
+  background: var(--skin-bg);
+}
+.skin-root[data-skin="standard"] header {
+  background: var(--skin-elev);
+}
+.skin-root[data-skin="standard"] .text-blue-600 {
+  color: var(--skin-brand) !important;
+}
+.skin-root[data-skin="standard"] .bg-blue-600 {
+  background-color: var(--skin-brand) !important;
+}
+.skin-root[data-skin="standard"] .hover\:bg-blue-700:hover {
+  background-color: var(--skin-brand-dk) !important;
+}
+.skin-root[data-skin="standard"] .bg-blue-50 {
+  background-color: var(--skin-accent-bg) !important;
+}
+.skin-root[data-skin="standard"] .hover\:bg-blue-100:hover {
+  background-color: #DDE2FF !important;
+}
+
+/* ============ DENSE: 여백 줄이고 보더 강조 ============ */
+.skin-root[data-skin="dense"] {
+  --skin-bg: #F4F4F5;
+  --skin-elev: #FFFFFF;
+  --skin-border: #D4D4D8;
+  background: var(--skin-bg);
+  font-size: 13.5px;
+}
+.skin-root[data-skin="dense"] header {
+  background: var(--skin-elev);
+  border-bottom-color: var(--skin-border) !important;
+}
+.skin-root[data-skin="dense"] .text-blue-600 { color: var(--skin-brand) !important; }
+.skin-root[data-skin="dense"] .bg-blue-600 { background-color: var(--skin-brand) !important; }
+.skin-root[data-skin="dense"] .hover\:bg-blue-700:hover { background-color: var(--skin-brand-dk) !important; }
+.skin-root[data-skin="dense"] .bg-blue-50 { background-color: var(--skin-accent-bg) !important; }
+
+/* 카드/포스트 — 그림자 대신 또렷한 1px 보더 */
+.skin-root[data-skin="dense"] [class*="rounded-2xl"],
+.skin-root[data-skin="dense"] [class*="rounded-xl"] {
+  border-radius: 8px !important;
+}
+.skin-root[data-skin="dense"] .shadow-sm,
+.skin-root[data-skin="dense"] .shadow-md {
+  box-shadow: none !important;
+}
+.skin-root[data-skin="dense"] [class*="border-gray-100"],
+.skin-root[data-skin="dense"] [class*="border-gray-200"] {
+  border-color: var(--skin-border) !important;
+}
+.skin-root[data-skin="dense"] .gap-3 { gap: 0.5rem !important; }
+.skin-root[data-skin="dense"] .gap-4 { gap: 0.625rem !important; }
+.skin-root[data-skin="dense"] .p-4 { padding: 0.625rem !important; }
+.skin-root[data-skin="dense"] .py-3 { padding-top: 0.5rem !important; padding-bottom: 0.5rem !important; }
+
+/* ============ GLASS: 블러 + 그라데이션 액센트 ============ */
+.skin-root[data-skin="glass"] {
+  --skin-brand: #6366F1;
+  --skin-brand-dk: #4338CA;
+  background: #F6F5FA;
+  background-image:
+    radial-gradient(1200px 600px at 90% -10%, rgba(99,102,241,.10), transparent 60%),
+    radial-gradient(900px 500px at -10% 20%, rgba(168,85,247,.08), transparent 60%);
+  background-attachment: fixed;
+}
+.skin-root[data-skin="glass"] header,
+.skin-root[data-skin="glass"] aside,
+.skin-root[data-skin="glass"] [class*="bg-white"] {
+  background-color: rgba(255,255,255,0.72) !important;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-color: rgba(82,82,91,0.12) !important;
+}
+.skin-root[data-skin="glass"] .bg-blue-600 {
+  background-image: linear-gradient(135deg, #6366F1, #4338CA) !important;
+  background-color: transparent !important;
+  box-shadow: 0 4px 14px -4px rgba(99,102,241,.55) !important;
+}
+.skin-root[data-skin="glass"] .hover\:bg-blue-700:hover {
+  background-image: linear-gradient(135deg, #4F46E5, #4338CA) !important;
+}
+.skin-root[data-skin="glass"] .bg-blue-50 {
+  background: rgba(99,102,241,.10) !important;
+}
+.skin-root[data-skin="glass"] .text-blue-600 { color: #4F46E5 !important; }
+.skin-root[data-skin="glass"] [class*="rounded-2xl"] { border-radius: 14px !important; }
+.skin-root[data-skin="glass"] [class*="rounded-xl"]  { border-radius: 12px !important; }
+.skin-root[data-skin="glass"] [class*="rounded-lg"]  { border-radius: 10px !important; }
+
+/* 포스트 카드를 글래스 톤으로 */
+.skin-root[data-skin="glass"] .skin-post-card {
+  background: rgba(255,255,255,0.72) !important;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(82,82,91,0.12) !important;
+  box-shadow: 0 1px 2px rgba(20,20,40,.04), 0 8px 24px -8px rgba(20,20,40,.10) !important;
+}
+
+/* ============ BRUTAL: 굵은 보더 + 하드 그림자 ============ */
+.skin-root[data-skin="brutal"] {
+  --skin-bg: #F5F1E6;
+  --skin-elev: #FFFFFF;
+  --skin-border: #0A0A0A;
+  --skin-fg: #0A0A0A;
+  --skin-brand: #6366F1;
+  background: var(--skin-bg);
+  background-image:
+    linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-weight: 500;
+}
+.skin-root[data-skin="brutal"] header {
+  background: #FACC15 !important;
+  border: 3px solid #0A0A0A !important;
+  border-radius: 0 !important;
+  box-shadow: 5px 5px 0 0 #0A0A0A !important;
+  margin: 12px 12px 0;
+}
+.skin-root[data-skin="brutal"] aside,
+.skin-root[data-skin="brutal"] [class*="border-l"] {
+  border-left: 3px solid #0A0A0A !important;
+}
+.skin-root[data-skin="brutal"] .border-gray-100,
+.skin-root[data-skin="brutal"] .border-gray-200 {
+  border-color: #0A0A0A !important;
+  border-width: 2.5px !important;
+}
+.skin-root[data-skin="brutal"] .border-b {
+  border-bottom-width: 2.5px !important;
+  border-bottom-color: #0A0A0A !important;
+}
+
+/* 모서리 각 잡기 */
+.skin-root[data-skin="brutal"] [class*="rounded-2xl"],
+.skin-root[data-skin="brutal"] [class*="rounded-xl"],
+.skin-root[data-skin="brutal"] [class*="rounded-lg"],
+.skin-root[data-skin="brutal"] [class*="rounded-md"],
+.skin-root[data-skin="brutal"] [class*="rounded-full"]:not(.bg-green-400):not(.bg-red-600) {
+  border-radius: 0 !important;
+}
+
+/* 버튼 — 하드 그림자 */
+.skin-root[data-skin="brutal"] button.bg-blue-600,
+.skin-root[data-skin="brutal"] a.bg-blue-600,
+.skin-root[data-skin="brutal"] button.bg-blue-50,
+.skin-root[data-skin="brutal"] [class*="bg-blue-600"][role="button"] {
+  border: 2.5px solid #0A0A0A !important;
+  box-shadow: 3px 3px 0 0 #0A0A0A !important;
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+  transition: transform .08s ease, box-shadow .08s ease !important;
+}
+.skin-root[data-skin="brutal"] button.bg-blue-600:hover,
+.skin-root[data-skin="brutal"] a.bg-blue-600:hover {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 0 #0A0A0A !important;
+}
+.skin-root[data-skin="brutal"] button.bg-blue-600:active,
+.skin-root[data-skin="brutal"] a.bg-blue-600:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 0 #0A0A0A !important;
+}
+
+.skin-root[data-skin="brutal"] .text-blue-600 { color: #0A0A0A !important; font-weight: 700 !important; }
+.skin-root[data-skin="brutal"] .bg-blue-50 {
+  background-color: #FFF7DD !important;
+  border: 2.5px solid #0A0A0A !important;
+  box-shadow: 2px 2px 0 0 #0A0A0A !important;
+}
+
+/* 포스트 카드 */
+.skin-root[data-skin="brutal"] .skin-post-card {
+  border: 2.5px solid #0A0A0A !important;
+  box-shadow: 4px 4px 0 0 #0A0A0A !important;
+  border-radius: 0 !important;
+  font-weight: 500;
+}
+.skin-root[data-skin="brutal"] .skin-post-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 0 #0A0A0A !important;
+}
+
+/* 채팅 버블 */
+.skin-root[data-skin="brutal"] .rounded-2xl {
+  border: 2.5px solid #0A0A0A !important;
+  box-shadow: 3px 3px 0 0 #0A0A0A !important;
+  border-radius: 0 !important;
+}

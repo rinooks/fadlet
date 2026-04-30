@@ -42,7 +42,7 @@ export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenD
 
   return (
     <div
-      className={`relative rounded-xl border-2 shadow-sm min-h-[120px] flex flex-col cursor-pointer hover:shadow-md transition-shadow ${COLOR_MAP[post.color]}`}
+      className={`skin-post-card relative rounded-xl border-2 shadow-sm min-h-[120px] flex flex-col cursor-pointer hover:shadow-md transition-shadow ${COLOR_MAP[post.color]}`}
       onClick={() => !editing && onOpenDetail(post)}
     >
       {post.imageUrl && (

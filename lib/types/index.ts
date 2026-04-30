@@ -8,6 +8,7 @@ export type EmojiType = 'thumbsup' | 'heart' | 'party' | 'bulb' | 'thinking';
 export type ReportTarget = 'message' | 'post';
 export type ReportStatus = 'open' | 'resolved';
 export type WorkspaceRole = 'admin' | 'member';
+export type BoardSkin = 'standard' | 'dense' | 'glass' | 'brutal';
 
 export interface BoardSettings {
   allowChat: boolean;
@@ -44,6 +45,7 @@ export interface Board {
   title: string;
   boardCode: string;
   template: BoardTemplate;
+  skin?: BoardSkin;
   ownerId: string;
   workspaceId: string;
   settings: BoardSettings;

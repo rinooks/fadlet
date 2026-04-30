@@ -10,12 +10,14 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TemplateSelector } from '@/components/board/template-selector';
+import { SkinSelector } from '@/components/board/skin-selector';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
-import type { BoardTemplate } from '@/lib/types';
+import { getSkinMeta } from '@/lib/skins';
+import type { BoardSkin, BoardTemplate } from '@/lib/types';
 
 export default function NewBoardPage() {
   const router = useRouter();
@@ -24,6 +26,7 @@ export default function NewBoardPage() {
   const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [title, setTitle] = useState('');
   const [template, setTemplate] = useState<BoardTemplate>('free');
+  const [skin, setSkin] = useState<BoardSkin>('standard');
   const [allowChat, setAllowChat] = useState(true);
   const [workspaceId, setWorkspaceId] = useState<string>(searchParams.get('workspaceId') ?? 'default');
   const [step, setStep] = useState<1 | 2>(1);
@@ -40,6 +43,7 @@ export default function NewBoardPage() {
         title: title.trim(),
         boardCode,
         template,
+        skin,
         ownerId: user.uid,
         workspaceId,
         settings: {
@@ -144,6 +148,10 @@ export default function NewBoardPage() {
                 <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
                 <TemplateSelector value={template} onChange={setTemplate} />
               </div>
+              <div className="flex flex-col gap-2">
+                <label className="text-sm font-semibold text-gray-700">스킨 선택</label>
+                <SkinSelector value={skin} onChange={setSkin} />
+              </div>
               <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
                 <div>
                   <p className="text-sm font-semibold text-gray-800">실시간 채팅</p>
@@ -213,6 +221,20 @@ export default function NewBoardPage() {
                       ['free','brainstorming','proscons','kpt','4f','qna','nineWindow'].indexOf(template)
                     ]}
                   </span>
+                </div>
+              </div>
+              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">스킨</span>
+                  <button onClick={() => setStep(1)} className="text-xs text-blue-600 hover:underline">변경</button>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-1">
+                    {getSkinMeta(skin).swatch.map((c, i) => (
+                      <span key={i} className="block w-4 h-4 rounded border border-black/10" style={{ background: c }} aria-hidden />
+                    ))}
+                  </div>
+                  <span className="font-semibold text-gray-900">{getSkinMeta(skin).label}</span>
                 </div>
               </div>
               <div className="rounded-xl border border-gray-200 px-4 py-4 flex items-center justify-between">
