@@ -2,11 +2,15 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { BoardActionsMenu } from '@/components/board/board-actions-menu';
+import { BoardDeleteDialog } from '@/components/board/board-delete-dialog';
+import { BoardRenameDialog } from '@/components/board/board-rename-dialog';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
@@ -19,7 +23,57 @@ export default function DashboardPage() {
   const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
+  const [renameTarget, setRenameTarget] = useState<Board | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<Board | null>(null);
   const hasWorkspace = workspaces.length > 0;
+
+  async function submitRename(nextTitle: string) {
+    if (!renameTarget) return;
+    try {
+      await updateDoc(doc(db, boardsPath(), renameTarget.id), {
+        title: nextTitle,
+        updatedAt: serverTimestamp(),
+      });
+      toast.success('보드 이름을 변경했습니다.');
+    } catch {
+      toast.error('이름 변경에 실패했습니다.');
+    }
+  }
+
+  async function submitDelete() {
+    if (!deleteTarget) return;
+    try {
+      await deleteDoc(doc(db, boardsPath(), deleteTarget.id));
+      toast.success('보드를 삭제했습니다.');
+    } catch {
+      toast.error('삭제에 실패했습니다.');
+    }
+  }
+
+  // 보드를 워크스페이스별로 그룹핑 (사용자의 워크스페이스 순서 + 그 외 + 개인)
+  const groupedBoards = useMemo(() => {
+    const groups: { id: string; label: string; code?: string; boards: Board[] }[] = [];
+    const wsMap = new Map(workspaces.map((w) => [w.id, w]));
+    const seen = new Set<string>();
+
+    // 1) 사용자가 멤버인 워크스페이스 순서대로
+    for (const ws of workspaces) {
+      const list = boards.filter((b) => b.workspaceId === ws.id);
+      if (list.length === 0) continue;
+      groups.push({ id: ws.id, label: ws.name, code: ws.workspaceCode, boards: list });
+      seen.add(ws.id);
+    }
+
+    // 2) 'default' 또는 알 수 없는 워크스페이스의 보드를 묶음
+    const orphan = boards.filter(
+      (b) => !b.workspaceId || b.workspaceId === 'default' || (!seen.has(b.workspaceId) && !wsMap.has(b.workspaceId)),
+    );
+    if (orphan.length > 0) {
+      groups.push({ id: '__orphan__', label: '기타 / 개인', boards: orphan });
+    }
+
+    return groups;
+  }, [boards, workspaces]);
 
   useEffect(() => {
     if (!loading && !isOperator) router.replace('/login');
@@ -130,36 +184,76 @@ export default function DashboardPage() {
             </Button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {boards.map((board) => (
-              <Link
-                key={board.id}
-                href={`/boards/${board.id}`}
-                className="bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all group"
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2">
-                    {board.title}
+          <div className="flex flex-col gap-8">
+            {groupedBoards.map((group) => (
+              <section key={group.id}>
+                <div className="flex items-baseline gap-2 mb-3">
+                  <h3 className="text-sm font-bold text-gray-900">
+                    {group.id === '__orphan__' ? '🗂 ' : '👥 '}
+                    {group.label}
                   </h3>
-                  {board.settings?.lockedAt && (
-                    <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full ml-2 flex-shrink-0">
-                      잠김
-                    </span>
+                  {group.code && (
+                    <Link
+                      href={`/workspaces/${group.id}`}
+                      className="font-mono text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100"
+                    >
+                      {group.code}
+                    </Link>
                   )}
+                  <span className="text-xs text-gray-400">{group.boards.length}개</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                    {board.boardCode}
-                  </span>
-                  <span className="text-xs text-gray-400">
-                    {board.createdAt?.toDate?.().toLocaleDateString('ko-KR') ?? ''}
-                  </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {group.boards.map((board) => (
+                    <Link
+                      key={board.id}
+                      href={`/boards/${board.id}`}
+                      className="relative bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all group block"
+                    >
+                      <div className="flex items-start justify-between mb-3 gap-2">
+                        <h4 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 flex-1 min-w-0">
+                          {board.title}
+                        </h4>
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          {board.settings?.lockedAt && (
+                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+                              잠김
+                            </span>
+                          )}
+                          <BoardActionsMenu
+                            onRename={() => setRenameTarget(board)}
+                            onDelete={() => setDeleteTarget(board)}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                          {board.boardCode}
+                        </span>
+                        <span className="text-xs text-gray-400">
+                          {board.createdAt?.toDate?.().toLocaleDateString('ko-KR') ?? ''}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
                 </div>
-              </Link>
+              </section>
             ))}
           </div>
         )}
       </main>
+
+      <BoardRenameDialog
+        open={!!renameTarget}
+        initialTitle={renameTarget?.title ?? ''}
+        onClose={() => setRenameTarget(null)}
+        onSubmit={submitRename}
+      />
+      <BoardDeleteDialog
+        open={!!deleteTarget}
+        boardTitle={deleteTarget?.title ?? ''}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={submitDelete}
+      />
     </div>
   );
 }
