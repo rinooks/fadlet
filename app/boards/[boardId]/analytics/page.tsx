@@ -168,12 +168,16 @@ export default function AnalyticsPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href={`/boards/${boardId}`} className="text-indigo-600 hover:underline flex items-center gap-1 text-xs">
-            <ArrowLeft size={12} /> 보드로
+          <Link href="/" className="text-indigo-600 font-bold text-base hover:text-indigo-700 transition-colors flex-shrink-0">
+            Fadlet
           </Link>
           <span className="text-gray-300">|</span>
-          <h1 className="text-sm font-semibold text-gray-900 truncate">{board?.title}</h1>
-          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
+          <Link href={`/boards/${boardId}`} className="text-indigo-600 hover:underline flex items-center gap-1 text-xs flex-shrink-0">
+            <ArrowLeft size={12} /> 보드로
+          </Link>
+          <span className="text-gray-300 hidden sm:inline">|</span>
+          <h1 className="text-sm font-semibold text-gray-900 truncate hidden sm:inline">{board?.title}</h1>
+          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full hidden md:inline">
             {template.emoji} {template.label}
           </span>
         </div>

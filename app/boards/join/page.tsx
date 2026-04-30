@@ -3,6 +3,7 @@
 export const dynamic = 'force-dynamic';
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
+import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
@@ -64,7 +65,13 @@ function JoinForm() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+    <main className="relative flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+      <Link
+        href="/"
+        className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+      >
+        ← 홈
+      </Link>
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
         {step === 'code' ? (
           <>

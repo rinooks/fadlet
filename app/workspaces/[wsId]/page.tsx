@@ -128,7 +128,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/workspaces" className="text-indigo-600 font-bold text-lg">Fadlet</Link>
+          <Link href="/" className="text-indigo-600 font-bold text-lg hover:text-indigo-700 transition-colors">Fadlet</Link>
           <span className="text-gray-300">|</span>
           <h1 className="text-sm font-semibold text-gray-900 truncate">{workspace.name}</h1>
           <button

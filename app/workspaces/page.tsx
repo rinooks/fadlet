@@ -79,7 +79,7 @@ export default function WorkspacesPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-indigo-600 font-bold text-xl">Fadlet</Link>
+          <Link href="/" className="text-indigo-600 font-bold text-xl hover:text-indigo-700 transition-colors">Fadlet</Link>
           <span className="text-gray-300">|</span>
           <span className="text-sm text-gray-600 font-medium">워크스페이스</span>
         </div>

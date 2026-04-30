@@ -94,7 +94,13 @@ function NewBoardForm() {
 
   if (!isOperator) {
     return (
-      <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+      <main className="relative flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+        <Link
+          href="/"
+          className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+        >
+          ← 홈
+        </Link>
         <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
           <h1 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h1>
           <p className="text-gray-400 text-sm mb-6">보드를 만들려면 운영자 계정으로 로그인하세요.</p>
@@ -117,7 +123,13 @@ function NewBoardForm() {
 
   if (workspaces.length === 0) {
     return (
-      <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6">
+      <main className="relative flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6">
+        <Link
+          href="/"
+          className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+        >
+          ← 홈
+        </Link>
         <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 w-full max-w-md text-center">
           <div className="text-4xl mb-4">👥</div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">워크스페이스가 필요합니다</h1>
@@ -145,7 +157,13 @@ function NewBoardForm() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6 sm:py-8">
+    <main className="relative flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6 sm:py-8">
+      <Link
+        href="/"
+        className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+      >
+        ← 홈
+      </Link>
       <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8 w-full max-w-2xl">
         <div className="flex items-center justify-between mb-1 gap-2">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">새 보드 만들기</h1>

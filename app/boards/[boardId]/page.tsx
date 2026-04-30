@@ -234,19 +234,21 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       <header className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Link
-            href={role === 'host' ? '/dashboard' : '/'}
-            className="text-indigo-600 font-bold text-lg flex-shrink-0 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 rounded"
-            aria-label={role === 'host' ? '대시보드로 이동' : '홈으로 이동'}
+            href="/"
+            className="text-indigo-600 font-bold text-lg flex-shrink-0 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 rounded transition-colors"
+            aria-label="홈으로 이동"
           >
             Fadlet
           </Link>
-          <Link
-            href={role === 'host' ? '/dashboard' : '/'}
-            className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0"
-          >
-            <ArrowLeft size={12} />
-            {role === 'host' ? '대시보드' : '나가기'}
-          </Link>
+          {role === 'host' && (
+            <Link
+              href="/dashboard"
+              className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0"
+            >
+              <ArrowLeft size={12} />
+              대시보드
+            </Link>
+          )}
           <span className="text-gray-300 hidden sm:inline" aria-hidden>|</span>
           <h1 className="text-sm font-semibold text-gray-900 truncate">{board?.title}</h1>
           <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline">
