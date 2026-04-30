@@ -43,13 +43,14 @@ export function usePosts(boardId: string) {
     color: PostColor;
     imageUrl?: string;
     columnId?: string;
+    position?: { x: number; y: number };
   }) {
     const payload: Record<string, unknown> = {
       authorId: params.authorId,
       authorName: params.authorName,
       content: params.content,
       color: params.color,
-      position: null,
+      position: params.position ?? null,
       order: Date.now(),
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
@@ -62,6 +63,13 @@ export function usePosts(boardId: string) {
   async function updatePost(postId: string, content: string) {
     await updateDoc(doc(db, postsPath(boardId), postId), {
       content,
+      updatedAt: serverTimestamp(),
+    });
+  }
+
+  async function updatePosition(postId: string, position: { x: number; y: number }) {
+    await updateDoc(doc(db, postsPath(boardId), postId), {
+      position,
       updatedAt: serverTimestamp(),
     });
   }
@@ -81,5 +89,5 @@ export function usePosts(boardId: string) {
     await batch.commit();
   }
 
-  return { posts, loading, addPost, updatePost, deletePost, reorderPosts };
+  return { posts, loading, addPost, updatePost, updatePosition, deletePost, reorderPosts };
 }

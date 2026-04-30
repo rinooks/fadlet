@@ -25,6 +25,13 @@ export const TEMPLATES: TemplateDefinition[] = [
     columns: null,
   },
   {
+    id: 'canvas',
+    label: '캔버스',
+    description: '포스트를 원하는 위치에 자유롭게 배치합니다.',
+    emoji: '🗺️',
+    columns: null,
+  },
+  {
     id: 'brainstorming',
     label: '브레인스토밍',
     description: '아이디어를 자유롭게 쏟아냅니다.',

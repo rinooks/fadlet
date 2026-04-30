@@ -17,6 +17,7 @@ import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import { getSkinMeta } from '@/lib/skins';
+import { getTemplate } from '@/lib/templates';
 import type { BoardSkin, BoardTemplate } from '@/lib/types';
 
 function NewBoardForm() {
@@ -262,16 +263,8 @@ function NewBoardForm() {
                   </button>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-xl">
-                    {['✏️','💡','⚖️','🔄','📋','❓','🔲'][
-                      ['free','brainstorming','proscons','kpt','4f','qna','nineWindow'].indexOf(template)
-                    ]}
-                  </span>
-                  <span className="font-semibold text-gray-900">
-                    {['자유형','브레인스토밍','찬성 / 반대','KPT 회고','4F 회고','Q&A','9칸 윈도우'][
-                      ['free','brainstorming','proscons','kpt','4f','qna','nineWindow'].indexOf(template)
-                    ]}
-                  </span>
+                  <span className="text-xl">{getTemplate(template).emoji}</span>
+                  <span className="font-semibold text-gray-900">{getTemplate(template).label}</span>
                 </div>
               </div>
               <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">

@@ -14,6 +14,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
+import { CanvasBoard } from '@/components/board/canvas-board';
 import { ColumnBoard } from '@/components/board/column-board';
 import { FacilitatorPanel } from '@/components/board/facilitator-panel';
 import { HostActionsMenu } from '@/components/board/host-actions-menu';
@@ -72,7 +73,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [joined, setJoined] = useState(false);
 
   const { board, loading: boardLoading, error: boardError } = useBoard(boardId);
-  const { posts, loading: postsLoading, addPost, updatePost, deletePost, reorderPosts } = usePosts(boardId);
+  const { posts, loading: postsLoading, addPost, updatePost, updatePosition, deletePost, reorderPosts } = usePosts(boardId);
   const { messages, loading: msgsLoading, sendMessage } = useMessages(boardId);
   const { onlineCount, joinBoard, setOffline } = useParticipants(boardId);
   const { lockBoard, unlockBoard } = useLockBoard(boardId);
@@ -224,6 +225,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const canPost = role === 'host' || !isLocked;
   const template = getTemplate(board?.template ?? 'free');
   const isFreeLayout = template.columns === null;
+  const isCanvas = template.id === 'canvas';
   const skin = board?.skin ?? 'standard';
 
   return (
@@ -350,87 +352,119 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       {/* 메인 영역 */}
       <div className="flex flex-1 overflow-hidden">
         {/* 보드 캔버스 */}
-        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-        <div className="flex-1 overflow-y-auto p-4">
-          {isFreeLayout ? (
-            /* 자유형 / 브레인스토밍 */
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
-                {canPost && (
-                  <Button
-                    onClick={() => setShowNewPost(true)}
-                    size="sm"
-                    className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
-                  >
-                    + 새 포스트
-                  </Button>
-                )}
-              </div>
-
-              {isLocked && role !== 'host' && (
-                <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
-                </div>
+        {isCanvas ? (
+          <div className="flex-1 flex flex-col min-w-0">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-white flex-shrink-0">
+              <span className="text-xs text-gray-400">{posts.length}개의 포스트 · 드래그하여 위치 변경</span>
+              {canPost && (
+                <Button
+                  onClick={() => setShowNewPost(true)}
+                  size="sm"
+                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                >
+                  + 새 포스트
+                </Button>
               )}
-
-              {postsLoading ? (
-                <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
-              ) : posts.length === 0 ? (
-                <div className="text-center py-16">
-                  <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
-                  {canPost && (
-                    <Button onClick={() => setShowNewPost(true)} variant="outline" size="sm">
-                      첫 번째 포스트 작성하기
-                    </Button>
-                  )}
-                </div>
-              ) : (
-                <SortableContext items={posts.map((p) => p.id)} strategy={rectSortingStrategy}>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                    {posts.map((post) => (
-                      <SortablePostCard
-                        key={post.id}
-                        post={post}
-                        currentUid={uid ?? ''}
-                        isHost={role === 'host'}
-                        canDrag={!isLocked || role === 'host'}
-                        onUpdate={updatePost}
-                        onDelete={deletePost}
-                        onOpenDetail={setDetailPost}
-                      />
-                    ))}
-                  </div>
-                </SortableContext>
-              )}
-            </>
-          ) : (
-            /* 컬럼형 템플릿 */
-            <>
-              <div className="flex items-center justify-between mb-4">
-                <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
-              </div>
+            </div>
+            <div className="flex-1 overflow-hidden">
               {postsLoading ? (
                 <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
               ) : (
-                <ColumnBoard
-                  template={template}
+                <CanvasBoard
                   posts={posts}
-                  canPost={canPost}
+                  canDrag={!isLocked || role === 'host'}
                   currentUid={uid ?? ''}
                   isHost={role === 'host'}
-                  isLocked={isLocked}
-                  onAddPost={handleAddPost}
-                  onUpdatePost={updatePost}
-                  onDeletePost={deletePost}
+                  onUpdate={updatePost}
+                  onDelete={deletePost}
+                  onUpdatePosition={updatePosition}
                   onOpenDetail={setDetailPost}
                 />
               )}
-            </>
-          )}
-        </div>
+            </div>
+          </div>
+        ) : (
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <div className="flex-1 overflow-y-auto p-4">
+            {isFreeLayout ? (
+              /* 자유형 / 브레인스토밍 */
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                  {canPost && (
+                    <Button
+                      onClick={() => setShowNewPost(true)}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                    >
+                      + 새 포스트
+                    </Button>
+                  )}
+                </div>
 
-        </DndContext>
+                {isLocked && role !== 'host' && (
+                  <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
+                    <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
+                  </div>
+                )}
+
+                {postsLoading ? (
+                  <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
+                ) : posts.length === 0 ? (
+                  <div className="text-center py-16">
+                    <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
+                    {canPost && (
+                      <Button onClick={() => setShowNewPost(true)} variant="outline" size="sm">
+                        첫 번째 포스트 작성하기
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  <SortableContext items={posts.map((p) => p.id)} strategy={rectSortingStrategy}>
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                      {posts.map((post) => (
+                        <SortablePostCard
+                          key={post.id}
+                          post={post}
+                          currentUid={uid ?? ''}
+                          isHost={role === 'host'}
+                          canDrag={!isLocked || role === 'host'}
+                          onUpdate={updatePost}
+                          onDelete={deletePost}
+                          onOpenDetail={setDetailPost}
+                        />
+                      ))}
+                    </div>
+                  </SortableContext>
+                )}
+              </>
+            ) : (
+              /* 컬럼형 템플릿 */
+              <>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                </div>
+                {postsLoading ? (
+                  <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
+                ) : (
+                  <ColumnBoard
+                    template={template}
+                    posts={posts}
+                    canPost={canPost}
+                    currentUid={uid ?? ''}
+                    isHost={role === 'host'}
+                    isLocked={isLocked}
+                    onAddPost={handleAddPost}
+                    onUpdatePost={updatePost}
+                    onDeletePost={deletePost}
+                    onOpenDetail={setDetailPost}
+                  />
+                )}
+              </>
+            )}
+          </div>
+          </DndContext>
+        )}
 
         {/* 데스크톱 채팅 패널 */}
         {allowChat && <div className="hidden lg:flex w-80 flex-col flex-shrink-0">
