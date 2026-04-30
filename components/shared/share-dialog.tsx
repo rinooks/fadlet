@@ -51,8 +51,8 @@ export function ShareDialog({ open, onClose, boardCode, boardTitle }: ShareDialo
 
           {/* 6자리 코드 */}
           <div className="flex flex-col items-center gap-2 w-full">
-            <div className="flex items-center gap-3 bg-blue-50 rounded-xl px-6 py-4 w-full justify-center">
-              <span className="text-4xl font-bold font-mono tracking-widest text-blue-600">
+            <div className="flex items-center gap-3 bg-indigo-50 rounded-xl px-6 py-4 w-full justify-center">
+              <span className="text-4xl font-bold font-mono tracking-widest text-indigo-600">
                 {boardCode}
               </span>
             </div>
@@ -77,7 +77,7 @@ export function ShareDialog({ open, onClose, boardCode, boardTitle }: ShareDialo
           {/* 링크 복사 */}
           <Button
             onClick={copyLink}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
           >
             {linkCopied ? '✓ 링크 복사됨' : '입장 링크 복사'}
           </Button>

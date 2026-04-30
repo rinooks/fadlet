@@ -64,7 +64,7 @@ function JoinForm() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4">
+    <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
         {step === 'code' ? (
           <>
@@ -83,7 +83,7 @@ function JoinForm() {
               <Button
                 type="submit"
                 disabled={loading || code.length !== 6}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-12"
               >
                 {loading ? '확인 중...' : '다음'}
               </Button>
@@ -107,7 +107,7 @@ function JoinForm() {
               <Button
                 type="submit"
                 disabled={loading || nickname.trim().length < 2}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-12"
               >
                 {loading ? '입장 중...' : '보드 입장하기'}
               </Button>

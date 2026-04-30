@@ -131,7 +131,7 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
                   title={c.label}
                   onClick={() => setColor(c.value)}
                   className={`w-7 h-7 rounded-full border-2 transition-transform ${c.className} ${
-                    color === c.value ? 'scale-125 ring-2 ring-offset-1 ring-blue-500' : ''
+                    color === c.value ? 'scale-125 ring-2 ring-offset-1 ring-indigo-500' : ''
                   }`}
                   aria-label={c.label}
                 />
@@ -157,7 +157,7 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
           <Button
             type="submit"
             disabled={loading || (!content.trim() && !imageFile)}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
           >
             {loading ? '저장 중...' : '포스트 추가'}
           </Button>

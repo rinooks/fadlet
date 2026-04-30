@@ -36,7 +36,7 @@ function DroppableColumn({ columnId, isGrid, postIds, children }: DroppableColum
       <div
         ref={setNodeRef}
         className={`flex-1 p-2 space-y-2 overflow-y-auto rounded-b-xl transition-colors ${
-          isOver ? 'bg-blue-50' : ''
+          isOver ? 'bg-indigo-50' : ''
         } ${isGrid ? 'min-h-[120px]' : 'min-h-[200px]'}`}
       >
         {children}
@@ -116,7 +116,7 @@ export function ColumnBoard({
                 <div className="px-2 pb-2">
                   <button
                     onClick={() => setActiveColumn(col.id)}
-                    className="w-full text-xs text-gray-400 hover:text-blue-600 hover:bg-blue-50 border border-dashed border-gray-300 hover:border-blue-400 rounded-lg py-1.5 transition-colors"
+                    className="w-full text-xs text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 border border-dashed border-gray-300 hover:border-indigo-400 rounded-lg py-1.5 transition-colors"
                   >
                     + 추가
                   </button>

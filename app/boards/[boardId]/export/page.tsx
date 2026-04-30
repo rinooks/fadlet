@@ -68,7 +68,7 @@ function MessageBlock({ msg }: { msg: Message }) {
   return (
     <div className="flex flex-col break-inside-avoid mb-3 pb-2 border-b border-gray-100">
       <div className="flex items-baseline justify-between mb-1">
-        <span className={`text-xs font-semibold ${isHost ? 'text-blue-600' : 'text-gray-700'}`}>
+        <span className={`text-xs font-semibold ${isHost ? 'text-indigo-600' : 'text-gray-700'}`}>
           {msg.authorName}
           {isHost && ' (운영자)'}
         </span>
@@ -127,15 +127,15 @@ export default function ExportPage({ params, searchParams }: PageProps) {
         .break-inside-avoid { break-inside: avoid; page-break-inside: avoid; }
       `}</style>
 
-      <div className="no-print sticky top-0 z-10 flex items-center justify-between bg-blue-50 border-b border-blue-200 px-4 py-2">
-        <span className="text-xs text-blue-800">
+      <div className="no-print sticky top-0 z-10 flex items-center justify-between bg-indigo-50 border-b border-indigo-200 px-4 py-2">
+        <span className="text-xs text-indigo-800">
           PDF 내보내기 미리보기 — 브라우저 인쇄 다이얼로그에서 “PDF로 저장”을 선택하세요.
         </span>
         <div className="flex gap-2">
           <button
             type="button"
             onClick={() => window.print()}
-            className="text-xs bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700"
+            className="text-xs bg-indigo-600 text-white px-3 py-1 rounded-md hover:bg-indigo-700"
           >
             인쇄·저장
           </button>
@@ -152,7 +152,7 @@ export default function ExportPage({ params, searchParams }: PageProps) {
       <div className="max-w-[800px] mx-auto p-6">
         <header className="mb-6 pb-4 border-b border-gray-200">
           <div className="flex items-baseline justify-between mb-1">
-            <span className="text-blue-600 font-bold">Fadlet</span>
+            <span className="text-indigo-600 font-bold">Fadlet</span>
             <span className="text-xs text-gray-400 font-mono">{board.boardCode}</span>
           </div>
           <h1 className="text-xl font-bold text-gray-900 mb-1">{board.title}</h1>

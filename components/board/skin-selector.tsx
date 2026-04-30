@@ -20,7 +20,7 @@ export function SkinSelector({ value, onChange }: SkinSelectorProps) {
             onClick={() => onChange(skin.id)}
             className={`flex flex-col items-start gap-2 rounded-xl border-2 p-3 text-left transition-colors ${
               active
-                ? 'border-blue-600 bg-blue-50'
+                ? 'border-indigo-600 bg-indigo-50'
                 : 'border-gray-200 bg-white hover:border-gray-300'
             }`}
             aria-pressed={active}

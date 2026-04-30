@@ -235,14 +235,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Link
             href={role === 'host' ? '/dashboard' : '/'}
-            className="text-blue-600 font-bold text-lg flex-shrink-0 hover:text-blue-700 focus-visible:outline focus-visible:outline-2 rounded"
+            className="text-indigo-600 font-bold text-lg flex-shrink-0 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 rounded"
             aria-label={role === 'host' ? '대시보드로 이동' : '홈으로 이동'}
           >
             Fadlet
           </Link>
           <Link
             href={role === 'host' ? '/dashboard' : '/'}
-            className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-blue-600 transition-colors flex-shrink-0"
+            className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0"
           >
             <ArrowLeft size={12} />
             {role === 'host' ? '대시보드' : '나가기'}
@@ -270,7 +270,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           {displayCode && (
             <button
               onClick={() => setShowShare(true)}
-              className="font-mono text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-lg hover:bg-blue-100 transition-colors focus-visible:outline focus-visible:outline-2"
+              className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-lg hover:bg-indigo-100 transition-colors focus-visible:outline focus-visible:outline-2"
               aria-label="보드 공유"
             >
               {displayCode}
@@ -313,7 +313,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 <Button
                   size="sm"
                   onClick={() => setShowShare(true)}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-7 px-3"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-7 px-3"
                 >
                   공유
                 </Button>
@@ -360,7 +360,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 <Button
                   onClick={() => setShowNewPost(true)}
                   size="sm"
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
                 >
                   + 새 포스트
                 </Button>
@@ -395,7 +395,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                     <Button
                       onClick={() => setShowNewPost(true)}
                       size="sm"
-                      className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
                     >
                       + 새 포스트
                     </Button>
@@ -486,7 +486,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       {allowChat && <div className="lg:hidden fixed bottom-5 right-5">
         <button
           onClick={() => setShowChat(true)}
-          className="w-14 h-14 rounded-full bg-blue-600 text-white flex items-center justify-center shadow-lg text-xl focus-visible:outline focus-visible:outline-2"
+          className="w-14 h-14 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow-lg text-xl focus-visible:outline focus-visible:outline-2"
           aria-label="채팅 열기"
         >
           💬

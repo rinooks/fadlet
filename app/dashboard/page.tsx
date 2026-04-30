@@ -63,14 +63,14 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <span className="text-blue-600 font-bold text-lg sm:text-xl">Fadlet</span>
+          <span className="text-indigo-600 font-bold text-lg sm:text-xl">Fadlet</span>
           <span className="text-gray-300 hidden sm:inline">|</span>
           <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 보드</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <Link
             href="/workspaces"
-            className="text-xs text-blue-600 hover:underline font-semibold"
+            className="text-xs text-indigo-600 hover:underline font-semibold"
             aria-label="워크스페이스"
           >
             <span className="sm:hidden">👥</span>
@@ -78,7 +78,7 @@ export default function DashboardPage() {
           </Link>
           <Link
             href="/help"
-            className="text-xs text-blue-600 hover:underline font-semibold"
+            className="text-xs text-indigo-600 hover:underline font-semibold"
             aria-label="가이드"
           >
             <span className="sm:hidden">📖</span>
@@ -99,7 +99,7 @@ export default function DashboardPage() {
           <h2 className="text-base sm:text-lg font-bold text-gray-900">내 보드 목록</h2>
           <Button
             onClick={() => router.push(hasWorkspace ? '/boards/new' : '/workspaces')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex-shrink-0"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex-shrink-0"
           >
             <span className="sm:hidden">{hasWorkspace ? '+ 새 보드' : '+ 워크스페이스'}</span>
             <span className="hidden sm:inline">{hasWorkspace ? '+ 새 보드 만들기' : '+ 워크스페이스 만들기'}</span>
@@ -107,9 +107,9 @@ export default function DashboardPage() {
         </div>
 
         {!hasWorkspace && (
-          <div className="rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 mb-5 flex items-start gap-3">
+          <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 mb-5 flex items-start gap-3">
             <span className="text-xl">💡</span>
-            <div className="text-sm text-blue-900 leading-relaxed">
+            <div className="text-sm text-indigo-900 leading-relaxed">
               보드는 워크스페이스 안에서만 만들 수 있습니다. 먼저{' '}
               <Link href="/workspaces" className="underline font-semibold">워크스페이스</Link>를
               만들거나 초대 코드로 참여하세요.
@@ -135,10 +135,10 @@ export default function DashboardPage() {
               <Link
                 key={board.id}
                 href={`/boards/${board.id}`}
-                className="bg-white rounded-xl border border-gray-200 p-5 hover:border-blue-300 hover:shadow-md transition-all group"
+                className="bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all group"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors line-clamp-2">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2">
                     {board.title}
                   </h3>
                   {board.settings?.lockedAt && (
@@ -148,7 +148,7 @@ export default function DashboardPage() {
                   )}
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-sm font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                  <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                     {board.boardCode}
                   </span>
                   <span className="text-xs text-gray-400">

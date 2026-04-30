@@ -24,19 +24,19 @@ export default function HelpPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-blue-600 font-bold text-xl">Fadlet</Link>
+          <Link href="/dashboard" className="text-indigo-600 font-bold text-xl">Fadlet</Link>
           <span className="text-gray-300">|</span>
           <span className="text-sm text-gray-600 font-medium">운영자 가이드</span>
         </div>
-        <Link href="/dashboard" className="text-xs text-blue-600 hover:underline">
+        <Link href="/dashboard" className="text-xs text-indigo-600 hover:underline">
           ← 대시보드로
         </Link>
       </header>
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-5">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-          <h1 className="text-xl font-bold text-blue-900 mb-1">워크숍 운영자를 위한 빠른 가이드</h1>
-          <p className="text-sm text-blue-800">
+        <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6">
+          <h1 className="text-xl font-bold text-indigo-900 mb-1">워크숍 운영자를 위한 빠른 가이드</h1>
+          <p className="text-sm text-indigo-800">
             Fadlet은 운영자(Facilitator) 관점에서 만든 협업 보드입니다. 핵심 기능 5분 안에 익혀
             현장에서 바로 활용해 보세요.
           </p>

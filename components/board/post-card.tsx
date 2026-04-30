@@ -69,7 +69,7 @@ export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenD
             />
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="ghost" onClick={() => { setEditContent(post.content); setEditing(false); }} className="text-xs h-7">취소</Button>
-              <Button size="sm" onClick={handleSave} className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-7">저장</Button>
+              <Button size="sm" onClick={handleSave} className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-7">저장</Button>
             </div>
           </div>
         ) : (

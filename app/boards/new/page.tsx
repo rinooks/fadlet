@@ -94,7 +94,7 @@ function NewBoardForm() {
 
   if (!isOperator) {
     return (
-      <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4">
+      <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
         <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
           <h1 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h1>
           <p className="text-gray-400 text-sm mb-6">보드를 만들려면 운영자 계정으로 로그인하세요.</p>
@@ -107,7 +107,7 @@ function NewBoardForm() {
           </Button>
           <p className="text-xs text-gray-400 mt-4">
             참여자라면{' '}
-            <Link href="/boards/join" className="text-blue-600 hover:underline">코드로 입장</Link>
+            <Link href="/boards/join" className="text-indigo-600 hover:underline">코드로 입장</Link>
             하세요.
           </p>
         </div>
@@ -117,7 +117,7 @@ function NewBoardForm() {
 
   if (workspaces.length === 0) {
     return (
-      <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4 py-6">
+      <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6">
         <div className="bg-white rounded-2xl shadow-md p-6 sm:p-8 w-full max-w-md text-center">
           <div className="text-4xl mb-4">👥</div>
           <h1 className="text-xl font-bold text-gray-900 mb-2">워크스페이스가 필요합니다</h1>
@@ -128,7 +128,7 @@ function NewBoardForm() {
           <div className="flex flex-col gap-2">
             <Link
               href="/workspaces"
-              className="inline-flex items-center justify-center h-11 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors"
+              className="inline-flex items-center justify-center h-11 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-colors"
             >
               워크스페이스로 이동
             </Link>
@@ -145,11 +145,11 @@ function NewBoardForm() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4 py-6 sm:py-8">
+    <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6 sm:py-8">
       <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8 w-full max-w-2xl">
         <div className="flex items-center justify-between mb-1 gap-2">
           <h1 className="text-xl sm:text-2xl font-bold text-gray-900">새 보드 만들기</h1>
-          <Link href="/dashboard" className="text-xs text-blue-600 hover:underline flex-shrink-0">
+          <Link href="/dashboard" className="text-xs text-indigo-600 hover:underline flex-shrink-0">
             내 보드 목록
           </Link>
         </div>
@@ -178,7 +178,7 @@ function NewBoardForm() {
                 <select
                   value={workspaceId}
                   onChange={(e) => setWorkspaceId(e.target.value)}
-                  className="h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-blue-400"
+                  className="h-10 px-3 rounded-lg border border-gray-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
                 >
                   {workspaces.map((ws) => (
                     <option key={ws.id} value={ws.id}>
@@ -205,8 +205,8 @@ function NewBoardForm() {
                   role="switch"
                   aria-checked={allowChat}
                   onClick={() => setAllowChat((v) => !v)}
-                  className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 ${
-                    allowChat ? 'bg-blue-600' : 'bg-gray-200'
+                  className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 ${
+                    allowChat ? 'bg-indigo-600' : 'bg-gray-200'
                   }`}
                 >
                   <span
@@ -219,7 +219,7 @@ function NewBoardForm() {
               <Button
                 type="submit"
                 disabled={!title.trim()}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-12"
               >
                 다음 →
               </Button>
@@ -236,7 +236,7 @@ function NewBoardForm() {
                   <span className="text-xs text-gray-400 uppercase tracking-wide">보드 제목</span>
                   <button
                     onClick={() => setStep(1)}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-indigo-600 hover:underline"
                   >
                     수정
                   </button>
@@ -246,7 +246,7 @@ function NewBoardForm() {
               <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">워크스페이스</span>
-                  <button onClick={() => setStep(1)} className="text-xs text-blue-600 hover:underline">변경</button>
+                  <button onClick={() => setStep(1)} className="text-xs text-indigo-600 hover:underline">변경</button>
                 </div>
                 <p className="font-semibold text-gray-900">
                   {workspaces.find((w) => w.id === workspaceId)?.name ?? '—'}
@@ -257,7 +257,7 @@ function NewBoardForm() {
                   <span className="text-xs text-gray-400 uppercase tracking-wide">템플릿</span>
                   <button
                     onClick={() => setStep(1)}
-                    className="text-xs text-blue-600 hover:underline"
+                    className="text-xs text-indigo-600 hover:underline"
                   >
                     변경
                   </button>
@@ -270,7 +270,7 @@ function NewBoardForm() {
               <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">스킨</span>
-                  <button onClick={() => setStep(1)} className="text-xs text-blue-600 hover:underline">변경</button>
+                  <button onClick={() => setStep(1)} className="text-xs text-indigo-600 hover:underline">변경</button>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="flex items-center gap-1">
@@ -286,13 +286,13 @@ function NewBoardForm() {
                   <span className="text-xs text-gray-400 uppercase tracking-wide block mb-1">채팅</span>
                   <p className="font-semibold text-gray-900">{allowChat ? '사용' : '사용 안 함'}</p>
                 </div>
-                <button onClick={() => setStep(1)} className="text-xs text-blue-600 hover:underline">변경</button>
+                <button onClick={() => setStep(1)} className="text-xs text-indigo-600 hover:underline">변경</button>
               </div>
               <form onSubmit={handleCreate}>
                 <Button
                   type="submit"
                   disabled={creating}
-                  className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-12"
+                  className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-12"
                 >
                   {creating ? '생성 중...' : '보드 만들기'}
                 </Button>

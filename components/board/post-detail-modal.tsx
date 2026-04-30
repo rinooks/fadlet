@@ -22,7 +22,7 @@ const EMOJIS: { type: EmojiType; label: string }[] = [
 
 const COLOR_MAP: Record<string, string> = {
   yellow: 'bg-yellow-100',
-  blue: 'bg-blue-100',
+  blue: 'bg-indigo-100',
   pink: 'bg-pink-100',
   green: 'bg-green-100',
   purple: 'bg-purple-100',
@@ -138,7 +138,7 @@ export function PostDetailModal({
                 onClick={() => toggleReaction(currentUid, type)}
                 className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-sm border transition-colors focus-visible:outline focus-visible:outline-2 ${
                   isMyReaction
-                    ? 'bg-blue-100 border-blue-300 text-blue-700'
+                    ? 'bg-indigo-100 border-indigo-300 text-indigo-700'
                     : 'bg-gray-50 border-gray-200 hover:bg-gray-100 text-gray-700'
                 }`}
               >
@@ -206,7 +206,7 @@ export function PostDetailModal({
             type="submit"
             disabled={sending || !commentText.trim()}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white self-end"
+            className="bg-indigo-600 hover:bg-indigo-700 text-white self-end"
           >
             등록
           </Button>

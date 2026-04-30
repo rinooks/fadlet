@@ -91,7 +91,7 @@ export function ReportDialog({
               key={r}
               type="button"
               onClick={() => setReason((cur) => (cur ? `${cur}, ${r}` : r))}
-              className="text-[11px] px-2 py-1 bg-gray-100 text-gray-700 hover:bg-blue-50 hover:text-blue-700 rounded-full transition-colors"
+              className="text-[11px] px-2 py-1 bg-gray-100 text-gray-700 hover:bg-indigo-50 hover:text-indigo-700 rounded-full transition-colors"
             >
               + {r}
             </button>

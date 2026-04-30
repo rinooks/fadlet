@@ -94,7 +94,7 @@ export function HostActionsMenu({
             type="button"
             role="menuitem"
             onClick={pick(onOpenShare)}
-            className="w-full text-left text-sm px-3 py-2.5 hover:bg-gray-50 text-blue-600 font-semibold"
+            className="w-full text-left text-sm px-3 py-2.5 hover:bg-gray-50 text-indigo-600 font-semibold"
           >
             📤 공유하기
           </button>

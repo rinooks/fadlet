@@ -247,9 +247,9 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
     >
       {/* 드래그 오버레이 */}
       {isDragging && (
-        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-blue-50/90 border-2 border-dashed border-blue-400 rounded-none pointer-events-none">
-          <Paperclip size={36} className="text-blue-400 mb-2" />
-          <p className="text-blue-600 font-semibold text-sm">파일을 여기에 놓으세요</p>
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-indigo-50/90 border-2 border-dashed border-indigo-400 rounded-none pointer-events-none">
+          <Paperclip size={36} className="text-indigo-400 mb-2" />
+          <p className="text-indigo-600 font-semibold text-sm">파일을 여기에 놓으세요</p>
         </div>
       )}
 
@@ -260,7 +260,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             onClick={() => setTab('chat')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               tab === 'chat'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-indigo-600 text-white'
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
           >
@@ -270,7 +270,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             onClick={() => setTab('media')}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
               tab === 'media'
-                ? 'bg-blue-600 text-white'
+                ? 'bg-indigo-600 text-white'
                 : 'text-gray-500 hover:bg-gray-100'
             }`}
           >
@@ -295,7 +295,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                 });
               }}
               className={`p-1 rounded transition-colors focus-visible:outline focus-visible:outline-2 ${
-                showSearch ? 'text-blue-600 bg-blue-50' : 'text-gray-400 hover:text-gray-600'
+                showSearch ? 'text-indigo-600 bg-indigo-50' : 'text-gray-400 hover:text-gray-600'
               }`}
               aria-label={showSearch ? '검색 닫기' : '메시지 검색'}
               aria-pressed={showSearch}
@@ -320,7 +320,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="메시지·작성자·파일명 검색"
               autoFocus
-              className="w-full text-xs pl-7 pr-2 py-1.5 bg-white border border-gray-200 rounded-md focus:outline-none focus:border-blue-400"
+              className="w-full text-xs pl-7 pr-2 py-1.5 bg-white border border-gray-200 rounded-md focus:outline-none focus:border-indigo-400"
             />
           </div>
           {searchQuery && (
@@ -376,7 +376,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                   {!isMine && (
                     <span className="text-xs text-gray-500 mb-0.5 ml-1">
                       {isHost ? (
-                        <span className="text-blue-600 font-semibold">{msg.authorName} (운영자)</span>
+                        <span className="text-indigo-600 font-semibold">{msg.authorName} (운영자)</span>
                       ) : (
                         msg.authorName
                       )}
@@ -386,9 +386,9 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                     <div
                       className={`px-3 py-2 rounded-2xl text-sm ${
                         isMine
-                          ? 'bg-blue-600 text-white rounded-br-sm'
+                          ? 'bg-indigo-600 text-white rounded-br-sm'
                           : isHost
-                          ? 'bg-blue-50 text-gray-900 border-l-4 border-blue-500 rounded-bl-sm'
+                          ? 'bg-indigo-50 text-gray-900 border-l-4 border-indigo-500 rounded-bl-sm'
                           : 'bg-gray-100 text-gray-900 rounded-bl-sm'
                       } ${msg.type === 'image' || msg.type === 'link' ? 'p-0 overflow-hidden' : ''}`}
                     >
@@ -428,7 +428,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             <button
               type="button"
               onClick={jumpToBottom}
-              className="absolute left-1/2 -translate-x-1/2 bottom-32 z-10 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5"
+              className="absolute left-1/2 -translate-x-1/2 bottom-32 z-10 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md flex items-center gap-1.5"
             >
               ↓ {unreadCount}개 안 읽은 메시지
             </button>
@@ -436,7 +436,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
 
           <form onSubmit={handleSend} className="px-3 pb-3 pt-2 border-t border-gray-100">
             {attachment && (
-              <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-blue-50 rounded-lg text-xs text-blue-700">
+              <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-indigo-50 rounded-lg text-xs text-indigo-700">
                 <span className="flex-1 truncate">{attachment.name}</span>
                 <button type="button" onClick={removeAttachment} className="flex-shrink-0 hover:text-red-500" aria-label="첨부 제거">
                   <X size={14} />
@@ -474,7 +474,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                 type="submit"
                 disabled={sending || uploading || (!input.trim() && !attachment)}
                 size="sm"
-                className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
               >
                 {uploading ? '업로드 중…' : sending ? '전송 중…' : '전송'}
               </Button>

@@ -63,7 +63,7 @@ export function HostOnboarding({ enabled }: HostOnboardingProps) {
         className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
       >
         <div className="flex items-center justify-between mb-4">
-          <span className="text-xs font-semibold text-blue-600 uppercase">
+          <span className="text-xs font-semibold text-indigo-600 uppercase">
             운영자 가이드 {step + 1}/{STEPS.length}
           </span>
           <button
@@ -83,7 +83,7 @@ export function HostOnboarding({ enabled }: HostOnboardingProps) {
           <Link
             href="/help"
             target="_blank"
-            className="text-xs text-blue-600 hover:underline"
+            className="text-xs text-indigo-600 hover:underline"
           >
             전체 가이드 보기 →
           </Link>
@@ -92,7 +92,7 @@ export function HostOnboarding({ enabled }: HostOnboardingProps) {
               {STEPS.map((_, i) => (
                 <span
                   key={i}
-                  className={`w-1.5 h-1.5 rounded-full ${i === step ? 'bg-blue-600' : 'bg-gray-300'}`}
+                  className={`w-1.5 h-1.5 rounded-full ${i === step ? 'bg-indigo-600' : 'bg-gray-300'}`}
                   aria-hidden
                 />
               ))}
@@ -101,7 +101,7 @@ export function HostOnboarding({ enabled }: HostOnboardingProps) {
               <Button
                 size="sm"
                 onClick={complete}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
               >
                 시작하기
               </Button>
@@ -109,7 +109,7 @@ export function HostOnboarding({ enabled }: HostOnboardingProps) {
               <Button
                 size="sm"
                 onClick={() => setStep((s) => Math.min(s + 1, STEPS.length - 1))}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
               >
                 다음
               </Button>

@@ -28,7 +28,7 @@ function CounterCard({ icon, label, value, hint }: CounterCardProps) {
     <div className="bg-white border border-gray-200 rounded-xl p-4 flex flex-col">
       <div className="flex items-center justify-between mb-1">
         <span className="text-xs text-gray-500 font-medium">{label}</span>
-        <span className="text-blue-600">{icon}</span>
+        <span className="text-indigo-600">{icon}</span>
       </div>
       <span className="text-2xl font-bold text-gray-900 tabular-nums">{value.toLocaleString('ko-KR')}</span>
       {hint && <span className="text-[11px] text-gray-400 mt-1">{hint}</span>}
@@ -50,7 +50,7 @@ function BarRow({ label, count, max, highlight }: BarRowProps) {
       <span className="text-xs text-gray-700 font-medium w-24 truncate flex-shrink-0">{label}</span>
       <div className="flex-1 h-5 bg-gray-100 rounded relative overflow-hidden">
         <div
-          className={`h-full ${highlight ? 'bg-blue-600' : 'bg-blue-400'}`}
+          className={`h-full ${highlight ? 'bg-indigo-600' : 'bg-indigo-400'}`}
           style={{ width: `${pct}%` }}
         />
         <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[11px] font-semibold text-gray-700 tabular-nums">
@@ -153,7 +153,7 @@ export default function AnalyticsPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
         <p className="text-gray-700 font-semibold mb-1">접근 권한이 없습니다</p>
         <p className="text-sm text-gray-500 mb-4">이 보드의 운영자만 분석을 볼 수 있습니다.</p>
-        <Link href="/dashboard" className="text-sm text-blue-600 hover:underline">대시보드로</Link>
+        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">대시보드로</Link>
       </div>
     );
   }
@@ -168,7 +168,7 @@ export default function AnalyticsPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href={`/boards/${boardId}`} className="text-blue-600 hover:underline flex items-center gap-1 text-xs">
+          <Link href={`/boards/${boardId}`} className="text-indigo-600 hover:underline flex items-center gap-1 text-xs">
             <ArrowLeft size={12} /> 보드로
           </Link>
           <span className="text-gray-300">|</span>
@@ -261,7 +261,7 @@ export default function AnalyticsPage({ params }: PageProps) {
                 <div key={i} className="flex flex-col items-center gap-0.5 h-full" title={`${i}시: ${v}건`}>
                   <div className="flex-1 w-full flex items-end">
                     <div
-                      className="w-full rounded-sm bg-blue-500"
+                      className="w-full rounded-sm bg-indigo-500"
                       style={{ height: `${h}%`, minHeight: v > 0 ? '2px' : 0 }}
                     />
                   </div>

@@ -93,7 +93,7 @@ export function ReportsPanel({ open, onClose, boardId, currentUid, onDeleteMessa
           <button
             onClick={() => setFilter('open')}
             className={`px-3 py-1 text-xs rounded-md font-semibold ${
-              filter === 'open' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+              filter === 'open' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
             미처리 {openCount > 0 && <span className={filter === 'open' ? 'text-white' : 'text-red-500'}>({openCount})</span>}
@@ -101,7 +101,7 @@ export function ReportsPanel({ open, onClose, boardId, currentUid, onDeleteMessa
           <button
             onClick={() => setFilter('all')}
             className={`px-3 py-1 text-xs rounded-md font-semibold ${
-              filter === 'all' ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
+              filter === 'all' ? 'bg-indigo-600 text-white' : 'text-gray-600 hover:bg-gray-100'
             }`}
           >
             전체 ({reports.length})
@@ -125,7 +125,7 @@ export function ReportsPanel({ open, onClose, boardId, currentUid, onDeleteMessa
               <div className="flex items-start justify-between mb-2">
                 <div className="flex items-center gap-2 flex-wrap">
                   <span className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                    report.targetType === 'message' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'
+                    report.targetType === 'message' ? 'bg-purple-100 text-purple-700' : 'bg-indigo-100 text-indigo-700'
                   }`}>
                     {report.targetType === 'message' ? '메시지' : '포스트'}
                   </span>

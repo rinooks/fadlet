@@ -41,14 +41,14 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
         rel="noopener noreferrer"
         className={`flex items-center gap-2 px-3 py-2 rounded-xl border text-sm ${
           isMine
-            ? 'border-blue-400 bg-blue-500/20 text-white'
+            ? 'border-indigo-400 bg-indigo-500/20 text-white'
             : 'border-gray-200 bg-white text-gray-800'
         }`}
         download={msg.fileName}
       >
         <FileIcon size={16} className="flex-shrink-0" />
         <span className="flex-1 truncate">{msg.fileName ?? '파일'}</span>
-        <span className={`text-xs flex-shrink-0 ${isMine ? 'text-blue-200' : 'text-gray-400'}`}>
+        <span className={`text-xs flex-shrink-0 ${isMine ? 'text-indigo-200' : 'text-gray-400'}`}>
           {msg.fileSize ? formatFileSize(msg.fileSize) : ''}
         </span>
         <DownloadIcon size={14} className="flex-shrink-0" />
@@ -66,7 +66,7 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
           target="_blank"
           rel="noopener noreferrer"
           className={`block rounded-xl border overflow-hidden text-sm no-underline ${
-            isMine ? 'border-blue-400' : 'border-gray-200'
+            isMine ? 'border-indigo-400' : 'border-gray-200'
           }`}
         >
           {p.image && (
@@ -78,16 +78,16 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
               className="w-full object-cover max-h-28"
             />
           )}
-          <div className={`px-3 py-2 ${isMine ? 'bg-blue-500/20' : 'bg-gray-50'}`}>
+          <div className={`px-3 py-2 ${isMine ? 'bg-indigo-500/20' : 'bg-gray-50'}`}>
             <p className={`font-semibold truncate ${isMine ? 'text-white' : 'text-gray-900'}`}>
               {p.title}
             </p>
             {p.description && (
-              <p className={`text-xs line-clamp-2 mt-0.5 ${isMine ? 'text-blue-100' : 'text-gray-500'}`}>
+              <p className={`text-xs line-clamp-2 mt-0.5 ${isMine ? 'text-indigo-100' : 'text-gray-500'}`}>
                 {p.description}
               </p>
             )}
-            <p className={`text-[10px] mt-1 flex items-center gap-1 ${isMine ? 'text-blue-200' : 'text-gray-400'}`}>
+            <p className={`text-[10px] mt-1 flex items-center gap-1 ${isMine ? 'text-indigo-200' : 'text-gray-400'}`}>
               <ExternalLinkIcon size={10} />
               {p.siteName}
             </p>

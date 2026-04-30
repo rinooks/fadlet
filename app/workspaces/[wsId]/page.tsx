@@ -101,7 +101,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="text-gray-500 mb-3">워크스페이스를 찾을 수 없습니다.</p>
-        <Link href="/workspaces" className="text-sm text-blue-600 hover:underline">목록으로</Link>
+        <Link href="/workspaces" className="text-sm text-indigo-600 hover:underline">목록으로</Link>
       </div>
     );
   }
@@ -119,7 +119,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
         <p className="text-gray-700 font-semibold mb-1">{workspace.name}</p>
         <p className="text-sm text-gray-500 mb-4">멤버만 접근할 수 있습니다.</p>
-        <Link href="/workspaces" className="text-sm text-blue-600 hover:underline">목록으로</Link>
+        <Link href="/workspaces" className="text-sm text-indigo-600 hover:underline">목록으로</Link>
       </div>
     );
   }
@@ -128,12 +128,12 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/workspaces" className="text-blue-600 font-bold text-lg">Fadlet</Link>
+          <Link href="/workspaces" className="text-indigo-600 font-bold text-lg">Fadlet</Link>
           <span className="text-gray-300">|</span>
           <h1 className="text-sm font-semibold text-gray-900 truncate">{workspace.name}</h1>
           <button
             onClick={copyCode}
-            className="flex items-center gap-1 font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded hover:bg-blue-100"
+            className="flex items-center gap-1 font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100"
             aria-label="코드 복사"
           >
             {workspace.workspaceCode}
@@ -165,7 +165,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
             <Button
               size="sm"
               onClick={() => router.push(`/boards/new?workspaceId=${wsId}`)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs h-7 px-3"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-7 px-3"
             >
               + 새 보드
             </Button>
@@ -182,13 +182,13 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                 <Link
                   key={board.id}
                   href={`/boards/${board.id}`}
-                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all group"
+                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-sm transition-all group"
                 >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 line-clamp-2 mb-2">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 line-clamp-2 mb-2">
                     {board.title}
                   </h3>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                       {board.boardCode}
                     </span>
                     <span className="text-[10px] text-gray-400">
@@ -210,7 +210,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                 key={m.uid}
                 className="bg-white border border-gray-200 rounded-lg p-3 flex items-center gap-3"
               >
-                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 flex items-center justify-center text-sm font-semibold flex-shrink-0">
                   {m.displayName.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex-1 min-w-0">

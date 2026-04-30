@@ -118,13 +118,13 @@ export function FacilitatorPanel({
           <Link
             href={`/boards/${boardId}/analytics`}
             target="_blank"
-            className="flex items-center justify-between gap-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg px-4 py-3 transition-colors"
+            className="flex items-center justify-between gap-2 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 rounded-lg px-4 py-3 transition-colors"
           >
-            <span className="flex items-center gap-2 text-sm font-semibold text-blue-700">
+            <span className="flex items-center gap-2 text-sm font-semibold text-indigo-700">
               <BarChart3 size={14} />
               분석 대시보드
             </span>
-            <span className="text-[11px] text-blue-600">참여도·활동량 보기 →</span>
+            <span className="text-[11px] text-indigo-600">참여도·활동량 보기 →</span>
           </Link>
 
           {/* 단계 관리 */}
@@ -186,7 +186,7 @@ export function FacilitatorPanel({
                 onClick={handleAddStage}
                 disabled={busy}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white h-8"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white h-8"
               >
                 <Plus size={14} />
               </Button>
@@ -212,7 +212,7 @@ export function FacilitatorPanel({
                 onClick={handlePin}
                 disabled={busy || !announcementDraft.trim()}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white flex-1"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white flex-1"
               >
                 <Pin size={14} />
                 <span className="ml-1">{pinnedAnnouncement ? '공지 갱신' : '공지 고정'}</span>
@@ -316,7 +316,7 @@ function StageRow({ stage, index, total, busy, onUpdate, onMove, onRemove }: Sta
 
   if (editing) {
     return (
-      <li className="flex gap-2 items-center p-2 bg-blue-50 rounded-lg border border-blue-200">
+      <li className="flex gap-2 items-center p-2 bg-indigo-50 rounded-lg border border-indigo-200">
         <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-sm h-8 flex-1" />
         <Input
           type="number"
@@ -325,7 +325,7 @@ function StageRow({ stage, index, total, busy, onUpdate, onMove, onRemove }: Sta
           onChange={(e) => setMinutes(e.target.value)}
           className="text-sm h-8 w-16"
         />
-        <Button onClick={save} disabled={busy} size="sm" className="h-7 bg-blue-600 hover:bg-blue-700 text-white text-xs">저장</Button>
+        <Button onClick={save} disabled={busy} size="sm" className="h-7 bg-indigo-600 hover:bg-indigo-700 text-white text-xs">저장</Button>
         <button
           onClick={() => { setTitle(stage.title); setMinutes(String(Math.round(stage.durationSec / 60))); setEditing(false); }}
           className="text-xs text-gray-500 hover:text-gray-800 px-1"

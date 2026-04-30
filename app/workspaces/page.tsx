@@ -79,11 +79,11 @@ export default function WorkspacesPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <Link href="/dashboard" className="text-blue-600 font-bold text-xl">Fadlet</Link>
+          <Link href="/dashboard" className="text-indigo-600 font-bold text-xl">Fadlet</Link>
           <span className="text-gray-300">|</span>
           <span className="text-sm text-gray-600 font-medium">워크스페이스</span>
         </div>
-        <Link href="/dashboard" className="text-xs text-blue-600 hover:underline">
+        <Link href="/dashboard" className="text-xs text-indigo-600 hover:underline">
           ← 대시보드로
         </Link>
       </header>
@@ -93,7 +93,7 @@ export default function WorkspacesPage() {
           {/* 새로 만들기 */}
           <form onSubmit={handleCreate} className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-1">
-              <Plus size={16} className="text-blue-600" />
+              <Plus size={16} className="text-indigo-600" />
               <h3 className="font-semibold text-gray-900">새 워크스페이스</h3>
             </div>
             <p className="text-xs text-gray-500 mb-3">
@@ -111,7 +111,7 @@ export default function WorkspacesPage() {
                 type="submit"
                 disabled={busy || !newName.trim()}
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
               >
                 만들기
               </Button>
@@ -121,7 +121,7 @@ export default function WorkspacesPage() {
           {/* 코드로 가입 */}
           <form onSubmit={handleJoin} className="bg-white rounded-xl border border-gray-200 p-5">
             <div className="flex items-center gap-2 mb-1">
-              <KeyRound size={16} className="text-blue-600" />
+              <KeyRound size={16} className="text-indigo-600" />
               <h3 className="font-semibold text-gray-900">코드로 가입</h3>
             </div>
             <p className="text-xs text-gray-500 mb-3">
@@ -162,13 +162,13 @@ export default function WorkspacesPage() {
               <Link
                 key={ws.id}
                 href={`/workspaces/${ws.id}`}
-                className="bg-white rounded-xl border border-gray-200 p-4 hover:border-blue-300 hover:shadow-sm transition-all group"
+                className="bg-white rounded-xl border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-sm transition-all group"
               >
-                <h3 className="font-semibold text-gray-900 group-hover:text-blue-600 mb-2 truncate">
+                <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 mb-2 truncate">
                   {ws.name}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded">
+                  <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
                     {ws.workspaceCode}
                   </span>
                   {ws.ownerUid === user?.uid && (

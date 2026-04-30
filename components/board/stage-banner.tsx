@@ -40,15 +40,15 @@ export function StageBanner({ stages, timer, isHost, onStart, onPause, onResume,
   const showTimer = status !== 'idle';
 
   return (
-    <div className={`relative border-b border-gray-100 ${overdue ? 'bg-red-50' : 'bg-blue-50'}`}>
+    <div className={`relative border-b border-gray-100 ${overdue ? 'bg-red-50' : 'bg-indigo-50'}`}>
       <div className="flex items-center justify-between gap-3 px-4 py-2">
         <div className="flex items-center gap-3 min-w-0 flex-1">
-          <span className="text-xs font-semibold text-blue-700 bg-white border border-blue-200 px-2 py-0.5 rounded-full flex-shrink-0">
+          <span className="text-xs font-semibold text-indigo-700 bg-white border border-indigo-200 px-2 py-0.5 rounded-full flex-shrink-0">
             {idx + 1}/{sorted.length}
           </span>
           <span className="font-semibold text-sm text-gray-900 truncate">{currentStage.title}</span>
           {currentStage.durationSec > 0 && (
-            <span className={`font-mono text-sm font-bold tabular-nums flex-shrink-0 ${overdue ? 'text-red-600' : 'text-blue-700'}`}>
+            <span className={`font-mono text-sm font-bold tabular-nums flex-shrink-0 ${overdue ? 'text-red-600' : 'text-indigo-700'}`}>
               {showTimer
                 ? totalMs > 0
                   ? overdue
@@ -70,7 +70,7 @@ export function StageBanner({ stages, timer, isHost, onStart, onPause, onResume,
             {status === 'idle' && (
               <button
                 onClick={() => onStart(currentStage.id)}
-                className="flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
+                className="flex items-center gap-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
                 aria-label="시작"
               >
                 <Play size={12} /> 시작
@@ -88,7 +88,7 @@ export function StageBanner({ stages, timer, isHost, onStart, onPause, onResume,
             {status === 'paused' && (
               <button
                 onClick={onResume}
-                className="flex items-center gap-1 text-xs font-semibold text-white bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
+                className="flex items-center gap-1 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
                 aria-label="재개"
               >
                 <Play size={12} /> 재개
@@ -106,7 +106,7 @@ export function StageBanner({ stages, timer, isHost, onStart, onPause, onResume,
             {nextStage && (
               <button
                 onClick={() => onSelect(nextStage.id)}
-                className="flex items-center gap-1 text-xs text-blue-700 hover:bg-blue-100 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
+                className="flex items-center gap-1 text-xs text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-md focus-visible:outline focus-visible:outline-2"
                 aria-label={`다음 단계: ${nextStage.title}`}
                 title={nextStage.title}
               >
@@ -118,9 +118,9 @@ export function StageBanner({ stages, timer, isHost, onStart, onPause, onResume,
       </div>
 
       {showTimer && totalMs > 0 && (
-        <div className="absolute left-0 bottom-0 right-0 h-0.5 bg-blue-100">
+        <div className="absolute left-0 bottom-0 right-0 h-0.5 bg-indigo-100">
           <div
-            className={`h-full transition-all ${overdue ? 'bg-red-500' : 'bg-blue-500'}`}
+            className={`h-full transition-all ${overdue ? 'bg-red-500' : 'bg-indigo-500'}`}
             style={{ width: `${progressPct}%` }}
           />
         </div>
