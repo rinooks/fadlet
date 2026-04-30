@@ -2,7 +2,7 @@
 
 import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useDraggable, useSensor, useSensors } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { PostCard } from './post-card';
 import type { Post } from '@/lib/types';
 
@@ -73,9 +73,14 @@ export function CanvasBoard({
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } }),
   );
 
+  // 드래그 종료 직후 Firestore 스냅샷 도착 전까지 위치를 유지하기 위한 로컬 오버라이드
+  const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({});
+
   // 위치가 없는 포스트엔 자동으로 적당한 좌표를 배정 (생성 순서 기반 격자)
   const positioned = useMemo(() => {
     return posts.map((post, idx) => {
+      const local = localPositions[post.id];
+      if (local) return { post, x: local.x, y: local.y };
       if (post.position && typeof post.position.x === 'number' && typeof post.position.y === 'number') {
         return { post, x: post.position.x, y: post.position.y };
       }
@@ -88,7 +93,7 @@ export function CanvasBoard({
         y: 60 + row * (POST_HEIGHT_ESTIMATE + 20),
       };
     });
-  }, [posts]);
+  }, [posts, localPositions]);
 
   function handleDragEnd(event: DragEndEvent) {
     const { active, delta } = event;
@@ -96,9 +101,20 @@ export function CanvasBoard({
     const id = String(active.id);
     const item = positioned.find((p) => p.post.id === id);
     if (!item) return;
-    const newX = Math.max(0, Math.min(CANVAS_WIDTH - POST_WIDTH, item.x + delta.x));
-    const newY = Math.max(0, Math.min(CANVAS_HEIGHT - POST_HEIGHT_ESTIMATE, item.y + delta.y));
-    onUpdatePosition(id, { x: Math.round(newX), y: Math.round(newY) }).catch(() => {});
+    const newX = Math.round(Math.max(0, Math.min(CANVAS_WIDTH - POST_WIDTH, item.x + delta.x)));
+    const newY = Math.round(Math.max(0, Math.min(CANVAS_HEIGHT - POST_HEIGHT_ESTIMATE, item.y + delta.y)));
+
+    // 즉시 로컬 반영 → 튀는 느낌 제거
+    setLocalPositions((prev) => ({ ...prev, [id]: { x: newX, y: newY } }));
+
+    onUpdatePosition(id, { x: newX, y: newY }).catch(() => {
+      // 실패 시 로컬 오버라이드 제거 → Firestore 값으로 복구
+      setLocalPositions((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    });
   }
 
   return (
