@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -26,13 +26,25 @@ export default function DashboardPage() {
     if (!user || !isOperator) return;
     const q = query(
       collection(db, boardsPath()),
-      where('ownerId', '==', user.uid),
-      orderBy('createdAt', 'desc')
+      where('ownerId', '==', user.uid)
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setBoards(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board));
-      setBoardsLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board);
+        list.sort((a, b) => {
+          const ta = a.createdAt?.toMillis?.() ?? 0;
+          const tb = b.createdAt?.toMillis?.() ?? 0;
+          return tb - ta;
+        });
+        setBoards(list);
+        setBoardsLoading(false);
+      },
+      (err) => {
+        console.error('[dashboard] boards snapshot error', err);
+        setBoardsLoading(false);
+      }
+    );
     return unsub;
   }, [user, isOperator]);
 
@@ -46,41 +58,48 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <span className="text-blue-600 font-bold text-xl">Fadlet</span>
-          <span className="text-gray-300">|</span>
-          <span className="text-sm text-gray-600 font-medium">내 보드</span>
+      <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="text-blue-600 font-bold text-lg sm:text-xl">Fadlet</span>
+          <span className="text-gray-300 hidden sm:inline">|</span>
+          <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 보드</span>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
           <Link
             href="/workspaces"
             className="text-xs text-blue-600 hover:underline font-semibold"
+            aria-label="워크스페이스"
           >
-            👥 워크스페이스
+            <span className="sm:hidden">👥</span>
+            <span className="hidden sm:inline">👥 워크스페이스</span>
           </Link>
           <Link
             href="/help"
             className="text-xs text-blue-600 hover:underline font-semibold"
+            aria-label="가이드"
           >
-            📖 가이드
+            <span className="sm:hidden">📖</span>
+            <span className="hidden sm:inline">📖 가이드</span>
           </Link>
-          <span className="text-gray-300">|</span>
-          <span className="text-sm text-gray-500">{user?.displayName ?? user?.email}</span>
+          <span className="text-gray-300 hidden lg:inline">|</span>
+          <span className="text-sm text-gray-500 hidden lg:inline truncate max-w-[180px]">
+            {user?.displayName ?? user?.email}
+          </span>
           <Button variant="outline" size="sm" onClick={logout} className="text-xs">
             로그아웃
           </Button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-6 py-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-bold text-gray-900">내 보드 목록</h2>
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+        <div className="flex items-center justify-between mb-5 sm:mb-6 gap-3">
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">내 보드 목록</h2>
           <Button
             onClick={() => router.push('/boards/new')}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold flex-shrink-0"
           >
-            + 새 보드 만들기
+            <span className="sm:hidden">+ 새 보드</span>
+            <span className="hidden sm:inline">+ 새 보드 만들기</span>
           </Button>
         </div>
 

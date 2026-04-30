@@ -4,7 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense, useEffect, useState } from 'react';
+import { Suspense, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,15 +18,10 @@ function JoinForm() {
   const searchParams = useSearchParams();
   const { uid } = useAuth();
   const [step, setStep] = useState<'code' | 'nickname'>('code');
-  const [code, setCode] = useState('');
+  const [code, setCode] = useState(() => searchParams.get('code')?.toUpperCase() ?? '');
   const [nickname, setNickname] = useState('');
   const [boardId, setBoardId] = useState('');
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const prefilledCode = searchParams.get('code');
-    if (prefilledCode) setCode(prefilledCode.toUpperCase());
-  }, [searchParams]);
 
   const { joinBoard } = useParticipants(boardId);
 

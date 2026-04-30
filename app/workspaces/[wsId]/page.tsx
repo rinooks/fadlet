@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, onSnapshot, orderBy, query, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
@@ -39,15 +39,23 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     const q = query(
       collection(db, boardsPath()),
       where('workspaceId', '==', wsId),
-      orderBy('createdAt', 'desc'),
     );
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setBoards(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board));
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board);
+        list.sort((a, b) => {
+          const ta = a.createdAt?.toMillis?.() ?? 0;
+          const tb = b.createdAt?.toMillis?.() ?? 0;
+          return tb - ta;
+        });
+        setBoards(list);
         setBoardsLoading(false);
       },
-      () => setBoardsLoading(false),
+      (err) => {
+        console.error('[workspace] boards snapshot error', err);
+        setBoardsLoading(false);
+      },
     );
     return unsub;
   }, [wsId]);

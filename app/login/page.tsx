@@ -2,6 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Button } from '@/components/ui/button';
@@ -49,7 +50,7 @@ export default function LoginPage() {
 
         <p className="text-xs text-gray-400 mt-6">
           참여자는 로그인 없이{' '}
-          <a href="/boards/join" className="text-blue-600 hover:underline">코드로 입장</a>
+          <Link href="/boards/join" className="text-blue-600 hover:underline">코드로 입장</Link>
           하세요.
         </p>
       </div>
