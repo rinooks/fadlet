@@ -1,10 +1,7 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter } from 'next/font/google';
 import './globals.css';
 import './skins.css';
 import { Toaster } from '@/components/ui/sonner';
-
-const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export const metadata: Metadata = {
   title: 'Fadlet — 워크숍 운영자를 위한 협업 보드',
@@ -23,7 +20,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ko" className={`${inter.variable} h-full`}>
+    <html lang="ko" className="h-full">
       <head>
         <link
           rel="preconnect"
@@ -37,7 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body
         className="min-h-full flex flex-col antialiased"
-        style={{ fontFamily: "'Pretendard Variable', var(--font-inter), sans-serif" }}
+        style={{ fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif" }}
       >
         {children}
         <Toaster richColors position="top-center" />

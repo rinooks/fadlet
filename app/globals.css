@@ -128,3 +128,59 @@
     @apply font-sans;
   }
 }
+
+/* 랜딩 페이지 — 떠다니는 포스트잇 */
+.sticky-note {
+  position: absolute;
+  width: var(--size, 60px);
+  height: var(--size, 60px);
+  background: var(--bg, #FEF3C7);
+  border-radius: 4px;
+  box-shadow:
+    0 1px 2px rgba(20, 20, 40, 0.06),
+    0 6px 16px -8px rgba(20, 20, 40, 0.18);
+  transform-origin: center;
+  will-change: transform;
+  /* 종이 질감 — 약한 그라데이션 */
+  background-image: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(0, 0, 0, 0.04) 100%);
+  background-blend-mode: overlay;
+  /* 모서리 살짝 휜 듯한 느낌 */
+  clip-path: polygon(0 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%);
+}
+.sticky-note::after {
+  /* 우측 하단 접힌 모서리 */
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 10px;
+  height: 10px;
+  background: linear-gradient(135deg, transparent 50%, rgba(0, 0, 0, 0.1) 50%);
+}
+.sticky-float-a { animation: sticky-float-a var(--dur, 30s) ease-in-out infinite; }
+.sticky-float-b { animation: sticky-float-b var(--dur, 34s) ease-in-out infinite; }
+.sticky-float-c { animation: sticky-float-c var(--dur, 38s) ease-in-out infinite; }
+.sticky-float-d { animation: sticky-float-d var(--dur, 42s) ease-in-out infinite; }
+
+@keyframes sticky-float-a {
+  0%, 100% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+  50%      { transform: translate(30px, -40px) rotate(calc(var(--rot, 0deg) + 6deg)); }
+}
+@keyframes sticky-float-b {
+  0%, 100% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+  50%      { transform: translate(-25px, 35px) rotate(calc(var(--rot, 0deg) - 5deg)); }
+}
+@keyframes sticky-float-c {
+  0%, 100% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+  33%      { transform: translate(20px, 20px) rotate(calc(var(--rot, 0deg) + 4deg)); }
+  66%      { transform: translate(-15px, -25px) rotate(calc(var(--rot, 0deg) - 3deg)); }
+}
+@keyframes sticky-float-d {
+  0%, 100% { transform: translate(0, 0) rotate(var(--rot, 0deg)); }
+  33%      { transform: translate(-30px, 25px) rotate(calc(var(--rot, 0deg) - 6deg)); }
+  66%      { transform: translate(35px, -15px) rotate(calc(var(--rot, 0deg) + 5deg)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sticky-note { animation: none !important; }
+}
