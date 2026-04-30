@@ -5,27 +5,25 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useOperatorAuth, OperatorNotAllowedError } from '@/lib/hooks/use-operator-auth';
+import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { isOperator, loading, signInWithGoogle } = useOperatorAuth();
+  const { isOperator, isPending, loading, signInWithGoogle } = useOperatorAuth();
 
   useEffect(() => {
-    if (!loading && isOperator) router.replace('/dashboard');
-  }, [isOperator, loading, router]);
+    if (loading) return;
+    if (isOperator) router.replace('/dashboard');
+    else if (isPending) router.replace('/pending');
+  }, [isOperator, isPending, loading, router]);
 
   async function handleGoogle() {
     try {
       await signInWithGoogle();
-      router.push('/dashboard');
-    } catch (err) {
-      if (err instanceof OperatorNotAllowedError) {
-        toast.error('베타 기간 동안 허용된 계정만 로그인할 수 있습니다.');
-      }
-      // 팝업 취소 등 그 외 에러는 조용히 무시
+      // 이후 위 useEffect가 isOperator/isPending 보고 라우팅
+    } catch {
+      // 팝업 취소 등 무시
     }
   }
 
@@ -38,7 +36,13 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+    <main className="relative flex items-center justify-center min-h-screen bg-indigo-50 px-4">
+      <Link
+        href="/"
+        className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
+      >
+        ← 홈
+      </Link>
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">운영자 로그인</h1>
         <p className="text-gray-400 text-sm mb-8">보드를 만들고 관리하려면 로그인하세요.</p>

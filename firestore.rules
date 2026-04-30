@@ -19,11 +19,38 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/workspaces/$(wsId)/members/$(request.auth.uid));
     }
 
-    // 베타 기간: 운영자(워크스페이스/보드 생성) 권한은 화이트리스트 이메일만 허용
-    // 익명 참여자는 포스트·채팅·참여 기록은 그대로 가능
-    function isAllowedOperator() {
+    // 슈퍼관리자: 하드코딩된 이메일
+    function isSuperAdmin() {
       return request.auth != null
         && request.auth.token.email in ['rinooks@gmail.com'];
+    }
+
+    // 운영자(워크스페이스/보드 생성) 권한: operators/{uid}.allowed == true 일 때만 허용
+    function isAllowedOperator() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/operators/$(request.auth.uid))
+        && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.allowed == true;
+    }
+
+    // operators 컬렉션: 본인은 문서 read 가능, super가 전체 read/write
+    match /operators/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());
+      allow list: if isSuperAdmin();
+      // 첫 로그인 시 본인이 자기 문서를 생성. allowed/isSuperAdmin은 슈퍼관리자만 true 설정 가능.
+      allow create: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid
+        && (request.resource.data.allowed == false || isSuperAdmin())
+        && (request.resource.data.isSuperAdmin == false || isSuperAdmin());
+      // 본인은 메타(displayName/email/lastLoginAt)만 갱신, allowed/isSuperAdmin은 슈퍼만
+      allow update: if isAuthenticated()
+        && (
+          isSuperAdmin()
+          || (request.auth.uid == uid
+              && request.resource.data.allowed == resource.data.allowed
+              && request.resource.data.isSuperAdmin == resource.data.isSuperAdmin)
+        );
+      allow delete: if isSuperAdmin();
     }
 
     match /workspaces/{wsId} {
@@ -46,7 +73,7 @@ service cloud.firestore {
 
       match /boards/{boardId} {
         allow read: if true;
-        // 보드 생성은 화이트리스트 운영자가 본인 멤버인 워크스페이스에만 허용
+        // 보드 생성은 승인된 운영자가 본인 멤버인 워크스페이스에만 허용
         allow create: if isAllowedOperator()
           && request.resource.data.ownerId == request.auth.uid
           && request.resource.data.workspaceId is string

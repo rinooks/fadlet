@@ -131,6 +131,19 @@ export interface WorkspaceMember {
   joinedAt: Timestamp;
 }
 
+export interface Operator {
+  uid: string;
+  email: string;
+  displayName: string;
+  photoURL?: string;
+  allowed: boolean;
+  isSuperAdmin?: boolean;
+  createdAt: Timestamp;
+  lastLoginAt: Timestamp;
+  reviewedAt?: Timestamp;
+  reviewedBy?: string;
+}
+
 export interface Report {
   id: string;
   targetType: ReportTarget;

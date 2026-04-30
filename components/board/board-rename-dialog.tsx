@@ -22,12 +22,15 @@ export function BoardRenameDialog({ open, initialTitle, onClose, onSubmit }: Boa
   const [title, setTitle] = useState(initialTitle);
   const [busy, setBusy] = useState(false);
 
+  // 외부에서 다이얼로그가 새 보드로 열릴 때 인풋을 동기화. 의도된 setState in effect.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (open) {
       setTitle(initialTitle);
       setBusy(false);
     }
   }, [open, initialTitle]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

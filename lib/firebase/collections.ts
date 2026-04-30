@@ -8,6 +8,7 @@ export const COLLECTIONS = {
   PARTICIPANTS: 'participants',
   REPORTS: 'reports',
   MEMBERS: 'members',
+  OPERATORS: 'operators',
 } as const;
 
 export function boardsPath(wsId = WORKSPACE_ID) {
@@ -40,4 +41,12 @@ export function workspaceDocPath(wsId: string) {
 
 export function workspaceMembersPath(wsId: string) {
   return `${COLLECTIONS.WORKSPACES}/${wsId}/${COLLECTIONS.MEMBERS}`;
+}
+
+export function operatorsPath() {
+  return COLLECTIONS.OPERATORS;
+}
+
+export function operatorDocPath(uid: string) {
+  return `${COLLECTIONS.OPERATORS}/${uid}`;
 }

@@ -19,7 +19,7 @@ import type { Board } from '@/lib/types';
 
 export default function DashboardPage() {
   const router = useRouter();
-  const { user, isOperator, loading, logout } = useOperatorAuth();
+  const { user, isOperator, isPending, isSuperAdmin, loading, logout } = useOperatorAuth();
   const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
@@ -76,8 +76,10 @@ export default function DashboardPage() {
   }, [boards, workspaces]);
 
   useEffect(() => {
-    if (!loading && !isOperator) router.replace('/login');
-  }, [isOperator, loading, router]);
+    if (loading) return;
+    if (!user) router.replace('/login');
+    else if (isPending) router.replace('/pending');
+  }, [user, isPending, loading, router]);
 
   useEffect(() => {
     if (!user || !isOperator) return;
@@ -117,7 +119,7 @@ export default function DashboardPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <span className="text-indigo-600 font-bold text-lg sm:text-xl">Fadlet</span>
+          <Link href="/" className="text-indigo-600 font-bold text-lg sm:text-xl hover:text-indigo-700 transition-colors">Fadlet</Link>
           <span className="text-gray-300 hidden sm:inline">|</span>
           <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 보드</span>
         </div>
@@ -138,6 +140,16 @@ export default function DashboardPage() {
             <span className="sm:hidden">📖</span>
             <span className="hidden sm:inline">📖 가이드</span>
           </Link>
+          {isSuperAdmin && (
+            <Link
+              href="/admin"
+              className="text-xs text-amber-700 hover:underline font-semibold"
+              aria-label="관리자"
+            >
+              <span className="sm:hidden">🛡</span>
+              <span className="hidden sm:inline">🛡 관리자</span>
+            </Link>
+          )}
           <span className="text-gray-300 hidden lg:inline">|</span>
           <span className="text-sm text-gray-500 hidden lg:inline truncate max-w-[180px]">
             {user?.displayName ?? user?.email}
