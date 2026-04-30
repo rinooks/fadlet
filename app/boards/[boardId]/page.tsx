@@ -219,9 +219,10 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const canPost = role === 'host' || !isLocked;
   const template = getTemplate(board?.template ?? 'free');
   const isFreeLayout = template.columns === null;
+  const skin = board?.skin ?? 'standard';
 
   return (
-    <div className="flex flex-col h-screen bg-gray-50">
+    <div data-skin={skin} className="skin-root flex flex-col h-screen bg-gray-50">
       {/* 헤더 */}
       <header className="flex items-center justify-between px-4 py-3 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-3 min-w-0">
@@ -251,6 +252,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           )}
         </div>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <span
+            className="flex items-center gap-1 text-xs text-gray-500 px-2"
+            title={`현재 접속자 ${onlineCount}명`}
+            aria-label={`현재 접속자 ${onlineCount}명`}
+          >
+            <span className="w-2 h-2 rounded-full bg-green-400 inline-block" aria-hidden />
+            <span className="hidden sm:inline">접속</span> {onlineCount}명
+          </span>
           {displayCode && (
             <button
               onClick={() => setShowShare(true)}

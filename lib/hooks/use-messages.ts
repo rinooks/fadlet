@@ -21,15 +21,23 @@ export function useMessages(boardId: string) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!boardId) return;
     const q = query(
       collection(db, messagesPath(boardId)),
       orderBy('createdAt', 'asc'),
       limit(200)
     );
-    const unsub = onSnapshot(q, (snap) => {
-      setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Message));
-      setLoading(false);
-    });
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Message));
+        setLoading(false);
+      },
+      (err) => {
+        console.error('[useMessages] snapshot error', err);
+        setLoading(false);
+      }
+    );
     return unsub;
   }, [boardId]);
 
