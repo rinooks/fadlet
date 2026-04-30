@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fadlet — 디자인 시안 비교</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --bg: #0B0B0E;
+    --bg-elev: #16161A;
+    --border: #25252A;
+    --fg: #E4E4E7;
+    --fg-muted: #8A8A92;
+    --brand: #6366F1;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    font-family: 'Pretendard Variable', system-ui, sans-serif;
+    background: var(--bg); color: var(--fg);
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.012em;
+  }
+  header {
+    padding: 28px 32px 20px;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(99,102,241,.10), transparent);
+  }
+  header h1 {
+    margin: 0; font-size: 22px; font-weight: 700;
+    background: linear-gradient(135deg, #818CF8, #C084FC);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header p { margin: 6px 0 0; color: var(--fg-muted); font-size: 14px; }
+  main {
+    display: grid; gap: 18px; padding: 28px 32px;
+    grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  }
+  .card {
+    background: var(--bg-elev); border: 1px solid var(--border); border-radius: 12px;
+    overflow: hidden; display: flex; flex-direction: column;
+    transition: transform .14s ease, border-color .14s ease;
+  }
+  .card:hover { transform: translateY(-3px); border-color: #3A3A42; }
+  .preview {
+    aspect-ratio: 16/10; background: #0F0F12;
+    border-bottom: 1px solid var(--border);
+    overflow: hidden; position: relative;
+  }
+  .preview iframe {
+    width: 200%; height: 200%;
+    border: 0; transform: scale(0.5); transform-origin: 0 0;
+    pointer-events: none;
+  }
+  .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px; }
+  .tag {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    background: rgba(99,102,241,.16); color: #C7CCFA; border: 1px solid rgba(99,102,241,.3);
+    width: max-content;
+  }
+  .title { font-size: 16px; font-weight: 600; }
+  .desc { font-size: 13px; color: var(--fg-muted); line-height: 1.55; }
+  .actions { display: flex; gap: 8px; margin-top: 10px; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 7px 14px; border-radius: 8px; font-size: 13px; font-weight: 500;
+    text-decoration: none; cursor: pointer; border: 1px solid var(--border);
+    color: var(--fg); background: transparent;
+  }
+  .btn:hover { background: var(--bg-elev); border-color: #3A3A42; }
+  .btn.primary {
+    background: var(--brand); border-color: var(--brand); color: #fff;
+  }
+  .btn.primary:hover { background: #4F46E5; border-color: #4F46E5; }
+
+  .summary {
+    margin: 4px 32px 32px; padding: 18px 22px;
+    border: 1px solid var(--border); border-radius: 12px;
+    background: var(--bg-elev);
+    font-size: 13px; line-height: 1.6; color: var(--fg-muted);
+  }
+  .summary strong { color: var(--fg); }
+  .summary table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+  .summary th, .summary td {
+    text-align: left; padding: 8px 10px;
+    border-bottom: 1px solid var(--border); font-size: 12px;
+  }
+  .summary th { color: var(--fg); font-weight: 600; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Fadlet 디자인 시안 비교</h1>
+  <p>다크/라이트 양쪽 지원 · Indigo(블루 퍼플) 브랜드 · 4가지 방향성</p>
+</header>
+
+<main>
+  <article class="card">
+    <div class="preview">
+      <iframe src="/design-preview.html" loading="lazy"></iframe>
+    </div>
+    <div class="body">
+      <span class="tag">A · 표준</span>
+      <div class="title">Linear 절제 톤 + 자유형</div>
+      <p class="desc">기본 옵션. 그림자 거의 없음, 1px 보더 의존, 6px 코너 라디우스. 페이드릿의 정체성에 가장 가까움.</p>
+      <div class="actions">
+        <a class="btn primary" href="/design-preview.html" target="_blank">전체 보기 →</a>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="preview">
+      <iframe src="/design-preview-b.html" loading="lazy"></iframe>
+    </div>
+    <div class="body">
+      <span class="tag">B · 고밀도</span>
+      <div class="title">사이드바 + 컬럼 템플릿</div>
+      <p class="desc">좌측 네비게이션으로 운영 도구를 정리. KPT 컬럼 레이아웃을 보여주며, 워크숍 운영자의 컨트롤 타워 느낌.</p>
+      <div class="actions">
+        <a class="btn primary" href="/design-preview-b.html" target="_blank">전체 보기 →</a>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="preview">
+      <iframe src="/design-preview-c.html" loading="lazy"></iframe>
+    </div>
+    <div class="body">
+      <span class="tag">C · 표현형</span>
+      <div class="title">글래스모피즘 + 그라데이션 액센트</div>
+      <p class="desc">블러 패널, 인디고~퍼플 그라데이션, 카드 상단 컬러 액센트. 시각적 인상은 강하지만 절제 톤보다는 화려함.</p>
+      <div class="actions">
+        <a class="btn primary" href="/design-preview-c.html" target="_blank">전체 보기 →</a>
+      </div>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="preview">
+      <iframe src="/design-preview-d.html" loading="lazy"></iframe>
+    </div>
+    <div class="body">
+      <span class="tag">D · 네오 브루탈리즘</span>
+      <div class="title">굵은 보더 + 하드 그림자 + 비비드 컬러</div>
+      <p class="desc">3px 검정 보더, 오프셋 하드 그림자, 비비드 노랑/핑크/라임/시안. Linear 절제 톤과는 반대 방향. 강한 개성과 재미가 살아 있음.</p>
+      <div class="actions">
+        <a class="btn primary" href="/design-preview-d.html" target="_blank">전체 보기 →</a>
+      </div>
+    </div>
+  </article>
+</main>
+
+<div class="summary">
+  <strong>차이 한눈에 보기</strong>
+  <table>
+    <thead>
+      <tr><th></th><th>A · 표준</th><th>B · 고밀도</th><th>C · 표현형</th><th>D · 브루탈</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>레이아웃</td><td>헤더 + 보드 + 우측 채팅</td><td>좌측 사이드바 + 본문 + 우측 채팅</td><td>플로팅 카드 + 보드 + 우측 채팅</td><td>블록형 패널 + 그리드 배경</td></tr>
+      <tr><td>그림자/효과</td><td>없음 (1px 보더)</td><td>없음 (1px 보더)</td><td>블러 + 그라데이션</td><td>3px 보더 + 하드 오프셋 그림자</td></tr>
+      <tr><td>컬러</td><td>인디고 + 무채색</td><td>인디고 + 무채색</td><td>인디고~퍼플 그라데이션</td><td>인디고 + 노랑/핑크/라임/시안</td></tr>
+      <tr><td>운영자 도구 노출</td><td>헤더 우측 버튼</td><td>사이드바 영구 노출</td><td>헤더 우측 (압축)</td><td>헤더 우측 컬러 버튼</td></tr>
+      <tr><td>밀도</td><td>중간</td><td>높음</td><td>낮음 (여백 큼)</td><td>중간 (시각 강도 큼)</td></tr>
+      <tr><td>가장 어울리는 곳</td><td>일반 워크숍 / 회고</td><td>장기 운영 / 다중 보드</td><td>외부 시연 / 마케팅</td><td>브랜딩 캠페인 / 청년 대상</td></tr>
+      <tr><td>작업량</td><td>중</td><td>큼</td><td>중-큼</td><td>중 (변수 토큰 정비 필요)</td></tr>
+    </tbody>
+  </table>
+  <p style="margin-top:12px;">
+    <strong>추천:</strong> CLAUDE.md의 "운영자 친화" 정체성과 "한국 기업교육 HRD" 타겟을 고려하면 <strong>B (사이드바)</strong>가 운영자에게 가장 도움이 됩니다.
+    다만 모바일 60% 가정이 있으니 모바일에선 사이드바를 햄버거로 접는 형태가 필수.
+    빠른 개선이 목적이면 <strong>A</strong>로 시작해서 점진적으로 B 요소를 흡수하는 방식이 안전합니다.
+  </p>
+</div>
+
+</body>
+</html>

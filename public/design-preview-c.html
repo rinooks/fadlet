@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fadlet — 시안 C (글래스 + 그라데이션 액센트)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --brand-400: #818CF8;
+    --brand-500: #6366F1;
+    --brand-600: #4F46E5;
+    --brand-700: #4338CA;
+
+    --bg:        #F6F5FA;
+    --bg-tint:   radial-gradient(1200px 600px at 90% -10%, rgba(99,102,241,.10), transparent 60%),
+                 radial-gradient(900px 500px at -10% 20%, rgba(168,85,247,.08), transparent 60%);
+    --bg-elev-1: rgba(255,255,255,0.72);
+    --bg-elev-2: #F2F1F7;
+    --border:    rgba(82, 82, 91, 0.12);
+    --border-strong: rgba(82, 82, 91, 0.22);
+    --fg:        #1A1A24;
+    --fg-muted:  #6B6B7A;
+    --fg-subtle: #9D9DAA;
+    --accent-bg: rgba(99,102,241,.10);
+    --accent-fg: #4F46E5;
+    --shadow:    0 1px 2px rgba(20,20,40,.04), 0 8px 24px -8px rgba(20,20,40,.10);
+  }
+  [data-theme="dark"] {
+    --bg:        #07060B;
+    --bg-tint:   radial-gradient(1200px 600px at 90% -10%, rgba(99,102,241,.18), transparent 60%),
+                 radial-gradient(900px 500px at -10% 20%, rgba(168,85,247,.14), transparent 60%);
+    --bg-elev-1: rgba(20,20,28,0.66);
+    --bg-elev-2: #15141C;
+    --border:    rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.16);
+    --fg:        #ECECF1;
+    --fg-muted:  #9C9CAA;
+    --fg-subtle: #66666F;
+    --accent-bg: rgba(129,140,248,.16);
+    --accent-fg: #C7CCFA;
+    --shadow:    0 1px 2px rgba(0,0,0,.4), 0 8px 28px -8px rgba(0,0,0,.6);
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+    color: var(--fg);
+    background: var(--bg);
+    background-image: var(--bg-tint);
+    background-attachment: fixed;
+    letter-spacing: -0.012em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .preview-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+  .preview-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; border-bottom: 1px solid var(--border);
+    background: var(--bg-elev-1); backdrop-filter: blur(12px);
+    font-size: 12px; color: var(--fg-muted);
+  }
+  .preview-bar strong { color: var(--fg); }
+  .preview-bar .toggle { display: inline-flex; gap: 4px; padding: 3px;
+    background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 8px; }
+  .preview-bar .toggle button { padding: 5px 10px; border: 0; background: transparent;
+    color: var(--fg-muted); font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 5px; }
+  .preview-bar .toggle button[aria-pressed="true"] { background: var(--bg-elev-1); color: var(--fg);
+    box-shadow: 0 0 0 1px var(--border-strong); }
+
+  /* 보드 화면 */
+  .board { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; padding: 14px; gap: 14px; }
+
+  .glass {
+    background: var(--bg-elev-1);
+    backdrop-filter: blur(14px);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    box-shadow: var(--shadow);
+  }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px;
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    background: linear-gradient(135deg, var(--brand-500), #A855F7);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    font-weight: 800; font-size: 16px; letter-spacing: -0.02em;
+  }
+  .divider { color: var(--border-strong); }
+  .board-title { font-size: 14px; font-weight: 600; }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    background: var(--bg-elev-2); color: var(--fg-muted); border: 1px solid var(--border);
+  }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .online { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); padding: 0 4px; }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: #22C55E;
+    box-shadow: 0 0 0 3px rgba(34,197,94,.18); }
+  .code {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 700;
+    background: linear-gradient(135deg, var(--brand-500), #A855F7); color: #fff;
+    padding: 6px 12px; border-radius: 8px; border: 0; cursor: pointer; letter-spacing: 0.06em;
+    box-shadow: 0 4px 12px -4px rgba(99,102,241,.6);
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px;
+    border: 1px solid var(--border); border-radius: 8px; font-size: 12px; font-weight: 500;
+    background: var(--bg-elev-1); color: var(--fg); cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  }
+  .btn:hover { background: var(--bg-elev-2); border-color: var(--border-strong); transform: translateY(-1px); }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    border: 0; color: #fff;
+    box-shadow: 0 4px 14px -4px rgba(99,102,241,.55);
+  }
+  .btn-primary:hover { transform: translateY(-1px); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--fg-muted); }
+  .btn-ghost:hover { background: var(--bg-elev-2); color: var(--fg); }
+
+  /* 단계 + 본문 */
+  .stage {
+    display: flex; align-items: center; gap: 14px; padding: 12px 16px;
+  }
+  .stage-tabs { display: flex; gap: 6px; }
+  .stage-tab { padding: 6px 12px; border-radius: 999px; font-size: 12px; color: var(--fg-muted);
+    cursor: pointer; }
+  .stage-tab.active {
+    background: linear-gradient(135deg, var(--accent-bg), rgba(168,85,247,.10));
+    color: var(--accent-fg); font-weight: 500;
+    box-shadow: inset 0 0 0 1px var(--border-strong);
+  }
+  .stage-tab.done { color: var(--fg-subtle); text-decoration: line-through; text-decoration-thickness: 1px; }
+  .timer {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 10px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+    padding: 6px 12px; border-radius: 999px;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+  }
+  .timer .running { width: 6px; height: 6px; border-radius: 999px; background: var(--brand-500);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-500) 25%, transparent);
+    animation: p 1.6s ease-in-out infinite; }
+  @keyframes p { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .icon-btn { width: 24px; height: 24px; display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; border-radius: 6px; color: var(--fg-muted); cursor: pointer; }
+  .icon-btn:hover { background: var(--bg-elev-1); color: var(--fg); }
+
+  /* 본문 */
+  .work { display: grid; grid-template-columns: 1fr 340px; gap: 14px; min-height: 0; }
+  .canvas { padding: 18px; overflow: auto; }
+  .canvas-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .canvas-meta { font-size: 12px; color: var(--fg-subtle); }
+
+  .grid {
+    display: grid; gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .post {
+    border-radius: 12px; padding: 14px;
+    display: flex; flex-direction: column; gap: 8px; min-height: 130px;
+    background: var(--bg-elev-1); border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    backdrop-filter: blur(10px);
+    transition: transform .14s ease, border-color .14s ease;
+  }
+  .post:hover { transform: translateY(-2px); border-color: var(--border-strong); }
+  .post.accent-yellow { border-top: 2px solid #F59E0B; }
+  .post.accent-pink   { border-top: 2px solid #EC4899; }
+  .post.accent-blue   { border-top: 2px solid #3B82F6; }
+  .post.accent-green  { border-top: 2px solid #10B981; }
+  .post.accent-purple { border-top: 2px solid #8B5CF6; }
+  .post-text { font-size: 13px; line-height: 1.55; color: var(--fg); }
+  .post-meta { display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--fg-muted); margin-top: auto; }
+  .react-pill { display: inline-flex; align-items: center; gap: 3px;
+    padding: 1px 7px; border-radius: 999px;
+    background: var(--bg-elev-2); border: 1px solid var(--border);
+    font-size: 11px; }
+
+  /* 채팅 */
+  .chat { display: flex; flex-direction: column; min-height: 0; }
+  .chat-head { padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; }
+  .chat-tabs { display: flex; gap: 4px; }
+  .tab { padding: 5px 10px; border-radius: 999px; font-size: 12px; color: var(--fg-muted); cursor: pointer; }
+  .tab.active {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: #fff; font-weight: 500;
+  }
+  .pin { display: flex; gap: 8px; align-items: flex-start;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, rgba(245,158,11,.10), transparent);
+    font-size: 12px; }
+
+  .messages { flex: 1; overflow: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .msg-row { display: flex; flex-direction: column; }
+  .msg-row.mine { align-items: flex-end; }
+  .msg-name { font-size: 11px; color: var(--fg-muted); margin: 0 4px 2px; }
+  .msg-name .host { color: var(--brand-500); font-weight: 600; }
+  .bubble { max-width: 85%; padding: 9px 13px; border-radius: 14px; font-size: 13px; line-height: 1.55; }
+  .bubble.theirs { background: var(--bg-elev-2); color: var(--fg); border-bottom-left-radius: 4px; }
+  .bubble.host {
+    background: linear-gradient(135deg, var(--accent-bg), rgba(168,85,247,.08));
+    color: var(--fg); border-left: 2px solid var(--brand-500);
+    border-bottom-left-radius: 4px;
+  }
+  .bubble.mine {
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    color: #fff; border-bottom-right-radius: 4px;
+    box-shadow: 0 4px 14px -6px rgba(99,102,241,.55);
+  }
+  .msg-time { font-size: 10px; color: var(--fg-subtle); margin: 2px 6px 0; }
+
+  .composer { padding: 10px 14px; border-top: 1px solid var(--border); }
+  .composer textarea {
+    width: 100%; resize: none; border: 1px solid var(--border); border-radius: 10px;
+    padding: 9px 11px; font-size: 13px; background: var(--bg-elev-1); color: var(--fg);
+    font-family: inherit; outline: none;
+  }
+  .composer textarea:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 25%, transparent);
+  }
+  .composer-row { display: flex; gap: 6px; margin-top: 6px; }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="preview-shell">
+  <div class="preview-bar">
+    <span><strong>시안 C</strong> · 글래스모피즘 + 미세 그라데이션 액센트 + 자유형</span>
+    <div class="toggle">
+      <button id="t-light" aria-pressed="true">☀ 라이트</button>
+      <button id="t-dark"  aria-pressed="false">☾ 다크</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <!-- 헤더 -->
+    <div class="header glass">
+      <div class="header-left">
+        <span class="logo">Fadlet</span>
+        <span class="divider">|</span>
+        <span class="board-title">2026 신입 온보딩 워크숍 · Day 2</span>
+        <span class="badge">🌐 자유형</span>
+      </div>
+      <div class="header-right">
+        <span class="online"><span class="dot"></span> 14명 접속</span>
+        <button class="code">K3F2X9</button>
+        <button class="btn btn-ghost">↓</button>
+        <button class="btn">🎛 운영</button>
+        <button class="btn btn-primary">＋ 새 포스트</button>
+      </div>
+    </div>
+
+    <!-- 단계 -->
+    <div class="stage glass">
+      <div class="stage-tabs">
+        <span class="stage-tab done">1. 아이스브레이킹</span>
+        <span class="stage-tab active">2. 아이디어 발산</span>
+        <span class="stage-tab">3. 그룹화</span>
+        <span class="stage-tab">4. 발표</span>
+      </div>
+      <div class="timer">
+        <span class="running"></span>
+        <span>08:32 / 15:00</span>
+        <button class="icon-btn">⏸</button>
+        <button class="icon-btn">⏹</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="canvas glass">
+        <div class="canvas-head">
+          <span class="canvas-meta">12개의 포스트 · 마지막 활동 방금 전</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-ghost">⌕ 검색</button>
+            <button class="btn btn-ghost">↕ 정렬</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="post accent-yellow">
+            <div class="post-text">고객사 미팅 전 <b>의제 시트</b>를 슬랙에 미리 공유하면 회의 시간이 절반으로 줄어요.</div>
+            <div class="post-meta"><span>박지영</span><span class="react-pill">👍 5</span></div>
+          </div>
+          <div class="post accent-pink">
+            <div class="post-text">출석은 자동 인증 링크로. QR + 닉네임 콤보가 좋았음.</div>
+            <div class="post-meta"><span>이도현</span><span class="react-pill">👍 3</span></div>
+          </div>
+          <div class="post accent-purple">
+            <div class="post-text">다음 분기 KR: <b>NPS 9 이상 70%</b>. 측정 도구 정비 필요.</div>
+            <div class="post-meta"><span>김서윤</span><span class="react-pill">🎯 4</span></div>
+          </div>
+          <div class="post accent-blue">
+            <div class="post-text">중간 5분 산책 타임. 결과물 질이 눈에 띄게 올라갔다.</div>
+            <div class="post-meta"><span>최민준</span><span class="react-pill">👍 7</span></div>
+          </div>
+          <div class="post accent-green">
+            <div class="post-text">툴 통합: Notion → Linear → Slack 자동화로 손이 적게 가게.</div>
+            <div class="post-meta"><span>한예린</span><span class="react-pill">🚀 2</span></div>
+          </div>
+          <div class="post accent-yellow">
+            <div class="post-text">만족도 조사는 <b>익명</b>이 핵심. 진짜 피드백을 받으려면 신원 노출 0%.</div>
+            <div class="post-meta"><span>유준호</span><span class="react-pill">💯 6</span></div>
+          </div>
+          <div class="post accent-pink">
+            <div class="post-text">월간 회고: <b>KPT</b>는 좋은데 액션 항목 추적이 약하다.</div>
+            <div class="post-meta"><span>송하늘</span><span class="react-pill">👍 4</span></div>
+          </div>
+          <div class="post accent-blue">
+            <div class="post-text">온보딩 4주 → 6주로 늘리니 이탈률 35% 감소했다.</div>
+            <div class="post-meta"><span>장세훈</span><span class="react-pill">📈 5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="chat glass">
+        <div class="chat-head">
+          <div class="chat-tabs">
+            <span class="tab active">채팅</span>
+            <span class="tab">파일·미디어 3</span>
+          </div>
+          <span class="online"><span class="dot"></span> 14</span>
+        </div>
+        <div class="pin">
+          <span>📌</span>
+          <div>
+            <div>오후 4시 발표 시작합니다. 그룹별 대표 발표자 선정 부탁드려요.</div>
+            <div style="color:var(--fg-muted);margin-top:2px;font-size:11px;">— 박지영</div>
+          </div>
+        </div>
+        <div class="messages">
+          <div class="msg-row">
+            <div class="msg-name"><span class="host">박지영 (운영자)</span></div>
+            <div class="bubble host">2단계 아이디어 발산 시작합니다 🚀</div>
+            <div class="msg-time">15:42</div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-name">이도현</div>
+            <div class="bubble theirs">템플릿은 KPT인가요?</div>
+            <div class="msg-time">15:43</div>
+          </div>
+          <div class="msg-row mine">
+            <div class="bubble mine">자유형으로 진행할게요. 떠오르는 대로 적어주세요!</div>
+            <div class="msg-time">15:43</div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-name">김서윤</div>
+            <div class="bubble theirs">14명인데 보드에 글이 8개… 다들 어디 계신가요 😅</div>
+            <div class="msg-time">15:45</div>
+          </div>
+          <div class="msg-row mine">
+            <div class="bubble mine">2분 남았습니다 ⏰</div>
+            <div class="msg-time">15:50</div>
+          </div>
+        </div>
+        <div class="composer">
+          <textarea rows="2" placeholder="메시지 입력…"></textarea>
+          <div class="composer-row">
+            <button class="icon-btn">📎</button>
+            <button class="btn btn-primary" style="flex:1;justify-content:center;">전송</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.body;
+  const lightBtn = document.getElementById('t-light');
+  const darkBtn  = document.getElementById('t-dark');
+  function setTheme(t) { root.dataset.theme = t;
+    lightBtn.setAttribute('aria-pressed', t==='light');
+    darkBtn .setAttribute('aria-pressed', t==='dark'); }
+  lightBtn.addEventListener('click', () => setTheme('light'));
+  darkBtn .addEventListener('click', () => setTheme('dark'));
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+</script>
+</body>
+</html>

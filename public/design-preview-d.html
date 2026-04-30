@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fadlet — 시안 D (네오 브루탈리즘)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --brand:    #6366F1;   /* Indigo */
+    --brand-dk: #4338CA;
+    --acc-y:    #FACC15;   /* 노랑 */
+    --acc-p:    #F472B6;   /* 핑크 */
+    --acc-l:    #84CC16;   /* 라임 */
+    --acc-o:    #FB923C;   /* 오렌지 */
+    --acc-c:    #22D3EE;   /* 시안 */
+
+    /* 라이트 토큰 */
+    --bg:        #F5F1E6;
+    --bg-elev:   #FFFFFF;
+    --bg-soft:   #FFF7DD;
+    --fg:        #0A0A0A;
+    --fg-muted:  #404040;
+    --line:      #0A0A0A;
+    --shadow-rgb: 10,10,10;
+  }
+  [data-theme="dark"] {
+    --bg:        #0E0E12;
+    --bg-elev:   #161620;
+    --bg-soft:   #1A1A24;
+    --fg:        #F5F5F5;
+    --fg-muted:  #B5B5B8;
+    --line:      #F5F5F5;
+    --shadow-rgb: 245,245,245;
+    --acc-y:     #FDE047;
+    --acc-p:     #F472B6;
+    --acc-l:     #A3E635;
+    --acc-o:     #FB923C;
+    --acc-c:     #22D3EE;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+    background: var(--bg); color: var(--fg);
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    background-image:
+      linear-gradient(rgba(0,0,0,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,0,0,.04) 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+  [data-theme="dark"] body, body[data-theme="dark"] {
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+  }
+
+  /* 공통 브루탈 셸 */
+  .brut {
+    border: 3px solid var(--line);
+    background: var(--bg-elev);
+    box-shadow: 5px 5px 0 0 rgb(var(--shadow-rgb));
+    border-radius: 0;
+  }
+  .brut-tight {
+    border: 2.5px solid var(--line);
+    box-shadow: 3px 3px 0 0 rgb(var(--shadow-rgb));
+    border-radius: 0;
+  }
+
+  .preview-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+  .preview-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 3px solid var(--line);
+    background: var(--bg-elev); font-size: 12px;
+    font-weight: 600;
+  }
+  .preview-bar .toggle { display: inline-flex; gap: 0; }
+  .preview-bar .toggle button {
+    padding: 6px 12px; border: 2px solid var(--line); background: var(--bg-elev);
+    color: var(--fg); font-size: 12px; font-weight: 700; cursor: pointer;
+    margin-left: -2px; font-family: inherit;
+  }
+  .preview-bar .toggle button:first-child { margin-left: 0; }
+  .preview-bar .toggle button[aria-pressed="true"] {
+    background: var(--brand); color: #fff;
+  }
+
+  /* 보드 */
+  .board { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; padding: 16px; gap: 14px; }
+
+  /* 헤더 */
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 16px; background: var(--acc-y);
+  }
+  [data-theme="dark"] .header { background: var(--bg-elev); }
+  .header-left { display: flex; align-items: center; gap: 12px; }
+  .logo {
+    font-weight: 900; font-size: 22px; letter-spacing: -0.04em;
+    color: var(--fg);
+    font-style: italic;
+    text-shadow: 3px 3px 0 var(--brand);
+  }
+  .divider {
+    width: 2px; height: 22px; background: var(--line);
+  }
+  .board-title { font-size: 14px; font-weight: 700; }
+  .badge {
+    font-size: 11px; padding: 3px 10px;
+    background: var(--bg-elev); color: var(--fg);
+    border: 2px solid var(--line); font-weight: 700;
+  }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+
+  .online {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; background: var(--acc-l); color: var(--fg);
+    border: 2px solid var(--line); font-size: 12px; font-weight: 700;
+    box-shadow: 2px 2px 0 0 rgb(var(--shadow-rgb));
+  }
+  .dot { width: 8px; height: 8px; background: var(--fg); border: 2px solid var(--line); }
+  .code {
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; font-weight: 800;
+    background: var(--brand); color: #fff;
+    padding: 5px 12px; border: 2px solid var(--line);
+    box-shadow: 2px 2px 0 0 rgb(var(--shadow-rgb));
+    cursor: pointer; letter-spacing: 0.08em; font-family: inherit;
+  }
+  .code:active { transform: translate(2px, 2px); box-shadow: 0 0 0 0 rgb(var(--shadow-rgb)); }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 5px 11px; font-size: 12px; font-weight: 700;
+    background: var(--bg-elev); color: var(--fg);
+    border: 2px solid var(--line); cursor: pointer;
+    box-shadow: 2px 2px 0 0 rgb(var(--shadow-rgb));
+    font-family: inherit;
+    transition: transform .08s ease, box-shadow .08s ease;
+  }
+  .btn:hover { transform: translate(-1px, -1px); box-shadow: 3px 3px 0 0 rgb(var(--shadow-rgb)); }
+  .btn:active { transform: translate(2px, 2px); box-shadow: 0 0 0 0 rgb(var(--shadow-rgb)); }
+  .btn-primary { background: var(--brand); color: #fff; }
+  .btn-pink { background: var(--acc-p); color: var(--fg); }
+  .btn-orange { background: var(--acc-o); color: var(--fg); }
+  .btn-cyan { background: var(--acc-c); color: var(--fg); }
+
+  /* 단계 */
+  .stage {
+    display: flex; align-items: center; gap: 14px; padding: 10px 14px;
+    background: var(--bg-elev);
+  }
+  .stage-tabs { display: flex; gap: 0; }
+  .stage-tab {
+    padding: 6px 12px; font-size: 12px; font-weight: 700; cursor: pointer;
+    background: var(--bg-elev); color: var(--fg);
+    border: 2px solid var(--line); margin-left: -2px;
+  }
+  .stage-tab:first-child { margin-left: 0; }
+  .stage-tab.active { background: var(--brand); color: #fff; }
+  .stage-tab.done { background: var(--bg-soft); color: var(--fg-muted); }
+
+  .timer {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
+    padding: 6px 12px; background: var(--acc-y); color: var(--fg);
+    border: 2px solid var(--line); font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    box-shadow: 2px 2px 0 0 rgb(var(--shadow-rgb));
+  }
+  [data-theme="dark"] .timer { background: var(--acc-y); color: #0A0A0A; }
+  .timer .running {
+    width: 8px; height: 8px; background: #DC2626; border: 2px solid var(--line);
+    animation: blink 1s steps(2) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.3; } }
+  .icon-btn {
+    width: 26px; height: 26px; padding: 0; font-family: inherit;
+    background: var(--bg-elev); color: var(--fg);
+    border: 2px solid var(--line); cursor: pointer; font-weight: 700;
+  }
+  .icon-btn:hover { background: var(--bg-soft); }
+
+  /* 본문 */
+  .work { display: grid; grid-template-columns: 1fr 340px; gap: 14px; min-height: 0; }
+  .canvas {
+    padding: 16px; overflow: auto; background: var(--bg-elev);
+  }
+  .canvas-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .canvas-meta {
+    font-size: 12px; font-weight: 600; color: var(--fg);
+    background: var(--acc-c); padding: 3px 9px; border: 2px solid var(--line);
+  }
+  [data-theme="dark"] .canvas-meta { color: #0A0A0A; }
+
+  .grid {
+    display: grid; gap: 14px;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  }
+  .post {
+    border: 2.5px solid var(--line);
+    box-shadow: 4px 4px 0 0 rgb(var(--shadow-rgb));
+    padding: 12px; min-height: 130px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: transform .12s ease, box-shadow .12s ease;
+    cursor: grab;
+  }
+  .post:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 0 rgb(var(--shadow-rgb)); }
+  .post.yellow { background: var(--acc-y); }
+  .post.pink   { background: var(--acc-p); }
+  .post.lime   { background: var(--acc-l); }
+  .post.cyan   { background: var(--acc-c); }
+  .post.orange { background: var(--acc-o); }
+  .post.indigo { background: var(--brand); color: #fff; }
+  [data-theme="dark"] .post:not(.indigo) { color: #0A0A0A; }
+  .post-text { font-size: 13px; line-height: 1.5; font-weight: 500; }
+  .post-text b { font-weight: 800; background: rgba(0,0,0,0.1); padding: 0 3px; }
+  .post.indigo .post-text b { background: rgba(255,255,255,0.2); }
+  .post-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; font-weight: 700; margin-top: auto;
+  }
+  .react {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 2px 8px; background: var(--bg-elev); color: var(--fg);
+    border: 2px solid var(--line); font-weight: 700;
+  }
+
+  /* 채팅 */
+  .chat { display: flex; flex-direction: column; min-height: 0;
+    background: var(--bg-elev); }
+  .chat-head {
+    padding: 10px 14px; border-bottom: 2.5px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--acc-p);
+  }
+  [data-theme="dark"] .chat-head { color: #0A0A0A; }
+  .chat-head-title { font-size: 14px; font-weight: 800; letter-spacing: -0.02em; }
+  .tab-group { display: flex; gap: 0; }
+  .tab {
+    padding: 4px 10px; font-size: 11px; font-weight: 700; cursor: pointer;
+    background: var(--bg-elev); color: var(--fg);
+    border: 2px solid var(--line); margin-left: -2px;
+  }
+  .tab:first-child { margin-left: 0; }
+  .tab.active { background: var(--brand); color: #fff; }
+
+  .pin {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 10px 12px; border-bottom: 2.5px solid var(--line);
+    background: var(--acc-y); font-size: 12px; font-weight: 600;
+  }
+  [data-theme="dark"] .pin { color: #0A0A0A; }
+
+  .messages { flex: 1; overflow: auto; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+  .msg-row { display: flex; flex-direction: column; }
+  .msg-row.mine { align-items: flex-end; }
+  .msg-name { font-size: 11px; font-weight: 700; margin: 0 4px 3px; color: var(--fg); }
+  .msg-name .host { background: var(--brand); color: #fff; padding: 1px 6px;
+    border: 2px solid var(--line); font-size: 10px; }
+  .bubble {
+    max-width: 85%; padding: 9px 13px; font-size: 13px; line-height: 1.5; font-weight: 500;
+    border: 2.5px solid var(--line);
+    box-shadow: 3px 3px 0 0 rgb(var(--shadow-rgb));
+  }
+  .bubble.theirs { background: var(--bg-elev); }
+  .bubble.host { background: var(--acc-y); }
+  [data-theme="dark"] .bubble.host { color: #0A0A0A; }
+  .bubble.mine { background: var(--brand); color: #fff; }
+  .msg-time { font-size: 10px; color: var(--fg-muted); margin: 3px 6px 0; font-weight: 600; }
+
+  .composer { padding: 12px; border-top: 2.5px solid var(--line); }
+  .composer textarea {
+    width: 100%; resize: none; padding: 9px 11px; font-size: 13px;
+    background: var(--bg-elev); color: var(--fg);
+    border: 2.5px solid var(--line); font-family: inherit; outline: none;
+    font-weight: 500;
+  }
+  .composer textarea:focus {
+    box-shadow: 3px 3px 0 0 rgb(var(--shadow-rgb)); transform: translate(-1.5px, -1.5px);
+  }
+  .composer-row { display: flex; gap: 6px; margin-top: 8px; }
+  .composer-row .btn { flex: 1; justify-content: center; padding: 8px; font-weight: 800; }
+
+  /* 데코 — 작은 도형들 */
+  .deco {
+    position: fixed; pointer-events: none; z-index: 0;
+  }
+  .deco.star {
+    top: 70px; right: 240px; width: 22px; height: 22px;
+    background: var(--acc-y); border: 2px solid var(--line);
+    transform: rotate(15deg);
+  }
+  .deco.dot-row {
+    bottom: 30px; left: 30px; display: flex; gap: 6px;
+  }
+  .deco.dot-row span {
+    display: block; width: 10px; height: 10px;
+    background: var(--brand); border: 2px solid var(--line);
+  }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="preview-shell">
+  <div class="preview-bar">
+    <span><strong style="font-weight:800;">시안 D</strong> · 네오 브루탈리즘 — 굵은 보더 + 하드 그림자 + 비비드 컬러</span>
+    <div class="toggle">
+      <button id="t-light" aria-pressed="true">☀ 라이트</button>
+      <button id="t-dark"  aria-pressed="false">☾ 다크</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <!-- 헤더 -->
+    <div class="header brut">
+      <div class="header-left">
+        <span class="logo">Fadlet!</span>
+        <span class="divider"></span>
+        <span class="board-title">2026 신입 온보딩 워크숍 · Day 2</span>
+        <span class="badge">🌐 자유형</span>
+      </div>
+      <div class="header-right">
+        <span class="online"><span class="dot"></span> 14명</span>
+        <button class="code">K3F2X9</button>
+        <button class="btn btn-orange">↓ 내보내기</button>
+        <button class="btn btn-pink">🚩 신고 ②</button>
+        <button class="btn btn-cyan">🎛 운영</button>
+        <button class="btn btn-primary">＋ 새 포스트</button>
+      </div>
+    </div>
+
+    <!-- 단계 -->
+    <div class="stage brut-tight">
+      <div class="stage-tabs">
+        <span class="stage-tab done">✓ 1. 아이스브레이킹</span>
+        <span class="stage-tab active">2. 발산</span>
+        <span class="stage-tab">3. 그룹화</span>
+        <span class="stage-tab">4. 발표</span>
+      </div>
+      <div class="timer">
+        <span class="running"></span>
+        <span>08:32 / 15:00</span>
+        <button class="icon-btn">⏸</button>
+        <button class="icon-btn">⏹</button>
+      </div>
+    </div>
+
+    <div class="work">
+      <div class="canvas brut">
+        <div class="canvas-head">
+          <span class="canvas-meta">12개의 포스트 · 마지막 활동 방금 전</span>
+          <div style="display:flex;gap:6px;">
+            <button class="btn">⌕ 검색</button>
+            <button class="btn">↕ 정렬</button>
+          </div>
+        </div>
+        <div class="grid">
+          <div class="post yellow">
+            <div class="post-text">고객사 미팅 전 <b>의제 시트</b>를 슬랙에 미리 공유하면 회의 시간이 절반.</div>
+            <div class="post-meta"><span>박지영</span><span class="react">👍 5</span></div>
+          </div>
+          <div class="post pink">
+            <div class="post-text">출석은 자동 인증 링크로. <b>QR + 닉네임</b> 콤보가 좋았음.</div>
+            <div class="post-meta"><span>이도현</span><span class="react">👍 3</span></div>
+          </div>
+          <div class="post lime">
+            <div class="post-text">다음 분기 KR: <b>NPS 9 이상 70%</b>. 측정 도구 정비 필요.</div>
+            <div class="post-meta"><span>김서윤</span><span class="react">🎯 4</span></div>
+          </div>
+          <div class="post cyan">
+            <div class="post-text">중간 5분 산책 타임. 결과물 질이 눈에 띄게 올라갔다.</div>
+            <div class="post-meta"><span>최민준</span><span class="react">👍 7</span></div>
+          </div>
+          <div class="post indigo">
+            <div class="post-text">툴 통합: <b>Notion → Linear → Slack</b> 자동화로 손이 적게.</div>
+            <div class="post-meta"><span>한예린</span><span class="react">🚀 2</span></div>
+          </div>
+          <div class="post orange">
+            <div class="post-text">만족도 조사는 <b>익명</b>이 핵심. 신원 노출 0%.</div>
+            <div class="post-meta"><span>유준호</span><span class="react">💯 6</span></div>
+          </div>
+          <div class="post yellow">
+            <div class="post-text">월간 회고: <b>KPT</b>는 좋은데 액션 항목 추적이 약하다.</div>
+            <div class="post-meta"><span>송하늘</span><span class="react">👍 4</span></div>
+          </div>
+          <div class="post pink">
+            <div class="post-text">온보딩 4주 → 6주 늘리니 이탈률 <b>35% 감소</b>.</div>
+            <div class="post-meta"><span>장세훈</span><span class="react">📈 5</span></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="chat brut">
+        <div class="chat-head">
+          <span class="chat-head-title">💬 CHAT</span>
+          <div class="tab-group">
+            <span class="tab active">채팅</span>
+            <span class="tab">파일 3</span>
+          </div>
+        </div>
+        <div class="pin">
+          <span style="font-weight:800;">📌 PIN</span>
+          <div>
+            <div>오후 4시 발표 시작합니다. 그룹별 대표 발표자 선정 부탁!</div>
+            <div style="font-size:11px;margin-top:2px;">— 박지영</div>
+          </div>
+        </div>
+        <div class="messages">
+          <div class="msg-row">
+            <div class="msg-name"><span class="host">박지영 운영자</span></div>
+            <div class="bubble host">2단계 시작합니다 🚀</div>
+            <div class="msg-time">15:42</div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-name">이도현</div>
+            <div class="bubble theirs">템플릿은 KPT인가요?</div>
+            <div class="msg-time">15:43</div>
+          </div>
+          <div class="msg-row mine">
+            <div class="bubble mine">자유형으로 진행할게요!</div>
+            <div class="msg-time">15:43</div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-name">김서윤</div>
+            <div class="bubble theirs">14명인데 글이 8개… 다들 어디 😅</div>
+            <div class="msg-time">15:45</div>
+          </div>
+          <div class="msg-row mine">
+            <div class="bubble mine">2분 남았습니다 ⏰</div>
+            <div class="msg-time">15:50</div>
+          </div>
+        </div>
+        <div class="composer">
+          <textarea rows="2" placeholder="메시지 입력…"></textarea>
+          <div class="composer-row">
+            <button class="btn">📎</button>
+            <button class="btn btn-primary">전송 →</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<span class="deco star"></span>
+<div class="deco dot-row"><span></span><span></span><span></span><span></span></div>
+
+<script>
+  const root = document.body;
+  const lightBtn = document.getElementById('t-light');
+  const darkBtn  = document.getElementById('t-dark');
+  function setTheme(t) { root.dataset.theme = t;
+    lightBtn.setAttribute('aria-pressed', t==='light');
+    darkBtn .setAttribute('aria-pressed', t==='dark'); }
+  lightBtn.addEventListener('click', () => setTheme('light'));
+  darkBtn .addEventListener('click', () => setTheme('dark'));
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+</script>
+
+</body>
+</html>

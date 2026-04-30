@@ -1,0 +1,461 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fadlet — 시안 A (Linear 절제 톤)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --brand-50:  #EEF0FF;
+    --brand-100: #DDE2FF;
+    --brand-300: #A5ADF6;
+    --brand-500: #6366F1;
+    --brand-600: #4F46E5;
+    --brand-700: #4338CA;
+
+    /* 라이트 토큰 */
+    --bg:        #FAFAF9;
+    --bg-elev-1: #FFFFFF;
+    --bg-elev-2: #F4F4F5;
+    --border:    #E4E4E7;
+    --border-strong: #D4D4D8;
+    --fg:        #18181B;
+    --fg-muted:  #71717A;
+    --fg-subtle: #A1A1AA;
+    --accent-bg: #EEF0FF;
+    --accent-fg: #4F46E5;
+    --post-yellow: #FEF3C7;
+    --post-pink:   #FCE7F3;
+    --post-blue:   #DBEAFE;
+    --post-green:  #D1FAE5;
+    --post-purple: #EDE9FE;
+  }
+  [data-theme="dark"] {
+    --bg:        #0A0A0B;
+    --bg-elev-1: #111113;
+    --bg-elev-2: #16161A;
+    --border:    #25252A;
+    --border-strong: #2E2E34;
+    --fg:        #E4E4E7;
+    --fg-muted:  #8B8B92;
+    --fg-subtle: #5C5C63;
+    --accent-bg: rgba(99,102,241,.16);
+    --accent-fg: #A5ADF6;
+    --post-yellow: #3B2F12;
+    --post-pink:   #3A1B2C;
+    --post-blue:   #122438;
+    --post-green:  #112E22;
+    --post-purple: #251C3F;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+    font-feature-settings: "ss01", "ss02";
+    -webkit-font-smoothing: antialiased;
+    background: var(--bg);
+    color: var(--fg);
+    letter-spacing: -0.01em;
+    transition: background-color .2s ease, color .2s ease;
+  }
+
+  /* 페이지 셸 */
+  .preview-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+  .preview-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; border-bottom: 1px solid var(--border);
+    background: var(--bg-elev-1); font-size: 12px; color: var(--fg-muted);
+  }
+  .preview-bar strong { color: var(--fg); font-weight: 600; }
+  .preview-bar .toggle {
+    display: inline-flex; gap: 4px; padding: 3px;
+    background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 8px;
+  }
+  .preview-bar .toggle button {
+    padding: 5px 10px; border: 0; background: transparent; color: var(--fg-muted);
+    font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 5px;
+  }
+  .preview-bar .toggle button[aria-pressed="true"] {
+    background: var(--bg-elev-1); color: var(--fg);
+    box-shadow: 0 0 0 1px var(--border-strong);
+  }
+
+  /* 보드 화면 */
+  .board { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; }
+
+  .header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg-elev-1);
+  }
+  .header-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .logo {
+    color: var(--brand-500); font-weight: 700; font-size: 15px; letter-spacing: -0.02em;
+  }
+  .header-back {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--fg-muted); font-size: 12px; text-decoration: none;
+  }
+  .divider { color: var(--border-strong); font-weight: 300; }
+  .board-title { font-size: 14px; font-weight: 600; }
+  .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 999px;
+    background: var(--bg-elev-2); color: var(--fg-muted); border: 1px solid var(--border);
+  }
+  .header-right { display: flex; align-items: center; gap: 8px; }
+  .online {
+    display: inline-flex; align-items: center; gap: 6px; padding: 0 6px;
+    font-size: 12px; color: var(--fg-muted);
+  }
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: #22C55E; }
+  .code {
+    font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+    font-size: 12px; font-weight: 600;
+    background: var(--accent-bg); color: var(--accent-fg);
+    padding: 4px 10px; border-radius: 6px; border: 0;
+    cursor: pointer; letter-spacing: 0.04em;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    height: 28px; padding: 0 10px; border-radius: 6px;
+    font-size: 12px; font-weight: 500; cursor: pointer;
+    background: var(--bg-elev-1); color: var(--fg);
+    border: 1px solid var(--border);
+    transition: background .12s ease, border-color .12s ease;
+  }
+  .btn:hover { background: var(--bg-elev-2); border-color: var(--border-strong); }
+  .btn-primary {
+    background: var(--brand-500); color: #fff; border-color: var(--brand-500);
+  }
+  .btn-primary:hover { background: var(--brand-600); border-color: var(--brand-600); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--fg-muted); }
+  .btn-ghost:hover { background: var(--bg-elev-2); color: var(--fg); }
+
+  /* 단계 배너 */
+  .stage {
+    display: flex; align-items: center; gap: 14px;
+    padding: 10px 16px; border-bottom: 1px solid var(--border);
+    background: var(--bg-elev-1);
+  }
+  .stage-tabs { display: flex; gap: 4px; }
+  .stage-tab {
+    padding: 5px 10px; border-radius: 6px; font-size: 12px; color: var(--fg-muted);
+    cursor: pointer; border: 1px solid transparent;
+  }
+  .stage-tab.active {
+    color: var(--accent-fg); background: var(--accent-bg); border-color: transparent;
+    font-weight: 500;
+  }
+  .timer {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 13px; color: var(--fg);
+  }
+  .timer .running {
+    width: 6px; height: 6px; border-radius: 999px; background: var(--brand-500);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-500) 20%, transparent);
+    animation: pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .55; }
+  }
+
+  /* 본문 */
+  .main { display: grid; grid-template-columns: 1fr 320px; min-height: 0; }
+  .canvas { padding: 16px; overflow: auto; }
+  .canvas-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .canvas-meta { font-size: 12px; color: var(--fg-subtle); }
+
+  .grid {
+    display: grid; gap: 10px;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  }
+  .post {
+    border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px; min-height: 110px;
+    display: flex; flex-direction: column; gap: 8px;
+    transition: border-color .12s ease, transform .12s ease;
+  }
+  .post:hover { border-color: var(--border-strong); }
+  .post.yellow { background: var(--post-yellow); }
+  .post.pink   { background: var(--post-pink); }
+  .post.blue   { background: var(--post-blue); }
+  .post.green  { background: var(--post-green); }
+  .post.purple { background: var(--post-purple); }
+  .post-text { font-size: 13px; line-height: 1.5; color: var(--fg); }
+  .post-meta {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--fg-muted); margin-top: auto;
+  }
+  .post-meta .reactions { display: inline-flex; gap: 4px; }
+  .react-pill {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 1px 6px; border-radius: 999px;
+    background: color-mix(in srgb, var(--fg) 8%, transparent);
+    font-size: 11px;
+  }
+
+  /* 채팅 패널 */
+  .chat {
+    display: flex; flex-direction: column;
+    border-left: 1px solid var(--border); background: var(--bg-elev-1);
+  }
+  .chat-tabs {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 12px; border-bottom: 1px solid var(--border);
+  }
+  .tab-group { display: flex; gap: 2px; }
+  .tab {
+    padding: 5px 10px; border-radius: 6px; font-size: 12px; font-weight: 500;
+    color: var(--fg-muted); cursor: pointer;
+  }
+  .tab.active { background: var(--brand-500); color: #fff; }
+
+  .messages { flex: 1; overflow: auto; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+  .msg-row { display: flex; flex-direction: column; }
+  .msg-row.mine { align-items: flex-end; }
+  .msg-name { font-size: 11px; color: var(--fg-muted); margin: 0 4px 2px; }
+  .msg-name .host { color: var(--brand-500); font-weight: 600; }
+  .bubble {
+    max-width: 85%; padding: 8px 12px; border-radius: 12px;
+    font-size: 13px; line-height: 1.5;
+  }
+  .bubble.theirs { background: var(--bg-elev-2); color: var(--fg); border-bottom-left-radius: 4px; }
+  .bubble.host {
+    background: var(--accent-bg); color: var(--fg);
+    border-left: 2px solid var(--brand-500); border-bottom-left-radius: 4px;
+  }
+  .bubble.mine {
+    background: var(--brand-500); color: #fff; border-bottom-right-radius: 4px;
+  }
+  .msg-time { font-size: 10px; color: var(--fg-subtle); margin: 2px 6px 0; }
+
+  .composer { padding: 10px 12px; border-top: 1px solid var(--border); }
+  .composer textarea {
+    width: 100%; resize: none; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; background: var(--bg-elev-1); color: var(--fg);
+    font-family: inherit; outline: none;
+    transition: border-color .12s ease, box-shadow .12s ease;
+  }
+  .composer textarea:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 18%, transparent);
+  }
+  .composer-row { display: flex; gap: 6px; margin-top: 6px; }
+  .composer-row .btn { flex: 1; justify-content: center; }
+  .icon-btn {
+    width: 28px; height: 28px; display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid transparent; border-radius: 6px;
+    color: var(--fg-muted); cursor: pointer;
+  }
+  .icon-btn:hover { background: var(--bg-elev-2); color: var(--fg); }
+
+  /* 공지 배너 */
+  .pin {
+    display: flex; gap: 8px; align-items: flex-start;
+    padding: 8px 12px; background: color-mix(in srgb, #F59E0B 14%, var(--bg-elev-1));
+    border-bottom: 1px solid color-mix(in srgb, #F59E0B 26%, var(--border));
+    font-size: 12px; color: var(--fg);
+  }
+  .pin .icon { color: #B45309; flex-shrink: 0; margin-top: 2px; }
+
+  svg.icon-svg { width: 14px; height: 14px; flex-shrink: 0; }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="preview-shell">
+  <div class="preview-bar">
+    <span><strong>시안 A</strong> · Linear 절제 톤 + Indigo 브랜드 + 자유형 + 우측 채팅</span>
+    <div class="toggle" role="group" aria-label="테마">
+      <button id="t-light" aria-pressed="true">☀ 라이트</button>
+      <button id="t-dark"  aria-pressed="false">☾ 다크</button>
+    </div>
+  </div>
+
+  <div class="board">
+    <!-- 헤더 -->
+    <div class="header">
+      <div class="header-left">
+        <span class="logo">Fadlet</span>
+        <a class="header-back" href="#">← 대시보드</a>
+        <span class="divider">|</span>
+        <span class="board-title">2026 신입 온보딩 워크숍 · Day 2</span>
+        <span class="badge">🌐 자유형</span>
+      </div>
+      <div class="header-right">
+        <span class="online"><span class="dot"></span> 접속 14명</span>
+        <button class="code">K3F2X9</button>
+        <button class="btn btn-ghost">↓ 내보내기</button>
+        <button class="btn">🚩 신고 <span class="badge" style="background:#EF4444;color:#fff;border:0;font-size:10px;padding:0 6px;">2</span></button>
+        <button class="btn">🎛 운영</button>
+        <button class="btn">🔒 잠금</button>
+        <button class="btn btn-primary">공유</button>
+      </div>
+    </div>
+
+    <!-- 단계 배너 -->
+    <div class="stage">
+      <div class="stage-tabs">
+        <span class="stage-tab">1. 아이스브레이킹</span>
+        <span class="stage-tab active">2. 아이디어 발산</span>
+        <span class="stage-tab">3. 그룹화</span>
+        <span class="stage-tab">4. 발표</span>
+      </div>
+      <div class="timer">
+        <span class="running"></span>
+        <span>08 : 32 / 15 : 00</span>
+        <button class="icon-btn" title="일시정지">⏸</button>
+        <button class="icon-btn" title="정지">⏹</button>
+      </div>
+    </div>
+
+    <!-- 메인 -->
+    <div class="main">
+      <div class="canvas">
+        <div class="canvas-head">
+          <span class="canvas-meta">12개의 포스트 · 마지막 업데이트 방금 전</span>
+          <button class="btn btn-primary">＋ 새 포스트</button>
+        </div>
+        <div class="grid">
+          <div class="post yellow">
+            <div class="post-text">고객사 미팅 전, <b>의제 시트</b>를 슬랙에 미리 공유하면 회의 시간이 절반으로 줄어요.</div>
+            <div class="post-meta">
+              <span>박지영</span>
+              <span class="reactions"><span class="react-pill">👍 5</span><span class="react-pill">💡 2</span></span>
+            </div>
+          </div>
+          <div class="post pink">
+            <div class="post-text">참여자 출석은 자동 인증 링크로. QR + 닉네임 입력 콤보가 좋았음.</div>
+            <div class="post-meta">
+              <span>이도현</span>
+              <span class="reactions"><span class="react-pill">👍 3</span></span>
+            </div>
+          </div>
+          <div class="post purple">
+            <div class="post-text">다음 분기 KR: <b>NPS 9 이상 비율 70%</b>. 측정 도구 정비 필요.</div>
+            <div class="post-meta">
+              <span>김서윤</span>
+              <span class="reactions"><span class="react-pill">🎯 4</span></span>
+            </div>
+          </div>
+          <div class="post blue">
+            <div class="post-text">워크숍 중간에 5분 산책 타임. 결과물 질이 눈에 띄게 올라갔다는 피드백.</div>
+            <div class="post-meta">
+              <span>최민준</span>
+              <span class="reactions"><span class="react-pill">👍 7</span></span>
+            </div>
+          </div>
+          <div class="post green">
+            <div class="post-text">툴 통합: Notion → Linear → Slack 자동화로 손이 적게 가게.</div>
+            <div class="post-meta">
+              <span>한예린</span>
+              <span class="reactions"><span class="react-pill">🚀 2</span></span>
+            </div>
+          </div>
+          <div class="post yellow">
+            <div class="post-text">교육 만족도 조사는 <b>익명</b>이 핵심. 진짜 피드백을 받으려면 신원 노출 0%.</div>
+            <div class="post-meta">
+              <span>유준호</span>
+              <span class="reactions"><span class="react-pill">💯 6</span></span>
+            </div>
+          </div>
+          <div class="post pink">
+            <div class="post-text">월간 회고 템플릿: <b>KPT</b>는 좋은데, 액션 항목이 떠다니는 게 문제.</div>
+            <div class="post-meta">
+              <span>송하늘</span>
+              <span class="reactions"><span class="react-pill">👍 4</span></span>
+            </div>
+          </div>
+          <div class="post blue">
+            <div class="post-text">신규 입사자 온보딩 4주 → 6주로 늘리니 이탈률 35% 감소했다는 케이스.</div>
+            <div class="post-meta">
+              <span>장세훈</span>
+              <span class="reactions"><span class="react-pill">📈 5</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 채팅 패널 -->
+      <aside class="chat">
+        <div class="chat-tabs">
+          <div class="tab-group">
+            <span class="tab active">채팅</span>
+            <span class="tab">파일·미디어 <span style="opacity:.6">3</span></span>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <button class="icon-btn" title="검색">🔍</button>
+            <span class="online"><span class="dot"></span> 14</span>
+          </div>
+        </div>
+
+        <div class="pin">
+          <span class="icon">📌</span>
+          <div>
+            <div>오후 4시 발표 시작합니다. 그룹별 한 명씩 대표 발표자 선정 부탁드려요.</div>
+            <div style="color:var(--fg-muted);margin-top:2px;font-size:11px;">— 박지영</div>
+          </div>
+        </div>
+
+        <div class="messages">
+          <div class="msg-row">
+            <div class="msg-name"><span class="host">박지영 (운영자)</span></div>
+            <div class="bubble host">2단계 아이디어 발산 시작합니다 🚀</div>
+            <div class="msg-time">15:42</div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-name">이도현</div>
+            <div class="bubble theirs">템플릿은 KPT인가요?</div>
+            <div class="msg-time">15:43</div>
+          </div>
+          <div class="msg-row mine">
+            <div class="bubble mine">자유형으로 진행할게요. 떠오르는 대로 적어주세요!</div>
+            <div class="msg-time">15:43</div>
+          </div>
+          <div class="msg-row">
+            <div class="msg-name">김서윤</div>
+            <div class="bubble theirs">접속자 14명인데 보드에 글이 8개… 다들 어디 계신가요 😅</div>
+            <div class="msg-time">15:45</div>
+          </div>
+          <div class="msg-row mine">
+            <div class="bubble mine">2분 남았습니다 ⏰</div>
+            <div class="msg-time">15:50</div>
+          </div>
+        </div>
+
+        <div class="composer">
+          <textarea rows="2" placeholder="메시지 입력… (Enter 전송, 이미지 붙여넣기 가능)"></textarea>
+          <div class="composer-row">
+            <button class="icon-btn" title="첨부">📎</button>
+            <button class="btn btn-primary" style="flex:1;">전송</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.body;
+  const lightBtn = document.getElementById('t-light');
+  const darkBtn  = document.getElementById('t-dark');
+  function setTheme(theme) {
+    root.dataset.theme = theme;
+    lightBtn.setAttribute('aria-pressed', theme === 'light');
+    darkBtn .setAttribute('aria-pressed', theme === 'dark');
+  }
+  lightBtn.addEventListener('click', () => setTheme('light'));
+  darkBtn .addEventListener('click', () => setTheme('dark'));
+  // 시스템 선호도 초기 적용
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+</script>
+
+</body>
+</html>

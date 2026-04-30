@@ -1,0 +1,430 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Fadlet — 시안 B (사이드바 + 고밀도)</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+<style>
+  :root {
+    --brand-500: #6366F1;
+    --brand-600: #4F46E5;
+    --brand-700: #4338CA;
+    --bg:        #FAFAF9;
+    --bg-elev-1: #FFFFFF;
+    --bg-elev-2: #F4F4F5;
+    --bg-side:   #F7F7F8;
+    --border:    #E4E4E7;
+    --border-strong: #D4D4D8;
+    --fg:        #18181B;
+    --fg-muted:  #71717A;
+    --fg-subtle: #A1A1AA;
+    --accent-bg: #EEF0FF;
+    --accent-fg: #4F46E5;
+  }
+  [data-theme="dark"] {
+    --bg:        #08080A;
+    --bg-elev-1: #0F0F11;
+    --bg-elev-2: #16161A;
+    --bg-side:   #0B0B0D;
+    --border:    #1F1F24;
+    --border-strong: #2C2C32;
+    --fg:        #E4E4E7;
+    --fg-muted:  #8A8A92;
+    --fg-subtle: #5A5A62;
+    --accent-bg: rgba(99,102,241,.16);
+    --accent-fg: #A5ADF6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif;
+    background: var(--bg); color: var(--fg);
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .preview-shell { display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+  .preview-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 18px; border-bottom: 1px solid var(--border);
+    background: var(--bg-elev-1); font-size: 12px; color: var(--fg-muted);
+  }
+  .preview-bar strong { color: var(--fg); }
+  .preview-bar .toggle { display: inline-flex; gap: 4px; padding: 3px;
+    background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 8px; }
+  .preview-bar .toggle button { padding: 5px 10px; border: 0; background: transparent;
+    color: var(--fg-muted); font-size: 12px; font-weight: 500; cursor: pointer; border-radius: 5px; }
+  .preview-bar .toggle button[aria-pressed="true"] { background: var(--bg-elev-1); color: var(--fg);
+    box-shadow: 0 0 0 1px var(--border-strong); }
+
+  .app { display: grid; grid-template-columns: 224px 1fr; min-height: 0; }
+
+  /* 사이드바 */
+  .side {
+    background: var(--bg-side); border-right: 1px solid var(--border);
+    display: flex; flex-direction: column;
+  }
+  .side-head {
+    display: flex; align-items: center; gap: 8px; padding: 14px 14px 12px;
+  }
+  .side-logo {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--brand-500), var(--brand-700));
+    display: inline-flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 700; font-size: 13px;
+  }
+  .side-title { font-weight: 600; font-size: 14px; }
+  .side-sub { font-size: 11px; color: var(--fg-muted); margin-top: 1px; }
+
+  .side-section { padding: 8px 8px 4px; }
+  .side-section-label {
+    font-size: 10px; font-weight: 600; color: var(--fg-subtle); text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 6px 8px;
+  }
+  .nav-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 6px 8px; border-radius: 6px; font-size: 13px; cursor: pointer;
+    color: var(--fg);
+  }
+  .nav-item:hover { background: var(--bg-elev-2); }
+  .nav-item.active { background: var(--accent-bg); color: var(--accent-fg); font-weight: 500; }
+  .nav-item .ico { width: 14px; opacity: .8; }
+  .nav-item .count {
+    margin-left: auto; font-size: 11px; color: var(--fg-muted);
+    background: var(--bg-elev-1); padding: 0 6px; border-radius: 999px;
+    border: 1px solid var(--border);
+  }
+  .nav-item.active .count {
+    background: color-mix(in srgb, var(--brand-500) 20%, transparent);
+    border-color: transparent; color: var(--accent-fg);
+  }
+
+  .side-foot {
+    margin-top: auto; padding: 10px 12px; border-top: 1px solid var(--border);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .avatar {
+    width: 26px; height: 26px; border-radius: 999px;
+    background: linear-gradient(135deg, #F472B6, #6366F1);
+    color: #fff; display: inline-flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .me { font-size: 12px; }
+  .me strong { display: block; font-weight: 600; }
+  .me span { color: var(--fg-muted); font-size: 11px; }
+
+  /* 메인 */
+  .main { display: grid; grid-template-rows: auto auto 1fr; min-height: 0; }
+  .topbar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 12px 18px; border-bottom: 1px solid var(--border); background: var(--bg-elev-1);
+  }
+  .crumbs { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--fg-muted); }
+  .crumbs strong { color: var(--fg); font-weight: 600; }
+  .topbar-actions { display: flex; align-items: center; gap: 8px; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px;
+    border: 1px solid var(--border); border-radius: 6px; font-size: 12px; font-weight: 500;
+    background: var(--bg-elev-1); color: var(--fg); cursor: pointer;
+  }
+  .btn:hover { background: var(--bg-elev-2); }
+  .btn-primary { background: var(--brand-500); border-color: var(--brand-500); color: #fff; }
+  .btn-primary:hover { background: var(--brand-600); border-color: var(--brand-600); }
+  .btn-ghost { background: transparent; border-color: transparent; color: var(--fg-muted); }
+  .btn-ghost:hover { background: var(--bg-elev-2); color: var(--fg); }
+
+  .code {
+    font-family: 'JetBrains Mono', monospace; font-size: 12px; font-weight: 600;
+    background: var(--accent-bg); color: var(--accent-fg);
+    padding: 4px 10px; border-radius: 6px; border: 0; cursor: pointer; letter-spacing: 0.04em;
+  }
+  .online { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--fg-muted); padding: 0 4px;}
+  .dot { width: 6px; height: 6px; border-radius: 999px; background: #22C55E; }
+
+  /* 단계 + 본문 영역 */
+  .stage-bar {
+    padding: 10px 18px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: 14px;
+    background: var(--bg-elev-1);
+  }
+  .stages-pills { display: flex; gap: 4px; }
+  .stage-pill {
+    padding: 5px 10px; border-radius: 999px; font-size: 12px; color: var(--fg-muted);
+    border: 1px solid var(--border); background: var(--bg-elev-1);
+  }
+  .stage-pill.active {
+    background: var(--accent-bg); color: var(--accent-fg); border-color: transparent;
+    font-weight: 500;
+  }
+  .stage-pill.done { color: var(--fg-subtle); }
+  .timer {
+    margin-left: auto; display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 13px;
+  }
+  .timer .running { width: 6px; height: 6px; border-radius: 999px; background: var(--brand-500);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--brand-500) 20%, transparent);
+    animation: p 1.6s ease-in-out infinite; }
+  @keyframes p { 0%,100%{opacity:1} 50%{opacity:.5} }
+  .icon-btn { width: 26px; height: 26px; display: inline-flex; align-items: center; justify-content: center;
+    background: transparent; border: 1px solid transparent; border-radius: 6px;
+    color: var(--fg-muted); cursor: pointer; }
+  .icon-btn:hover { background: var(--bg-elev-2); color: var(--fg); }
+
+  /* 본문: 보드 + 하단 채팅 슬라이드 */
+  .work { display: grid; grid-template-columns: 1fr 360px; min-height: 0; }
+  .canvas { padding: 18px; overflow: auto; }
+  .canvas-head {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .canvas-meta { font-size: 12px; color: var(--fg-subtle); }
+
+  /* 컬럼형 KPT 레이아웃 */
+  .columns { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .column {
+    background: var(--bg-elev-1); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 240px;
+  }
+  .col-head { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4px; }
+  .col-title { font-size: 13px; font-weight: 600; }
+  .col-count { font-size: 11px; color: var(--fg-muted); }
+  .col-add { background: transparent; border: 1px dashed var(--border-strong);
+    border-radius: 8px; padding: 6px 8px; font-size: 12px; color: var(--fg-muted); cursor: pointer; }
+  .col-add:hover { border-color: var(--brand-500); color: var(--accent-fg); background: var(--accent-bg); }
+
+  .post {
+    background: var(--bg-elev-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 10px; font-size: 13px; line-height: 1.5; color: var(--fg);
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .post .meta { display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; color: var(--fg-muted); }
+  .react-pill { display: inline-flex; align-items: center; gap: 3px;
+    padding: 1px 6px; border-radius: 999px;
+    background: color-mix(in srgb, var(--fg) 8%, transparent); font-size: 11px; }
+
+  /* 채팅 */
+  .chat { background: var(--bg-elev-1); border-left: 1px solid var(--border);
+    display: flex; flex-direction: column; }
+  .chat-head { padding: 10px 14px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between; }
+  .chat-head-title { font-size: 13px; font-weight: 600; }
+  .messages { flex: 1; overflow: auto; padding: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .msg-row { display: flex; flex-direction: column; }
+  .msg-row.mine { align-items: flex-end; }
+  .msg-name { font-size: 11px; color: var(--fg-muted); margin: 0 4px 2px; }
+  .msg-name .host { color: var(--brand-500); font-weight: 600; }
+  .bubble { max-width: 85%; padding: 8px 12px; border-radius: 12px; font-size: 13px; line-height: 1.5; }
+  .bubble.theirs { background: var(--bg-elev-2); color: var(--fg); border-bottom-left-radius: 4px; }
+  .bubble.host { background: var(--accent-bg); color: var(--fg);
+    border-left: 2px solid var(--brand-500); border-bottom-left-radius: 4px; }
+  .bubble.mine { background: var(--brand-500); color: #fff; border-bottom-right-radius: 4px; }
+  .msg-time { font-size: 10px; color: var(--fg-subtle); margin: 2px 6px 0; }
+  .composer { padding: 10px 14px; border-top: 1px solid var(--border); }
+  .composer textarea {
+    width: 100%; resize: none; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 13px; background: var(--bg-elev-1); color: var(--fg);
+    font-family: inherit; outline: none;
+  }
+  .composer textarea:focus {
+    border-color: var(--brand-500);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand-500) 18%, transparent);
+  }
+  .composer-row { display: flex; gap: 6px; margin-top: 6px; }
+</style>
+</head>
+<body data-theme="light">
+
+<div class="preview-shell">
+  <div class="preview-bar">
+    <span><strong>시안 B</strong> · 좌측 사이드바 + 컬럼 템플릿(KPT) + 고밀도</span>
+    <div class="toggle">
+      <button id="t-light" aria-pressed="true">☀ 라이트</button>
+      <button id="t-dark"  aria-pressed="false">☾ 다크</button>
+    </div>
+  </div>
+
+  <div class="app">
+    <!-- 사이드바 -->
+    <aside class="side">
+      <div class="side-head">
+        <span class="side-logo">F</span>
+        <div>
+          <div class="side-title">REFERENCE HRD</div>
+          <div class="side-sub">신입 온보딩 · 2026</div>
+        </div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-section-label">현재 보드</div>
+        <div class="nav-item active">📋 Day 2 — 발산 <span class="count">12</span></div>
+        <div class="nav-item">💬 채팅 <span class="count">37</span></div>
+        <div class="nav-item">🚩 신고 <span class="count">2</span></div>
+        <div class="nav-item">📁 파일 <span class="count">8</span></div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-section-label">운영 도구</div>
+        <div class="nav-item">🎛 운영 패널</div>
+        <div class="nav-item">⏱ 타이머</div>
+        <div class="nav-item">📌 공지</div>
+        <div class="nav-item">🔒 잠금</div>
+        <div class="nav-item">📊 분석</div>
+      </div>
+
+      <div class="side-section">
+        <div class="side-section-label">최근 보드</div>
+        <div class="nav-item">📋 Day 1 — 아이스브레이킹</div>
+        <div class="nav-item">📋 사전 워크숍</div>
+      </div>
+
+      <div class="side-foot">
+        <span class="avatar">박</span>
+        <div class="me"><strong>박지영</strong><span>운영자</span></div>
+      </div>
+    </aside>
+
+    <!-- 메인 -->
+    <div class="main">
+      <div class="topbar">
+        <div class="crumbs">
+          신입 온보딩 <span style="color:var(--fg-subtle)">›</span>
+          <strong>Day 2 — 발산</strong>
+          <span style="margin-left:6px;font-size:11px;background:var(--bg-elev-2);padding:2px 8px;border-radius:999px;border:1px solid var(--border);">📊 KPT</span>
+        </div>
+        <div class="topbar-actions">
+          <span class="online"><span class="dot"></span> 14명 접속</span>
+          <button class="code">K3F2X9</button>
+          <button class="btn btn-ghost">↓ 내보내기</button>
+          <button class="btn btn-primary">＋ 새 포스트</button>
+          <button class="btn">공유</button>
+        </div>
+      </div>
+
+      <div class="stage-bar">
+        <div class="stages-pills">
+          <span class="stage-pill done">✓ 1. 아이스브레이킹</span>
+          <span class="stage-pill active">2. 아이디어 발산</span>
+          <span class="stage-pill">3. 그룹화</span>
+          <span class="stage-pill">4. 발표</span>
+        </div>
+        <div class="timer">
+          <span class="running"></span>
+          <span>08:32 / 15:00</span>
+          <button class="icon-btn">⏸</button>
+          <button class="icon-btn">⏹</button>
+        </div>
+      </div>
+
+      <div class="work">
+        <div class="canvas">
+          <div class="canvas-head">
+            <span class="canvas-meta">3개 컬럼 · 12개 포스트 · 마지막 활동 방금 전</span>
+            <div style="display:flex;gap:6px;">
+              <button class="btn btn-ghost">↕ 정렬</button>
+              <button class="btn btn-ghost">⌕ 검색</button>
+            </div>
+          </div>
+          <div class="columns">
+            <div class="column">
+              <div class="col-head"><span class="col-title">👍 Keep</span><span class="col-count">4</span></div>
+              <div class="post">
+                <div>중간 산책 타임이 결과물 질에 큰 영향을 줬다.</div>
+                <div class="meta"><span>최민준</span><span class="react-pill">👍 7</span></div>
+              </div>
+              <div class="post">
+                <div>그룹 발표 전 5분 리허설 시간을 확보한 것이 좋았다.</div>
+                <div class="meta"><span>박지영</span><span class="react-pill">💯 4</span></div>
+              </div>
+              <div class="post">
+                <div>익명 피드백 수집 → 솔직한 의견이 많이 나옴.</div>
+                <div class="meta"><span>유준호</span><span class="react-pill">💡 3</span></div>
+              </div>
+              <button class="col-add">＋ 포스트 추가</button>
+            </div>
+
+            <div class="column">
+              <div class="col-head"><span class="col-title">⚠ Problem</span><span class="col-count">5</span></div>
+              <div class="post">
+                <div>참여 격차 — 같은 그룹 내에서도 발화량 차이가 큼.</div>
+                <div class="meta"><span>김서윤</span><span class="react-pill">😬 6</span></div>
+              </div>
+              <div class="post">
+                <div>일정이 빡빡해 단계 사이 정리 시간이 부족했다.</div>
+                <div class="meta"><span>이도현</span><span class="react-pill">⏰ 4</span></div>
+              </div>
+              <div class="post">
+                <div>자료 공유 채널이 분산돼서 누락 발생.</div>
+                <div class="meta"><span>송하늘</span><span class="react-pill">📁 2</span></div>
+              </div>
+              <button class="col-add">＋ 포스트 추가</button>
+            </div>
+
+            <div class="column">
+              <div class="col-head"><span class="col-title">🚀 Try</span><span class="col-count">3</span></div>
+              <div class="post">
+                <div>발화량 시각화 — 운영자에게 균형 알림 띄우기.</div>
+                <div class="meta"><span>한예린</span><span class="react-pill">🎯 5</span></div>
+              </div>
+              <div class="post">
+                <div>다음 워크숍은 자료 공유 단일 채널로 통일.</div>
+                <div class="meta"><span>장세훈</span><span class="react-pill">👍 3</span></div>
+              </div>
+              <button class="col-add">＋ 포스트 추가</button>
+            </div>
+          </div>
+        </div>
+
+        <aside class="chat">
+          <div class="chat-head">
+            <span class="chat-head-title">채팅</span>
+            <span class="online"><span class="dot"></span> 14</span>
+          </div>
+          <div class="messages">
+            <div class="msg-row">
+              <div class="msg-name"><span class="host">박지영 (운영자)</span></div>
+              <div class="bubble host">2단계 시작합니다 🚀</div>
+              <div class="msg-time">15:42</div>
+            </div>
+            <div class="msg-row">
+              <div class="msg-name">이도현</div>
+              <div class="bubble theirs">템플릿은 KPT인가요?</div>
+              <div class="msg-time">15:43</div>
+            </div>
+            <div class="msg-row mine">
+              <div class="bubble mine">네 맞습니다. 컬럼별로 적어주세요!</div>
+              <div class="msg-time">15:43</div>
+            </div>
+            <div class="msg-row">
+              <div class="msg-name">김서윤</div>
+              <div class="bubble theirs">Problem 컬럼에 너무 몰리네요 😅</div>
+              <div class="msg-time">15:48</div>
+            </div>
+          </div>
+          <div class="composer">
+            <textarea rows="2" placeholder="메시지 입력…"></textarea>
+            <div class="composer-row">
+              <button class="icon-btn">📎</button>
+              <button class="btn btn-primary" style="flex:1;">전송</button>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const root = document.body;
+  const lightBtn = document.getElementById('t-light');
+  const darkBtn  = document.getElementById('t-dark');
+  function setTheme(t) { root.dataset.theme = t;
+    lightBtn.setAttribute('aria-pressed', t==='light');
+    darkBtn .setAttribute('aria-pressed', t==='dark'); }
+  lightBtn.addEventListener('click', () => setTheme('light'));
+  darkBtn .addEventListener('click', () => setTheme('dark'));
+  if (window.matchMedia('(prefers-color-scheme: dark)').matches) setTheme('dark');
+</script>
+</body>
+</html>
