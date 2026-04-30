@@ -5,8 +5,9 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
+import { useOperatorAuth, OperatorNotAllowedError } from '@/lib/hooks/use-operator-auth';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -20,8 +21,11 @@ export default function LoginPage() {
     try {
       await signInWithGoogle();
       router.push('/dashboard');
-    } catch {
-      // 팝업 취소 등 무시
+    } catch (err) {
+      if (err instanceof OperatorNotAllowedError) {
+        toast.error('베타 기간 동안 허용된 계정만 로그인할 수 있습니다.');
+      }
+      // 팝업 취소 등 그 외 에러는 조용히 무시
     }
   }
 
@@ -34,7 +38,7 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex items-center justify-center min-h-screen bg-blue-50 px-4">
+    <main className="flex items-center justify-center min-h-screen bg-indigo-50 px-4">
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
         <h1 className="text-2xl font-bold text-gray-900 mb-1">운영자 로그인</h1>
         <p className="text-gray-400 text-sm mb-8">보드를 만들고 관리하려면 로그인하세요.</p>
@@ -50,7 +54,7 @@ export default function LoginPage() {
 
         <p className="text-xs text-gray-400 mt-6">
           참여자는 로그인 없이{' '}
-          <Link href="/boards/join" className="text-blue-600 hover:underline">코드로 입장</Link>
+          <Link href="/boards/join" className="text-indigo-600 hover:underline">코드로 입장</Link>
           하세요.
         </p>
       </div>

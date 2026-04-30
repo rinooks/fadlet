@@ -19,33 +19,40 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/workspaces/$(wsId)/members/$(request.auth.uid));
     }
 
+    // 베타 기간: 운영자(워크스페이스/보드 생성) 권한은 화이트리스트 이메일만 허용
+    // 익명 참여자는 포스트·채팅·참여 기록은 그대로 가능
+    function isAllowedOperator() {
+      return request.auth != null
+        && request.auth.token.email in ['rinooks@gmail.com'];
+    }
+
     match /workspaces/{wsId} {
       allow read: if true;
-      allow create: if isAuthenticated()
+      allow create: if isAllowedOperator()
         && request.resource.data.ownerUid == request.auth.uid;
-      allow update, delete: if isAuthenticated()
+      allow update, delete: if isAllowedOperator()
         && resource.data.ownerUid == request.auth.uid;
 
       match /members/{memberUid} {
         allow read: if isAuthenticated();
-        allow create: if isAuthenticated()
+        allow create: if isAllowedOperator()
           && request.auth.uid == memberUid
           && request.resource.data.uid == memberUid;
-        allow update: if isAuthenticated()
+        allow update: if isAllowedOperator()
           && (request.auth.uid == memberUid || isWorkspaceOwner(wsId));
-        allow delete: if isAuthenticated()
+        allow delete: if isAllowedOperator()
           && (request.auth.uid == memberUid || isWorkspaceOwner(wsId));
       }
 
       match /boards/{boardId} {
         allow read: if true;
-        // 보드 생성은 본인이 멤버인 워크스페이스에만 허용. 'default'(개인) 차단.
-        allow create: if isAuthenticated()
+        // 보드 생성은 화이트리스트 운영자가 본인 멤버인 워크스페이스에만 허용
+        allow create: if isAllowedOperator()
           && request.resource.data.ownerId == request.auth.uid
           && request.resource.data.workspaceId is string
           && request.resource.data.workspaceId != 'default'
           && isWorkspaceMember(request.resource.data.workspaceId);
-        allow update, delete: if isAuthenticated()
+        allow update, delete: if isAllowedOperator()
           && resource.data.ownerId == request.auth.uid;
 
         match /posts/{postId} {
