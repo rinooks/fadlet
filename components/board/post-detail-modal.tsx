@@ -3,7 +3,6 @@
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Flag, X } from 'lucide-react';
-import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -86,11 +85,10 @@ export function PostDetailModal({
               <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{post.content}</p>
               {post.imageUrl && (
                 <div className="mt-3 rounded-lg overflow-hidden">
-                  <Image
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
                     src={post.imageUrl}
                     alt="포스트 이미지"
-                    width={400}
-                    height={300}
                     className="w-full object-cover max-h-60 rounded-lg"
                   />
                 </div>

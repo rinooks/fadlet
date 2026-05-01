@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,11 +46,10 @@ export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenD
     >
       {post.imageUrl && (
         <div className="rounded-t-xl overflow-hidden">
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={post.imageUrl}
             alt="포스트 이미지"
-            width={300}
-            height={160}
             className="w-full object-cover max-h-36"
           />
         </div>
