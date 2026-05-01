@@ -5,7 +5,23 @@ import { Toaster } from '@/components/ui/sonner';
 
 export const metadata: Metadata = {
   title: 'Fadlet — 워크숍 운영자를 위한 협업 보드',
-  description: '가입 없이 6자리 코드로 즉시 합류. 보드와 채팅을 한 화면에서.',
+  description: '가입 없이 코드로 즉시 합류. 보드와 채팅을 한 화면에서.',
+  metadataBase: new URL('https://fadlet.vercel.app'),
+  openGraph: {
+    title: 'Fadlet — 워크숍 운영자를 위한 협업 보드',
+    description: '가입 없이 코드로 즉시 합류. 보드와 채팅을 한 화면에서.',
+    url: 'https://fadlet.vercel.app',
+    siteName: 'Fadlet',
+    images: [{ url: '/fadlet.jpg', width: 1200, height: 630, alt: 'Fadlet' }],
+    locale: 'ko_KR',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Fadlet — 워크숍 운영자를 위한 협업 보드',
+    description: '가입 없이 코드로 즉시 합류. 보드와 채팅을 한 화면에서.',
+    images: ['/fadlet.jpg'],
+  },
 };
 
 export const viewport: Viewport = {
