@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { FileIcon, DownloadIcon } from 'lucide-react';
 import type { Message } from '@/lib/types';
 
@@ -43,12 +42,11 @@ export function MediaGallery({ messages }: MediaGalleryProps) {
                 rel="noopener noreferrer"
                 className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 hover:opacity-90 transition-opacity"
               >
-                <Image
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
                   src={img.fileUrl!}
                   alt={img.fileName ?? '이미지'}
-                  fill
-                  className="object-cover"
-                  sizes="96px"
+                  className="absolute inset-0 w-full h-full object-cover"
                 />
               </a>
             ))}

@@ -1,6 +1,5 @@
 'use client';
 
-import Image from 'next/image';
 import { FileIcon, DownloadIcon, ExternalLinkIcon } from 'lucide-react';
 import type { Message } from '@/lib/types';
 
@@ -19,11 +18,10 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
   if (msg.type === 'image' && msg.fileUrl) {
     return (
       <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block">
-        <Image
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
           src={msg.fileUrl}
           alt={msg.fileName ?? '이미지'}
-          width={240}
-          height={160}
           className="rounded-xl object-cover max-h-40 w-full"
         />
         {msg.content && (
@@ -70,11 +68,10 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
           }`}
         >
           {p.image && (
-            <Image
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
               src={p.image}
               alt={p.title}
-              width={240}
-              height={120}
               className="w-full object-cover max-h-28"
             />
           )}
