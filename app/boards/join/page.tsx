@@ -79,17 +79,17 @@ function JoinForm() {
             <p className="text-gray-400 text-sm mb-6">운영자에게 받은 6자리 코드를 입력하세요.</p>
             <form onSubmit={handleCodeSubmit} className="flex flex-col gap-4">
               <Input
-                placeholder="예: K3F2X9"
+                placeholder="예: K3F2"
                 value={code}
                 onChange={(e) => setCode(e.target.value.toUpperCase())}
-                maxLength={6}
+                maxLength={4}
                 required
                 autoFocus
                 className="text-base tracking-widest text-center font-mono uppercase"
               />
               <Button
                 type="submit"
-                disabled={loading || code.length !== 6}
+                disabled={loading || code.length !== 4}
                 className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-12"
               >
                 {loading ? '확인 중...' : '다음'}

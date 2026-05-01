@@ -5,7 +5,7 @@ import { boardsPath } from '@/lib/firebase/collections';
 const CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
 function randomCode(): string {
-  return Array.from({ length: 6 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
+  return Array.from({ length: 4 }, () => CHARS[Math.floor(Math.random() * CHARS.length)]).join('');
 }
 
 export async function generateBoardCode(maxRetries = 5): Promise<string> {
