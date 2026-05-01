@@ -358,7 +358,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
         </div>
       ) : (
         <>
-          <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto px-3 py-3 space-y-2 relative">
+          <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-2 relative">
             {loading && <p className="text-xs text-gray-400 text-center py-4">불러오는 중...</p>}
             {!loading && messages.length === 0 && (
               <p className="text-xs text-gray-400 text-center py-4">아직 메시지가 없습니다.</p>
@@ -372,7 +372,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
               const canPin = viewerIsHost && (msg.type === 'text' || (msg.content && msg.content.trim().length > 0));
               const canReport = !isMine && !isHost;
               return (
-                <div id={`msg-${msg.id}`} key={msg.id} className={`group flex flex-col ${isMine ? 'items-end' : 'items-start'}`}>
+                <div id={`msg-${msg.id}`} key={msg.id} className={`group flex flex-col w-full min-w-0 ${isMine ? 'items-end' : 'items-start'}`}>
                   {!isMine && (
                     <span className="text-xs text-gray-500 mb-0.5 ml-1">
                       {isHost ? (
