@@ -19,6 +19,12 @@ service cloud.firestore {
       return exists(/databases/$(database)/documents/workspaces/$(wsId)/members/$(request.auth.uid));
     }
 
+    function isWorkspaceMemberAdmin(wsId) {
+      return isAllowedOperator()
+        && exists(/databases/$(database)/documents/workspaces/$(wsId)/members/$(request.auth.uid))
+        && get(/databases/$(database)/documents/workspaces/$(wsId)/members/$(request.auth.uid)).data.role == 'admin';
+    }
+
     // 슈퍼관리자: 하드코딩된 이메일
     function isSuperAdmin() {
       return request.auth != null
@@ -53,12 +59,17 @@ service cloud.firestore {
       allow delete: if isSuperAdmin();
     }
 
+    // collectionGroup('members') 쿼리 허용 — 중첩 규칙만으로는 collection group 쿼리가 차단됨
+    match /{path=**}/members/{memberUid} {
+      allow read: if isAuthenticated();
+    }
+
     match /workspaces/{wsId} {
       allow read: if true;
       allow create: if isAllowedOperator()
         && request.resource.data.ownerUid == request.auth.uid;
-      allow update, delete: if isAllowedOperator()
-        && resource.data.ownerUid == request.auth.uid;
+      allow update, delete: if isSuperAdmin()
+        || (isAllowedOperator() && resource.data.ownerUid == request.auth.uid);
 
       match /members/{memberUid} {
         allow read: if isAuthenticated();
@@ -79,8 +90,11 @@ service cloud.firestore {
           && request.resource.data.workspaceId is string
           && request.resource.data.workspaceId != 'default'
           && isWorkspaceMember(request.resource.data.workspaceId);
-        allow update, delete: if isAllowedOperator()
-          && resource.data.ownerId == request.auth.uid;
+        allow update: if isSuperAdmin()
+          || (isAllowedOperator() && resource.data.ownerId == request.auth.uid)
+          || isWorkspaceMemberAdmin(resource.data.workspaceId);
+        allow delete: if isSuperAdmin()
+          || (isAllowedOperator() && resource.data.ownerId == request.auth.uid);
 
         match /posts/{postId} {
           allow read: if true;

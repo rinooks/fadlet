@@ -28,7 +28,12 @@ export function useMyWorkspaces(uid: string | null) {
   const [loading, setLoading] = useState<boolean>(() => !!uid);
 
   useEffect(() => {
-    if (!uid) return;
+    if (!uid) {
+      setWorkspaces([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
     const q = query(collectionGroup(db, 'members'), where('uid', '==', uid));
     const unsub = onSnapshot(
       q,
@@ -41,17 +46,25 @@ export function useMyWorkspaces(uid: string | null) {
           setLoading(false);
           return;
         }
-        const docs = await Promise.all(
-          wsIds.map((wsId) => getDoc(doc(db, workspaceDocPath(wsId)))),
-        );
-        const list: Workspace[] = docs
-          .filter((d) => d.exists())
-          .map((d) => ({ id: d.id, ...d.data() }) as Workspace);
-        list.sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
-        setWorkspaces(list);
+        try {
+          const docs = await Promise.all(
+            wsIds.map((wsId) => getDoc(doc(db, workspaceDocPath(wsId)))),
+          );
+          const list: Workspace[] = docs
+            .filter((d) => d.exists())
+            .map((d) => ({ id: d.id, ...d.data() }) as Workspace);
+          list.sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+          setWorkspaces(list);
+        } catch (err) {
+          console.error('[useMyWorkspaces] 워크스페이스 문서 로드 실패', err);
+        } finally {
+          setLoading(false);
+        }
+      },
+      (err) => {
+        console.error('[useMyWorkspaces] members 구독 실패', err);
         setLoading(false);
       },
-      () => setLoading(false),
     );
     return unsub;
   }, [uid]);

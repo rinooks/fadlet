@@ -2,15 +2,41 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, onSnapshot, orderBy, query } from 'firebase/firestore';
+import {
+  collection,
+  collectionGroup,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  updateDoc,
+} from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { ChevronDown, ChevronRight, Shield, ShieldCheck, ShieldOff, Users } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ChevronDown,
+  ChevronRight,
+  Pencil,
+  Shield,
+  ShieldCheck,
+  ShieldOff,
+  Trash2,
+  Users,
+  X,
+  Check,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { db } from '@/lib/firebase/client';
-import { boardsPath, operatorsPath, workspacesCollectionPath } from '@/lib/firebase/collections';
+import {
+  boardsPath,
+  operatorsPath,
+  workspaceDocPath,
+  workspacesCollectionPath,
+} from '@/lib/firebase/collections';
 import { setOperatorAllowed } from '@/lib/firebase/operators';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import type { Board, Operator, Workspace } from '@/lib/types';
@@ -21,9 +47,21 @@ export default function AdminPage() {
 
   const [operators, setOperators] = useState<Operator[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  // uid → wsId[] 멤버십 맵
+  const [wsMembership, setWsMembership] = useState<Map<string, string[]>>(new Map());
   const [boards, setBoards] = useState<Board[]>([]);
   const [loadingOps, setLoadingOps] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  // 인라인 이름 변경 상태
+  const [renamingWsId, setRenamingWsId] = useState<string | null>(null);
+  const [renamingBoardId, setRenamingBoardId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState('');
+  const renameInputRef = useRef<HTMLInputElement>(null);
+
+  // 삭제 확인 상태
+  const [deletingWsId, setDeletingWsId] = useState<string | null>(null);
+  const [deletingBoardId, setDeletingBoardId] = useState<string | null>(null);
 
   useEffect(() => {
     if (loading) return;
@@ -31,7 +69,6 @@ export default function AdminPage() {
     else if (!isSuperAdmin) router.replace('/dashboard');
   }, [user, isSuperAdmin, loading, router]);
 
-  // operators 구독
   useEffect(() => {
     if (!isSuperAdmin) return;
     const q = query(collection(db, operatorsPath()), orderBy('createdAt', 'desc'));
@@ -49,34 +86,66 @@ export default function AdminPage() {
     return unsub;
   }, [isSuperAdmin]);
 
-  // 모든 워크스페이스 + 보드 구독 (모니터링용)
   useEffect(() => {
     if (!isSuperAdmin) return;
+
     const wsUnsub = onSnapshot(
       collection(db, workspacesCollectionPath()),
       (snap) => setWorkspaces(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Workspace)),
       () => {},
     );
+
+    // members collectionGroup → uid별 멤버십 맵 (대시보드와 동일한 기준)
+    const memberUnsub = onSnapshot(
+      collectionGroup(db, 'members'),
+      (snap) => {
+        const map = new Map<string, string[]>();
+        for (const d of snap.docs) {
+          const uid = (d.data() as { uid?: string }).uid;
+          const wsId = d.ref.parent.parent?.id;
+          if (!uid || !wsId) continue;
+          const list = map.get(uid) ?? [];
+          list.push(wsId);
+          map.set(uid, list);
+        }
+        setWsMembership(map);
+      },
+      () => {},
+    );
+
     const bUnsub = onSnapshot(
       collection(db, boardsPath()),
       (snap) => setBoards(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board)),
       () => {},
     );
+
     return () => {
       wsUnsub();
+      memberUnsub();
       bUnsub();
     };
   }, [isSuperAdmin]);
 
-  const wsByOwner = useMemo(() => {
+  // 이름 변경 시작 시 input 포커스
+  useEffect(() => {
+    if ((renamingWsId || renamingBoardId) && renameInputRef.current) {
+      renameInputRef.current.focus();
+      renameInputRef.current.select();
+    }
+  }, [renamingWsId, renamingBoardId]);
+
+  // 워크스페이스 id → 문서 빠른 조회
+  const wsById = useMemo(() => new Map(workspaces.map((w) => [w.id, w])), [workspaces]);
+
+  // uid → 멤버로 속한 Workspace[] (대시보드와 동일 기준)
+  const wsByMember = useMemo(() => {
     const map = new Map<string, Workspace[]>();
-    for (const ws of workspaces) {
-      const list = map.get(ws.ownerUid) ?? [];
-      list.push(ws);
-      map.set(ws.ownerUid, list);
+    for (const [uid, wsIds] of wsMembership) {
+      const list = wsIds.map((id) => wsById.get(id)).filter((w): w is Workspace => !!w);
+      if (list.length > 0) map.set(uid, list);
     }
     return map;
-  }, [workspaces]);
+  }, [wsMembership, wsById]);
 
   const boardsByOwner = useMemo(() => {
     const map = new Map<string, Board[]>();
@@ -111,6 +180,75 @@ export default function AdminPage() {
     }
   }
 
+  function startRenameWs(ws: Workspace) {
+    setRenamingBoardId(null);
+    setDeletingWsId(null);
+    setDeletingBoardId(null);
+    setRenamingWsId(ws.id);
+    setRenameValue(ws.name);
+  }
+
+  function startRenameBoard(b: Board) {
+    setRenamingWsId(null);
+    setDeletingWsId(null);
+    setDeletingBoardId(null);
+    setRenamingBoardId(b.id);
+    setRenameValue(b.title);
+  }
+
+  function cancelRename() {
+    setRenamingWsId(null);
+    setRenamingBoardId(null);
+    setRenameValue('');
+  }
+
+  async function submitRenameWs(wsId: string) {
+    const trimmed = renameValue.trim();
+    if (!trimmed) return;
+    try {
+      await updateDoc(doc(db, workspaceDocPath(wsId)), { name: trimmed });
+      toast.success('워크스페이스 이름을 변경했습니다.');
+      cancelRename();
+    } catch {
+      toast.error('이름 변경에 실패했습니다.');
+    }
+  }
+
+  async function submitRenameBoard(boardId: string) {
+    const trimmed = renameValue.trim();
+    if (!trimmed) return;
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        title: trimmed,
+        updatedAt: serverTimestamp(),
+      });
+      toast.success('보드 이름을 변경했습니다.');
+      cancelRename();
+    } catch {
+      toast.error('이름 변경에 실패했습니다.');
+    }
+  }
+
+  async function handleDeleteWs(wsId: string) {
+    try {
+      await deleteDoc(doc(db, workspaceDocPath(wsId)));
+      toast.success('워크스페이스를 삭제했습니다.');
+      setDeletingWsId(null);
+    } catch {
+      toast.error('삭제에 실패했습니다.');
+    }
+  }
+
+  async function handleDeleteBoard(boardId: string) {
+    try {
+      await deleteDoc(doc(db, boardsPath(), boardId));
+      toast.success('보드를 삭제했습니다.');
+      setDeletingBoardId(null);
+    } catch {
+      toast.error('삭제에 실패했습니다.');
+    }
+  }
+
   if (loading || !isSuperAdmin) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -140,7 +278,6 @@ export default function AdminPage() {
       </header>
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
-        {/* 요약 카운터 */}
         <div className="grid grid-cols-3 gap-3 mb-6">
           <SummaryCard label="전체 운영자" value={operators.length} />
           <SummaryCard label="승인됨" value={allowedCount} accent="green" />
@@ -161,7 +298,7 @@ export default function AdminPage() {
             <ul>
               {operators.map((op) => {
                 const isExpanded = expanded.has(op.uid);
-                const opWorkspaces = wsByOwner.get(op.uid) ?? [];
+                const opWorkspaces = wsByMember.get(op.uid) ?? [];
                 const opBoards = boardsByOwner.get(op.uid) ?? [];
                 return (
                   <li key={op.uid} className="border-b border-gray-100 last:border-b-0">
@@ -224,7 +361,8 @@ export default function AdminPage() {
 
                     {isExpanded && (
                       <div className="bg-gray-50 px-4 py-3 border-t border-gray-100">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {/* 워크스페이스 */}
                           <div>
                             <p className="text-[11px] uppercase font-bold text-gray-500 mb-1.5">
                               워크스페이스 ({opWorkspaces.length})
@@ -234,21 +372,88 @@ export default function AdminPage() {
                             ) : (
                               <ul className="space-y-1">
                                 {opWorkspaces.map((ws) => (
-                                  <li key={ws.id}>
-                                    <Link
-                                      href={`/workspaces/${ws.id}`}
-                                      className="text-xs flex items-center justify-between bg-white px-2 py-1.5 rounded border border-gray-200 hover:border-indigo-300"
-                                    >
-                                      <span className="truncate">{ws.name}</span>
-                                      <span className="font-mono text-[10px] text-indigo-600 flex-shrink-0 ml-2">
-                                        {ws.workspaceCode}
-                                      </span>
-                                    </Link>
+                                  <li key={ws.id} className="bg-white rounded border border-gray-200">
+                                    {renamingWsId === ws.id ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-1.5">
+                                        <input
+                                          ref={renameInputRef}
+                                          value={renameValue}
+                                          onChange={(e) => setRenameValue(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') submitRenameWs(ws.id);
+                                            if (e.key === 'Escape') cancelRename();
+                                          }}
+                                          className="flex-1 min-w-0 text-xs border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                          maxLength={40}
+                                        />
+                                        <button
+                                          onClick={() => submitRenameWs(ws.id)}
+                                          className="text-emerald-600 hover:text-emerald-700 flex-shrink-0"
+                                          aria-label="저장"
+                                        >
+                                          <Check size={14} />
+                                        </button>
+                                        <button
+                                          onClick={cancelRename}
+                                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                                          aria-label="취소"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                      </div>
+                                    ) : deletingWsId === ws.id ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-1.5">
+                                        <span className="flex-1 text-xs text-red-600 font-medium truncate">
+                                          정말 삭제할까요?
+                                        </span>
+                                        <button
+                                          onClick={() => handleDeleteWs(ws.id)}
+                                          className="text-[11px] font-semibold text-white bg-red-500 hover:bg-red-600 px-1.5 py-0.5 rounded flex-shrink-0"
+                                        >
+                                          삭제
+                                        </button>
+                                        <button
+                                          onClick={() => setDeletingWsId(null)}
+                                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                                          aria-label="취소"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 px-2 py-1.5">
+                                        <Link
+                                          href={`/workspaces/${ws.id}`}
+                                          className="flex-1 min-w-0 flex items-center justify-between gap-2 hover:text-indigo-600"
+                                        >
+                                          <span className="text-xs truncate">{ws.name}</span>
+                                          <span className="font-mono text-[10px] text-indigo-600 flex-shrink-0">
+                                            {ws.workspaceCode}
+                                          </span>
+                                        </Link>
+                                        <button
+                                          onClick={() => startRenameWs(ws)}
+                                          className="text-gray-300 hover:text-indigo-500 flex-shrink-0 p-0.5"
+                                          aria-label="이름 변경"
+                                        >
+                                          <Pencil size={12} />
+                                        </button>
+                                        <button
+                                          onClick={() => { setDeletingBoardId(null); setDeletingWsId(ws.id); }}
+                                          className="text-gray-300 hover:text-red-500 flex-shrink-0 p-0.5"
+                                          aria-label="삭제"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    )}
                                   </li>
                                 ))}
                               </ul>
                             )}
                           </div>
+
+                          {/* 보드 */}
                           <div>
                             <p className="text-[11px] uppercase font-bold text-gray-500 mb-1.5">
                               보드 ({opBoards.length})
@@ -258,16 +463,81 @@ export default function AdminPage() {
                             ) : (
                               <ul className="space-y-1">
                                 {opBoards.map((b) => (
-                                  <li key={b.id}>
-                                    <Link
-                                      href={`/boards/${b.id}`}
-                                      className="text-xs flex items-center justify-between bg-white px-2 py-1.5 rounded border border-gray-200 hover:border-indigo-300"
-                                    >
-                                      <span className="truncate">{b.title}</span>
-                                      <span className="font-mono text-[10px] text-indigo-600 flex-shrink-0 ml-2">
-                                        {b.boardCode}
-                                      </span>
-                                    </Link>
+                                  <li key={b.id} className="bg-white rounded border border-gray-200">
+                                    {renamingBoardId === b.id ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-1.5">
+                                        <input
+                                          ref={renamingBoardId === b.id ? renameInputRef : undefined}
+                                          value={renameValue}
+                                          onChange={(e) => setRenameValue(e.target.value)}
+                                          onKeyDown={(e) => {
+                                            if (e.key === 'Enter') submitRenameBoard(b.id);
+                                            if (e.key === 'Escape') cancelRename();
+                                          }}
+                                          className="flex-1 min-w-0 text-xs border border-indigo-300 rounded px-1.5 py-0.5 focus:outline-none focus:ring-1 focus:ring-indigo-400"
+                                          maxLength={60}
+                                        />
+                                        <button
+                                          onClick={() => submitRenameBoard(b.id)}
+                                          className="text-emerald-600 hover:text-emerald-700 flex-shrink-0"
+                                          aria-label="저장"
+                                        >
+                                          <Check size={14} />
+                                        </button>
+                                        <button
+                                          onClick={cancelRename}
+                                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                                          aria-label="취소"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                      </div>
+                                    ) : deletingBoardId === b.id ? (
+                                      <div className="flex items-center gap-1.5 px-2 py-1.5">
+                                        <span className="flex-1 text-xs text-red-600 font-medium truncate">
+                                          정말 삭제할까요?
+                                        </span>
+                                        <button
+                                          onClick={() => handleDeleteBoard(b.id)}
+                                          className="text-[11px] font-semibold text-white bg-red-500 hover:bg-red-600 px-1.5 py-0.5 rounded flex-shrink-0"
+                                        >
+                                          삭제
+                                        </button>
+                                        <button
+                                          onClick={() => setDeletingBoardId(null)}
+                                          className="text-gray-400 hover:text-gray-600 flex-shrink-0"
+                                          aria-label="취소"
+                                        >
+                                          <X size={14} />
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <div className="flex items-center gap-1 px-2 py-1.5">
+                                        <Link
+                                          href={`/boards/${b.id}`}
+                                          className="flex-1 min-w-0 flex items-center justify-between gap-2 hover:text-indigo-600"
+                                        >
+                                          <span className="text-xs truncate">{b.title}</span>
+                                          <span className="font-mono text-[10px] text-indigo-600 flex-shrink-0">
+                                            {b.boardCode}
+                                          </span>
+                                        </Link>
+                                        <button
+                                          onClick={() => startRenameBoard(b)}
+                                          className="text-gray-300 hover:text-indigo-500 flex-shrink-0 p-0.5"
+                                          aria-label="이름 변경"
+                                        >
+                                          <Pencil size={12} />
+                                        </button>
+                                        <button
+                                          onClick={() => { setDeletingWsId(null); setDeletingBoardId(b.id); }}
+                                          className="text-gray-300 hover:text-red-500 flex-shrink-0 p-0.5"
+                                          aria-label="삭제"
+                                        >
+                                          <Trash2 size={12} />
+                                        </button>
+                                      </div>
+                                    )}
                                   </li>
                                 ))}
                               </ul>

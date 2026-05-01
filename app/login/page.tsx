@@ -3,20 +3,22 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 
-export default function LoginPage() {
+function LoginForm() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const redirect = searchParams.get('redirect') ?? '/dashboard';
   const { isOperator, isPending, loading, signInWithGoogle } = useOperatorAuth();
 
   useEffect(() => {
     if (loading) return;
-    if (isOperator) router.replace('/dashboard');
+    if (isOperator) router.replace(redirect);
     else if (isPending) router.replace('/pending');
-  }, [isOperator, isPending, loading, router]);
+  }, [isOperator, isPending, loading, router, redirect]);
 
   async function handleGoogle() {
     try {
@@ -63,6 +65,14 @@ export default function LoginPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><p className="text-gray-400">로딩 중...</p></div>}>
+      <LoginForm />
+    </Suspense>
   );
 }
 

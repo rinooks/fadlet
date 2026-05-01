@@ -38,10 +38,10 @@ import { useReports } from '@/lib/hooks/use-reports';
 import { useTimer } from '@/lib/hooks/use-timer';
 import { findBannedHit } from '@/lib/hooks/use-banned-words';
 import { db } from '@/lib/firebase/client';
-import { messagesPath } from '@/lib/firebase/collections';
-import { deleteDoc, doc } from 'firebase/firestore';
+import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
+import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
-import type { Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import type { BoardSkin, Post, PostColor, TimerState, UserRole } from '@/lib/types';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 
 interface PageProps {
@@ -64,6 +64,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
   const [role, setRole] = useState<UserRole>('member');
   const [nickname, setNickname] = useState('');
+  const [isWsAdmin, setIsWsAdmin] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showNewPost, setShowNewPost] = useState(false);
   const [showShare, setShowShare] = useState(false);
@@ -119,6 +120,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     };
   }, [uid, joined, setOffline]);
 
+  // 워크스페이스 admin 여부 확인 (보드 로드 + uid 확정 후 1회)
+  useEffect(() => {
+    if (!uid || !board?.workspaceId || board.workspaceId === 'default') return;
+    getDoc(doc(db, workspaceMembersPath(board.workspaceId), uid)).then((snap) => {
+      if (snap.exists() && snap.data().role === 'admin') setIsWsAdmin(true);
+    }).catch(() => {});
+  }, [uid, board?.workspaceId]);
+
   function checkBanned(text: string): boolean {
     if (role === 'host') return false;
     const hit = findBannedHit(text, board?.bannedWords);
@@ -127,6 +136,17 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       return true;
     }
     return false;
+  }
+
+  async function handleSkinChange(skin: BoardSkin) {
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        skin,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      toast.error('스킨 변경에 실패했습니다.');
+    }
   }
 
   async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string) {
@@ -280,7 +300,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           )}
           <div className="hidden md:flex items-center gap-2">
             <ExportMenu boardId={boardId} />
-            {role === 'host' && (
+            {isHostUser && (
               <>
                 <Button
                   size="sm"
@@ -299,14 +319,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  onClick={() => setShowFacilitator(true)}
-                  className="text-xs h-7 px-3"
-                >
-                  🎛 운영
-                </Button>
-                <Button
-                  size="sm"
-                  variant="outline"
                   onClick={isLocked ? unlockBoard : lockBoard}
                   className="text-xs h-7 px-3"
                 >
@@ -321,8 +333,18 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 </Button>
               </>
             )}
+            {(isHostUser || isWsAdmin) && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setShowFacilitator(true)}
+                className="text-xs h-7 px-3"
+              >
+                🎛 운영
+              </Button>
+            )}
           </div>
-          {role === 'host' && (
+          {isHostUser && (
             <div className="md:hidden">
               <HostActionsMenu
                 isLocked={isLocked}
@@ -553,7 +575,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         />
       )}
 
-      {role === 'host' && board && (
+      {(isHostUser || isWsAdmin) && board && (
         <FacilitatorPanel
           open={showFacilitator}
           onClose={() => setShowFacilitator(false)}
@@ -563,6 +585,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           bannedWords={board.bannedWords}
           currentUid={uid ?? ''}
           currentName={nickname}
+          currentSkin={board.skin ?? 'standard'}
+          onSkinChange={handleSkinChange}
+          isHostUser={isHostUser}
         />
       )}
 

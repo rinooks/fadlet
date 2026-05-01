@@ -135,7 +135,7 @@ export default function HomePage() {
 
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
           <Link
-            href="/boards/new"
+            href="/dashboard"
             className="group inline-flex items-center justify-center h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-base transition-all shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30 hover:-translate-y-0.5"
           >
             보드 만들기

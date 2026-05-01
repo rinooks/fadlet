@@ -20,7 +20,7 @@ import type { Board } from '@/lib/types';
 export default function DashboardPage() {
   const router = useRouter();
   const { user, isOperator, isPending, isSuperAdmin, loading, logout } = useOperatorAuth();
-  const { workspaces } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
+  const { workspaces, loading: wsLoading } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [renameTarget, setRenameTarget] = useState<Board | null>(null);
@@ -77,7 +77,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) router.replace('/login');
+    if (!user) router.replace('/login?redirect=/dashboard');
     else if (isPending) router.replace('/pending');
   }, [user, isPending, loading, router]);
 
@@ -183,7 +183,7 @@ export default function DashboardPage() {
           </div>
         )}
 
-        {boardsLoading ? (
+        {(boardsLoading || wsLoading) ? (
           <p className="text-gray-400 text-sm text-center py-16">불러오는 중...</p>
         ) : boards.length === 0 ? (
           <div className="text-center py-16">

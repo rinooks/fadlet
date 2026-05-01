@@ -9,7 +9,8 @@ import { Textarea } from '@/components/ui/textarea';
 import { useStages } from '@/lib/hooks/use-stages';
 import { useAnnouncement } from '@/lib/hooks/use-announcement';
 import { useBannedWords } from '@/lib/hooks/use-banned-words';
-import type { PinnedAnnouncement, Stage } from '@/lib/types';
+import { SkinSelector } from '@/components/board/skin-selector';
+import type { BoardSkin, PinnedAnnouncement, Stage } from '@/lib/types';
 
 interface FacilitatorPanelProps {
   open: boolean;
@@ -20,6 +21,9 @@ interface FacilitatorPanelProps {
   bannedWords: string[] | undefined;
   currentUid: string;
   currentName: string;
+  currentSkin: BoardSkin;
+  onSkinChange: (skin: BoardSkin) => Promise<void>;
+  isHostUser: boolean;
 }
 
 export function FacilitatorPanel({
@@ -31,6 +35,9 @@ export function FacilitatorPanel({
   bannedWords,
   currentUid,
   currentName,
+  currentSkin,
+  onSkinChange,
+  isHostUser,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
   const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
@@ -127,8 +134,17 @@ export function FacilitatorPanel({
             <span className="text-[11px] text-indigo-600">참여도·활동량 보기 →</span>
           </Link>
 
-          {/* 단계 관리 */}
+          {/* 스킨 변경 */}
           <section>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">🎨 보드 스킨</h3>
+            <SkinSelector
+              value={currentSkin}
+              onChange={async (skin) => { await onSkinChange(skin); }}
+            />
+          </section>
+
+          {/* 단계 관리·공지·키워드 — 호스트(보드 소유자)만 */}
+          {isHostUser && (<><section>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">📍 워크숍 단계</h3>
             <p className="text-xs text-gray-500 mb-3">참여자에게 현재 단계와 남은 시간이 표시됩니다.</p>
 
@@ -286,6 +302,7 @@ export function FacilitatorPanel({
               </Button>
             </div>
           </section>
+          </>)}
         </div>
       </aside>
     </div>
