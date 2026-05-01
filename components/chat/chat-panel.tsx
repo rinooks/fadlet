@@ -382,7 +382,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                       )}
                     </span>
                   )}
-                  <div className={`flex items-center gap-1 max-w-[85%] ${isMine ? 'flex-row-reverse' : ''}`}>
+                  <div className={`flex items-center gap-1 max-w-[85%] min-w-0 ${isMine ? 'flex-row-reverse' : ''}`}>
                     <div
                       className={`px-3 py-2 rounded-2xl text-sm ${
                         isMine

@@ -94,5 +94,5 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
     );
   }
 
-  return <p className="text-sm break-words">{msg.content}</p>;
+  return <p className="text-sm break-all">{msg.content}</p>;
 }
