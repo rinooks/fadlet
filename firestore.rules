@@ -84,12 +84,16 @@ service cloud.firestore {
 
       match /boards/{boardId} {
         allow read: if true;
-        // 보드 생성은 승인된 운영자가 본인 멤버인 워크스페이스에만 허용
-        allow create: if isAllowedOperator()
-          && request.resource.data.ownerId == request.auth.uid
-          && request.resource.data.workspaceId is string
-          && request.resource.data.workspaceId != 'default'
-          && isWorkspaceMember(request.resource.data.workspaceId);
+        // 보드 생성: 승인된 운영자(워크스페이스 멤버) 또는 데모 보드(누구나)
+        allow create: if (isAllowedOperator()
+            && request.resource.data.ownerId == request.auth.uid
+            && request.resource.data.workspaceId is string
+            && request.resource.data.workspaceId != 'default'
+            && isWorkspaceMember(request.resource.data.workspaceId))
+          || (isAuthenticated()
+            && request.resource.data.ownerId == request.auth.uid
+            && request.resource.data.workspaceId == 'demo'
+            && request.resource.data.isDemo == true);
         allow update: if isSuperAdmin()
           || (isAllowedOperator() && resource.data.ownerId == request.auth.uid)
           || isWorkspaceMemberAdmin(resource.data.workspaceId);
@@ -108,7 +112,13 @@ service cloud.firestore {
           allow read: if true;
           allow create: if isAuthenticated()
             && request.resource.data.authorId == request.auth.uid;
-          allow update, delete: if isAuthenticated()
+          allow update: if isAuthenticated()
+            && (
+              resource.data.authorId == request.auth.uid
+              || isOwner(wsId, boardId)
+              || request.resource.data.diff(resource.data).affectedKeys().hasOnly(['reactions'])
+            );
+          allow delete: if isAuthenticated()
             && (resource.data.authorId == request.auth.uid || isOwner(wsId, boardId));
         }
 

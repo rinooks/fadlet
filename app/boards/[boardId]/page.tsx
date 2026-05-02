@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import { use, useEffect, useState } from 'react';
 import {
   DndContext,
@@ -16,6 +16,7 @@ import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortab
 import { Button } from '@/components/ui/button';
 import { CanvasBoard } from '@/components/board/canvas-board';
 import { ColumnBoard } from '@/components/board/column-board';
+import { ProsConsBoard } from '@/components/board/pros-cons-board';
 import { FacilitatorPanel } from '@/components/board/facilitator-panel';
 import { HostActionsMenu } from '@/components/board/host-actions-menu';
 import { HostOnboarding } from '@/components/board/host-onboarding';
@@ -33,6 +34,7 @@ import { useBoard } from '@/lib/hooks/use-board';
 import { useLockBoard } from '@/lib/hooks/use-lock-board';
 import { useMessages } from '@/lib/hooks/use-messages';
 import { useParticipants } from '@/lib/hooks/use-participants';
+import { usePresence } from '@/lib/hooks/use-presence';
 import { usePosts } from '@/lib/hooks/use-posts';
 import { useReports } from '@/lib/hooks/use-reports';
 import { useTimer } from '@/lib/hooks/use-timer';
@@ -41,7 +43,7 @@ import { db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
-import type { BoardSkin, Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import type { BoardSkin, EmojiType, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 
 interface PageProps {
@@ -65,7 +67,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [role, setRole] = useState<UserRole>('member');
   const [nickname, setNickname] = useState('');
   const [isWsAdmin, setIsWsAdmin] = useState(false);
+  const [isWsMember, setIsWsMember] = useState(false);
   const [showChat, setShowChat] = useState(false);
+  const [showDesktopChat, setShowDesktopChat] = useState(true);
   const [showNewPost, setShowNewPost] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showFacilitator, setShowFacilitator] = useState(false);
@@ -75,8 +79,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
   const { board, loading: boardLoading, error: boardError } = useBoard(boardId);
   const { posts, loading: postsLoading, addPost, updatePost, updatePosition, deletePost, reorderPosts } = usePosts(boardId);
-  const { messages, loading: msgsLoading, sendMessage } = useMessages(boardId);
-  const { onlineCount, joinBoard, setOffline } = useParticipants(boardId);
+  const { messages, loading: msgsLoading, sendMessage, toggleReaction } = useMessages(boardId);
+  const { joinBoard, setOffline } = useParticipants(boardId);
+  const { sessionCount: onlineCount } = usePresence(boardId, uid);
   const { lockBoard, unlockBoard } = useLockBoard(boardId);
   const { selectStage, startTimer, pauseTimer, resumeTimer, stopTimer } = useTimer(boardId, board?.timer);
   const isHostUser = role === 'host';
@@ -120,11 +125,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     };
   }, [uid, joined, setOffline]);
 
-  // 워크스페이스 admin 여부 확인 (보드 로드 + uid 확정 후 1회)
+  // 워크스페이스 멤버 여부 확인 (보드 로드 + uid 확정 후 1회)
   useEffect(() => {
     if (!uid || !board?.workspaceId || board.workspaceId === 'default') return;
     getDoc(doc(db, workspaceMembersPath(board.workspaceId), uid)).then((snap) => {
-      if (snap.exists() && snap.data().role === 'admin') setIsWsAdmin(true);
+      if (snap.exists()) {
+        setIsWsMember(true);
+        if (snap.data().role === 'admin') setIsWsAdmin(true);
+      }
     }).catch(() => {});
   }, [uid, board?.workspaceId]);
 
@@ -213,14 +221,26 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     } catch {}
   }
 
-  async function handleSendMessage(content: string, fileAttachment?: { url: string; name: string; size: number; type: 'image' | 'file' }) {
-    if (!uid || !nickname) return;
+  async function handleSendMessage(
+    content: string,
+    fileAttachment?: { url: string; name: string; size: number; type: 'image' | 'file' },
+    replyTo?: MessageReplyTo,
+  ) {
+    console.log('[handleSendMessage] uid:', uid, 'nickname:', nickname, 'content:', content, 'replyTo:', replyTo);
+    if (!uid || !nickname) { console.warn('[handleSendMessage] early return — uid or nickname missing'); return; }
     if (checkBanned(content)) throw new Error('banned');
+    console.log('[handleSendMessage] calling sendMessage...');
     if (fileAttachment) {
-      await sendMessage({ authorId: uid, authorName: nickname, role, content, type: fileAttachment.type, fileUrl: fileAttachment.url, fileName: fileAttachment.name, fileSize: fileAttachment.size });
+      await sendMessage({ authorId: uid, authorName: nickname, role, content, type: fileAttachment.type, fileUrl: fileAttachment.url, fileName: fileAttachment.name, fileSize: fileAttachment.size, replyTo });
     } else {
-      await sendMessage({ authorId: uid, authorName: nickname, role, content });
+      await sendMessage({ authorId: uid, authorName: nickname, role, content, replyTo });
     }
+    console.log('[handleSendMessage] sendMessage done');
+  }
+
+  function handleToggleReaction(messageId: string, emoji: EmojiType) {
+    if (!uid) return;
+    toggleReaction(messageId, uid, emoji).catch(() => {});
   }
 
   if (authLoading || boardLoading) {
@@ -246,6 +266,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const template = getTemplate(board?.template ?? 'free');
   const isFreeLayout = template.columns === null;
   const isCanvas = template.id === 'canvas';
+  const isProscons = template.id === 'proscons';
   const skin = board?.skin ?? 'standard';
 
   return (
@@ -260,7 +281,16 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           >
             Fadlet
           </Link>
-          {role === 'host' && (
+          {isWsMember && board?.workspaceId && board.workspaceId !== 'default' && (
+            <Link
+              href={`/workspaces/${board.workspaceId}`}
+              className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0"
+            >
+              <ArrowLeft size={12} />
+              워크스페이스
+            </Link>
+          )}
+          {!isWsMember && role === 'host' && (
             <Link
               href="/dashboard"
               className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0"
@@ -359,6 +389,21 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         </div>
       </header>
 
+      {/* 데모 배너 */}
+      {board?.isDemo && (
+        <div className="flex items-center justify-between px-4 py-2 bg-amber-50 border-b border-amber-200 flex-shrink-0">
+          <p className="text-xs text-amber-800 font-medium">
+            🎯 데모 모드 — 최대 50명 참여 가능 · 채팅 로그 미보관
+          </p>
+          <Link
+            href="/dashboard"
+            className="text-xs text-amber-700 hover:text-amber-900 font-semibold underline underline-offset-2 flex-shrink-0"
+          >
+            정식 운영자로 시작 →
+          </Link>
+        </div>
+      )}
+
       {/* 단계 배너 */}
       {board?.stages && board.stages.length > 0 && (
         <StageBanner
@@ -409,70 +454,16 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           </div>
         ) : (
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
-          <div className="flex-1 overflow-y-auto p-4">
-            {isFreeLayout ? (
-              /* 자유형 / 브레인스토밍 */
-              <>
-                <div className="flex items-center justify-between mb-4">
-                  <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
-                  {canPost && (
-                    <Button
-                      onClick={() => setShowNewPost(true)}
-                      size="sm"
-                      className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
-                    >
-                      + 새 포스트
-                    </Button>
-                  )}
-                </div>
-
-                {isLocked && role !== 'host' && (
-                  <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
-                    <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
-                  </div>
-                )}
-
-                {postsLoading ? (
-                  <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
-                ) : posts.length === 0 ? (
-                  <div className="text-center py-16">
-                    <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
-                    {canPost && (
-                      <Button onClick={() => setShowNewPost(true)} variant="outline" size="sm">
-                        첫 번째 포스트 작성하기
-                      </Button>
-                    )}
-                  </div>
-                ) : (
-                  <SortableContext items={posts.map((p) => p.id)} strategy={rectSortingStrategy}>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                      {posts.map((post) => (
-                        <SortablePostCard
-                          key={post.id}
-                          post={post}
-                          currentUid={uid ?? ''}
-                          isHost={role === 'host'}
-                          canDrag={!isLocked || role === 'host'}
-                          onUpdate={updatePost}
-                          onDelete={deletePost}
-                          onOpenDetail={setDetailPost}
-                        />
-                      ))}
-                    </div>
-                  </SortableContext>
-                )}
-              </>
-            ) : (
-              /* 컬럼형 템플릿 */
-              <>
-                <div className="flex items-center justify-between mb-4">
+            {isProscons ? (
+              /* 찬반 템플릿 — 전체 높이 좌우 분할 */
+              <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-white flex-shrink-0">
                   <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
                 </div>
                 {postsLoading ? (
                   <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
                 ) : (
-                  <ColumnBoard
-                    template={template}
+                  <ProsConsBoard
                     posts={posts}
                     canPost={canPost}
                     currentUid={uid ?? ''}
@@ -484,26 +475,121 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                     onOpenDetail={setDetailPost}
                   />
                 )}
-              </>
+              </div>
+            ) : (
+              <div className="flex-1 overflow-y-auto p-4">
+                {isFreeLayout ? (
+                  /* 자유형 / 브레인스토밍 */
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                      {canPost && (
+                        <Button
+                          onClick={() => setShowNewPost(true)}
+                          size="sm"
+                          className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+                        >
+                          + 새 포스트
+                        </Button>
+                      )}
+                    </div>
+
+                    {isLocked && role !== 'host' && (
+                      <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
+                      </div>
+                    )}
+
+                    {postsLoading ? (
+                      <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
+                    ) : posts.length === 0 ? (
+                      <div className="text-center py-16">
+                        <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
+                        {canPost && (
+                          <Button onClick={() => setShowNewPost(true)} variant="outline" size="sm">
+                            첫 번째 포스트 작성하기
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <SortableContext items={posts.map((p) => p.id)} strategy={rectSortingStrategy}>
+                        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+                          {posts.map((post) => (
+                            <SortablePostCard
+                              key={post.id}
+                              post={post}
+                              currentUid={uid ?? ''}
+                              isHost={role === 'host'}
+                              canDrag={!isLocked || role === 'host'}
+                              onUpdate={updatePost}
+                              onDelete={deletePost}
+                              onOpenDetail={setDetailPost}
+                            />
+                          ))}
+                        </div>
+                      </SortableContext>
+                    )}
+                  </>
+                ) : (
+                  /* 컬럼형 템플릿 */
+                  <>
+                    <div className="flex items-center justify-between mb-4">
+                      <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                    </div>
+                    {postsLoading ? (
+                      <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
+                    ) : (
+                      <ColumnBoard
+                        template={template}
+                        posts={posts}
+                        canPost={canPost}
+                        currentUid={uid ?? ''}
+                        isHost={role === 'host'}
+                        isLocked={isLocked}
+                        onAddPost={handleAddPost}
+                        onUpdatePost={updatePost}
+                        onDeletePost={deletePost}
+                        onOpenDetail={setDetailPost}
+                      />
+                    )}
+                  </>
+                )}
+              </div>
             )}
-          </div>
           </DndContext>
         )}
 
         {/* 데스크톱 채팅 패널 */}
-        {allowChat && <div className="hidden lg:flex w-80 flex-col flex-shrink-0">
-          <ChatPanel
-            messages={messages}
-            loading={msgsLoading}
-            onlineCount={onlineCount}
-            onSend={handleSendMessage}
-            currentUid={uid ?? ''}
-            currentName={nickname}
-            currentRole={role}
-            boardId={boardId}
-            pinnedAnnouncement={board?.pinnedAnnouncement}
-          />
-        </div>}
+        {allowChat && showDesktopChat && (
+          <div className="hidden lg:flex w-80 flex-col flex-shrink-0">
+            <ChatPanel
+              messages={messages}
+              loading={msgsLoading}
+              onlineCount={onlineCount}
+              onSend={handleSendMessage}
+              onToggleReaction={handleToggleReaction}
+              currentUid={uid ?? ''}
+              currentName={nickname}
+              currentRole={role}
+              boardId={boardId}
+              pinnedAnnouncement={board?.pinnedAnnouncement}
+              onClose={() => setShowDesktopChat(false)}
+            />
+          </div>
+        )}
+        {/* 채팅 접혔을 때 재열기 탭 */}
+        {allowChat && !showDesktopChat && (
+          <button
+            onClick={() => setShowDesktopChat(true)}
+            className="hidden lg:flex flex-col items-center justify-center gap-1.5 w-8 border-l border-gray-200 bg-white hover:bg-indigo-50 text-gray-400 hover:text-indigo-600 transition-colors flex-shrink-0"
+            aria-label="채팅 열기"
+          >
+            <ChevronLeft size={15} />
+            <span className="text-[10px] font-semibold" style={{ writingMode: 'vertical-rl', letterSpacing: '0.05em' }}>
+              채팅
+            </span>
+          </button>
+        )}
       </div>
 
       {/* 모바일 채팅 버튼 */}
@@ -536,6 +622,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               loading={msgsLoading}
               onlineCount={onlineCount}
               onSend={handleSendMessage}
+              onToggleReaction={handleToggleReaction}
               currentUid={uid ?? ''}
               currentName={nickname}
               currentRole={role}

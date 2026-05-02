@@ -77,7 +77,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user) router.replace('/login?redirect=/dashboard');
+    if (!user || user.isAnonymous) router.replace('/login?redirect=/dashboard');
     else if (isPending) router.replace('/pending');
   }, [user, isPending, loading, router]);
 

@@ -2,6 +2,7 @@
 
 import { FileIcon, DownloadIcon } from 'lucide-react';
 import type { Message } from '@/lib/types';
+import { truncateFileName } from '@/lib/utils/truncate-file-name';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
@@ -70,7 +71,9 @@ export function MediaGallery({ messages }: MediaGalleryProps) {
                 className="flex items-center gap-2 px-3 py-2 rounded-lg border border-gray-200 bg-white hover:bg-gray-50 text-sm transition-colors"
               >
                 <FileIcon size={16} className="text-gray-400 flex-shrink-0" />
-                <span className="flex-1 truncate text-gray-800">{file.fileName ?? '파일'}</span>
+                <span className="flex-1 min-w-0 overflow-hidden text-gray-800" title={file.fileName ?? '파일'}>
+                  {truncateFileName(file.fileName ?? '파일')}
+                </span>
                 {file.fileSize !== undefined && (
                   <span className="text-xs text-gray-400 flex-shrink-0">
                     {formatFileSize(file.fileSize)}

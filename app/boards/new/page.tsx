@@ -159,10 +159,10 @@ function NewBoardForm() {
   return (
     <main className="relative flex items-center justify-center min-h-screen bg-indigo-50 px-4 py-6 sm:py-8">
       <Link
-        href="/"
+        href="/dashboard"
         className="absolute top-4 left-4 inline-flex items-center gap-1 text-sm text-indigo-600 hover:text-indigo-700 font-semibold transition-colors"
       >
-        ← 홈
+        ← 워크스페이스로 돌아가기
       </Link>
       <div className="bg-white rounded-2xl shadow-md p-5 sm:p-8 w-full max-w-2xl">
         <div className="flex items-center justify-between mb-1 gap-2">

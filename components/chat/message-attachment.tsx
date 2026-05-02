@@ -2,6 +2,7 @@
 
 import { FileIcon, DownloadIcon, ExternalLinkIcon } from 'lucide-react';
 import type { Message } from '@/lib/types';
+import { truncateFileName } from '@/lib/utils/truncate-file-name';
 
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes}B`;
@@ -45,7 +46,9 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
         download={msg.fileName}
       >
         <FileIcon size={16} className="flex-shrink-0" />
-        <span className="flex-1 truncate">{msg.fileName ?? '파일'}</span>
+        <span className="flex-1 min-w-0 overflow-hidden" title={msg.fileName ?? '파일'}>
+          {truncateFileName(msg.fileName ?? '파일')}
+        </span>
         <span className={`text-xs flex-shrink-0 ${isMine ? 'text-indigo-200' : 'text-gray-400'}`}>
           {msg.fileSize ? formatFileSize(msg.fileSize) : ''}
         </span>

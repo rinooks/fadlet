@@ -2,17 +2,21 @@
 
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
+  doc,
   limit,
   onSnapshot,
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { messagesPath } from '@/lib/firebase/collections';
-import type { LinkPreview, Message, MessageType, UserRole } from '@/lib/types';
+import type { EmojiType, LinkPreview, Message, MessageReplyTo, MessageType, UserRole } from '@/lib/types';
 
 const URL_REGEX = /https?:\/\/[^\s]+/g;
 
@@ -30,7 +34,10 @@ export function useMessages(boardId: string) {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        setMessages(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Message));
+        const msgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Message);
+        const withReply = msgs.filter((m) => m.replyTo);
+        if (withReply.length > 0) console.log('[useMessages] messages with replyTo:', withReply.length, withReply.map((m) => ({ id: m.id, replyTo: m.replyTo })));
+        setMessages(msgs);
         setLoading(false);
       },
       (err) => {
@@ -50,12 +57,25 @@ export function useMessages(boardId: string) {
     fileUrl?: string;
     fileName?: string;
     fileSize?: number;
+    replyTo?: MessageReplyTo;
   }) {
-    const { type = 'text', ...rest } = params;
-    const data: Record<string, unknown> = { ...rest, type, createdAt: serverTimestamp() };
+    const msgType: MessageType = params.type ?? 'text';
+
+    const data: Record<string, unknown> = {
+      authorId: params.authorId,
+      authorName: params.authorName,
+      role: params.role,
+      content: params.content,
+      type: msgType,
+      createdAt: serverTimestamp(),
+    };
+    if (params.fileUrl) data.fileUrl = params.fileUrl;
+    if (params.fileName) data.fileName = params.fileName;
+    if (params.fileSize !== undefined) data.fileSize = params.fileSize;
+    if (params.replyTo) data.replyTo = params.replyTo;
 
     // URL 자동 감지 → OG 미리보기
-    if (type === 'text') {
+    if (msgType === 'text') {
       const urls = params.content.match(URL_REGEX);
       if (urls?.[0]) {
         try {
@@ -73,8 +93,20 @@ export function useMessages(boardId: string) {
       }
     }
 
+    console.log('[sendMessage] writing to Firestore:', JSON.stringify(data, null, 2));
     await addDoc(collection(db, messagesPath(boardId)), data);
   }
 
-  return { messages, loading, sendMessage };
+  const toggleReaction = useCallback(async (messageId: string, userId: string, emoji: EmojiType) => {
+    const msg = messages.find((m) => m.id === messageId);
+    const reactors = (msg?.reactions?.[emoji] ?? []) as string[];
+    const ref = doc(db, messagesPath(boardId), messageId);
+    if (reactors.includes(userId)) {
+      await updateDoc(ref, { [`reactions.${emoji}`]: arrayRemove(userId) });
+    } else {
+      await updateDoc(ref, { [`reactions.${emoji}`]: arrayUnion(userId) });
+    }
+  }, [boardId, messages]);
+
+  return { messages, loading, sendMessage, toggleReaction };
 }

@@ -48,6 +48,8 @@ export interface Board {
   skin?: BoardSkin;
   ownerId: string;
   workspaceId: string;
+  isDemo?: boolean;
+  maxParticipants?: number;
   settings: BoardSettings;
   stages?: Stage[];
   timer?: TimerState;
@@ -93,6 +95,13 @@ export interface LinkPreview {
   siteName: string;
 }
 
+export interface MessageReplyTo {
+  id: string;
+  authorName: string;
+  content: string;
+  type: MessageType;
+}
+
 export interface Message {
   id: string;
   authorId: string;
@@ -104,6 +113,8 @@ export interface Message {
   fileName?: string;
   fileSize?: number;
   linkPreview?: LinkPreview;
+  replyTo?: MessageReplyTo;
+  reactions?: Partial<Record<EmojiType, string[]>>;
   createdAt: Timestamp;
 }
 

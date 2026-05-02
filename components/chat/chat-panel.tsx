@@ -1,16 +1,18 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Paperclip, X, Images, Search, Pin, PinOff, Flag } from 'lucide-react';
+import { CornerUpLeft, Paperclip, X, Images, Search, Pin, PinOff, Flag, ChevronRight } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { MessageAttachment } from './message-attachment';
 import { MediaGallery } from './media-gallery';
+import { truncateFileName } from '@/lib/utils/truncate-file-name';
 import { ReportDialog } from '@/components/shared/report-dialog';
 import { useAnnouncement } from '@/lib/hooks/use-announcement';
+import { useTyping } from '@/lib/hooks/use-typing';
 import { uploadChatFile } from '@/lib/utils/upload-file';
-import type { Message, PinnedAnnouncement, UserRole } from '@/lib/types';
+import type { EmojiType, Message, MessageReplyTo, PinnedAnnouncement, UserRole } from '@/lib/types';
 
 type Tab = 'chat' | 'media';
 
@@ -21,27 +23,39 @@ interface FileAttachment {
   type: 'image' | 'file';
 }
 
+const EMOJI_LIST: { key: EmojiType; emoji: string; label: string }[] = [
+  { key: 'thumbsup', emoji: '👍', label: '좋아요' },
+  { key: 'heart',    emoji: '❤️', label: '하트' },
+  { key: 'party',    emoji: '🎉', label: '파티' },
+  { key: 'bulb',     emoji: '💡', label: '아이디어' },
+  { key: 'thinking', emoji: '🤔', label: '생각중' },
+];
+
 interface ChatPanelProps {
   messages: Message[];
   loading: boolean;
   onlineCount: number;
-  onSend: (content: string, fileAttachment?: FileAttachment) => Promise<void>;
+  onSend: (content: string, fileAttachment?: FileAttachment, replyTo?: MessageReplyTo) => Promise<void>;
+  onToggleReaction: (messageId: string, emoji: EmojiType) => void;
   currentUid: string;
   currentName: string;
   currentRole: UserRole;
   boardId: string;
   pinnedAnnouncement?: PinnedAnnouncement | null;
+  onClose?: () => void;
 }
 
-export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, currentName, currentRole, boardId, pinnedAnnouncement }: ChatPanelProps) {
+export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReaction, currentUid, currentName, currentRole, boardId, pinnedAnnouncement, onClose }: ChatPanelProps) {
   const [tab, setTab] = useState<Tab>('chat');
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
+  const { typingUsers, startTyping, stopTyping } = useTyping(boardId, currentUid, currentName);
   const [attachment, setAttachment] = useState<FileAttachment | null>(null);
   const [uploading, setUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [replyingTo, setReplyingTo] = useState<Message | null>(null);
   const storageKey = `chat-last-read-${boardId}`;
   const viewerIsHost = currentRole === 'host';
   const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
@@ -55,6 +69,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
       toast.error('공지 고정 실패');
     }
   }
+
   const [lastReadAt, setLastReadAt] = useState<number>(() => {
     if (typeof window === 'undefined') return 0;
     return Number(localStorage.getItem(storageKey) ?? '0');
@@ -121,6 +136,15 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
 
   function jumpToBottom() {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
+
+  function scrollToMessage(messageId: string) {
+    const el = document.getElementById(`msg-${messageId}`);
+    if (!el) return;
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    el.style.transition = 'background-color 0.2s';
+    el.style.backgroundColor = '#eef2ff';
+    setTimeout(() => { el.style.backgroundColor = ''; }, 1200);
   }
 
   async function processFile(file: File) {
@@ -200,13 +224,25 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
     e.preventDefault();
     if ((!input.trim() && !attachment) || sending) return;
 
+    const replyTo: MessageReplyTo | undefined = replyingTo
+      ? {
+          id: replyingTo.id,
+          authorName: replyingTo.authorName,
+          content: (replyingTo.content || replyingTo.fileName || '').slice(0, 100),
+          type: replyingTo.type,
+        }
+      : undefined;
+
+    console.log('[handleSend] replyingTo:', replyingTo?.id, '→ replyTo:', replyTo);
+
     if (attachment) {
-      // 첨부 파일은 업로드 결과까지 기다림
       setSending(true);
       try {
-        await onSend(input.trim(), attachment);
+        await onSend(input.trim(), attachment, replyTo);
         setInput('');
         setAttachment(null);
+        setReplyingTo(null);
+        stopTyping();
       } catch (err) {
         handleSendError(err);
       } finally {
@@ -215,9 +251,10 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
       return;
     }
 
-    // 텍스트만: 낙관적 UI — 입력창을 즉시 비우고 백그라운드에서 전송
-    const promise = onSend(input.trim(), undefined);
+    const promise = onSend(input.trim(), undefined, replyTo);
     setInput('');
+    setReplyingTo(null);
+    stopTyping();
     promise.catch(handleSendError);
   }
 
@@ -245,7 +282,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
       onDragOver={handleDragOver}
       onDrop={handleDrop}
     >
-      {/* 드래그 오버레이 */}
       {isDragging && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-indigo-50/90 border-2 border-dashed border-indigo-400 rounded-none pointer-events-none">
           <Paperclip size={36} className="text-indigo-400 mb-2" />
@@ -259,9 +295,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
           <button
             onClick={() => setTab('chat')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              tab === 'chat'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-500 hover:bg-gray-100'
+              tab === 'chat' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-100'
             }`}
           >
             채팅
@@ -269,9 +303,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
           <button
             onClick={() => setTab('media')}
             className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold transition-colors ${
-              tab === 'media'
-                ? 'bg-indigo-600 text-white'
-                : 'text-gray-500 hover:bg-gray-100'
+              tab === 'media' ? 'bg-indigo-600 text-white' : 'text-gray-500 hover:bg-gray-100'
             }`}
           >
             <Images size={12} />
@@ -307,6 +339,16 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
             <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
             {onlineCount}명
           </span>
+          {onClose && (
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-1 rounded text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors focus-visible:outline focus-visible:outline-2"
+              aria-label="채팅 숨기기"
+            >
+              <ChevronRight size={14} />
+            </button>
+          )}
         </div>
       </div>
 
@@ -351,14 +393,13 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
         </div>
       )}
 
-      {/* 탭 컨텐츠 */}
       {tab === 'media' ? (
         <div className="flex-1 overflow-y-auto">
           <MediaGallery messages={messages} />
         </div>
       ) : (
         <>
-          <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-2 relative">
+          <div ref={scrollRef} onScroll={handleScroll} className="flex-1 overflow-y-auto overflow-x-hidden px-3 py-3 space-y-4 relative">
             {loading && <p className="text-xs text-gray-400 text-center py-4">불러오는 중...</p>}
             {!loading && messages.length === 0 && (
               <p className="text-xs text-gray-400 text-center py-4">아직 메시지가 없습니다.</p>
@@ -371,8 +412,15 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
               const isMine = msg.authorId === currentUid;
               const canPin = viewerIsHost && (msg.type === 'text' || (msg.content && msg.content.trim().length > 0));
               const canReport = !isMine && !isHost;
+              const reactions = msg.reactions ?? {};
+              const hasReactions = EMOJI_LIST.some(({ key }) => (reactions[key]?.length ?? 0) > 0);
+
               return (
-                <div id={`msg-${msg.id}`} key={msg.id} className={`group flex flex-col w-full min-w-0 ${isMine ? 'items-end' : 'items-start'}`}>
+                <div
+                  id={`msg-${msg.id}`}
+                  key={msg.id}
+                  className={`group flex flex-col w-full min-w-0 ${isMine ? 'items-end' : 'items-start'}`}
+                >
                   {!isMine && (
                     <span className="text-xs text-gray-500 mb-0.5 ml-1">
                       {isHost ? (
@@ -382,7 +430,21 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                       )}
                     </span>
                   )}
-                  <div className={`flex items-center gap-1 max-w-[85%] min-w-0 ${isMine ? 'flex-row-reverse' : ''}`}>
+
+                  {/* 답글 인용 블록 */}
+                  {msg.replyTo && (
+                    <button
+                      type="button"
+                      onClick={() => scrollToMessage(msg.replyTo!.id)}
+                      className={`max-w-[85%] mb-1 px-2 py-1 rounded-lg text-[11px] border-l-2 border-indigo-400 bg-indigo-50/60 text-left hover:bg-indigo-50 transition-colors ${isMine ? 'self-end' : 'self-start'}`}
+                    >
+                      <span className="font-semibold text-indigo-600">{msg.replyTo.authorName}</span>
+                      <span className="ml-1 text-gray-500 line-clamp-1">{msg.replyTo.content}</span>
+                    </button>
+                  )}
+
+                  {/* 버블 + 반응 배지 + 액션 바 */}
+                  <div className={`relative flex flex-col max-w-[88%]`}>
                     <div
                       className={`px-3 py-2 rounded-2xl text-sm ${
                         isMine
@@ -394,29 +456,82 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
                     >
                       <MessageAttachment msg={msg} isMine={isMine} />
                     </div>
-                    {canPin && (
+
+                    {/* 이모지 반응 배지 — 버블 바로 아래 */}
+                    {hasReactions && (
+                      <div className={`flex flex-wrap gap-1 mt-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
+                        {EMOJI_LIST.map(({ key, emoji }) => {
+                          const count = reactions[key]?.length ?? 0;
+                          if (!count) return null;
+                          const iReacted = reactions[key]?.includes(currentUid);
+                          return (
+                            <button
+                              key={key}
+                              type="button"
+                              onClick={() => onToggleReaction(msg.id, key)}
+                              className={`flex items-center gap-0.5 text-xs px-1.5 py-0.5 rounded-full border transition-colors ${
+                                iReacted
+                                  ? 'bg-indigo-50 border-indigo-300 text-indigo-700'
+                                  : 'bg-white border-gray-200 text-gray-600 hover:bg-gray-50'
+                              }`}
+                            >
+                              <span>{emoji}</span>
+                              <span>{count}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
+
+                    {/* 호버 액션 바 — 버블 바깥 아래에 절대 배치 */}
+                    <div className={`absolute top-full mt-1 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-100 px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMine ? 'right-0' : 'left-0'}`}>
+                      {EMOJI_LIST.map(({ key, emoji, label }) => (
+                        <button
+                          key={key}
+                          type="button"
+                          onClick={() => onToggleReaction(msg.id, key)}
+                          className={`p-1 rounded-full text-sm leading-none hover:bg-gray-100 transition-colors focus-visible:outline focus-visible:outline-2 ${reactions[key]?.includes(currentUid) ? 'bg-gray-100' : ''}`}
+                          aria-label={label}
+                          title={label}
+                        >
+                          {emoji}
+                        </button>
+                      ))}
+                      <span className="w-px h-4 bg-gray-200 mx-0.5" aria-hidden />
                       <button
                         type="button"
-                        onClick={() => handlePinMessage(msg)}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-gray-400 hover:text-amber-600 p-1 rounded transition-opacity focus-visible:outline focus-visible:outline-2"
-                        aria-label="공지로 고정"
-                        title="공지로 고정"
+                        onClick={() => setReplyingTo(msg)}
+                        className="p-1 rounded-full text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 transition-colors focus-visible:outline focus-visible:outline-2"
+                        aria-label="답글"
+                        title="답글"
                       >
-                        <Pin size={12} />
+                        <CornerUpLeft size={13} />
                       </button>
-                    )}
-                    {canReport && (
-                      <button
-                        type="button"
-                        onClick={() => setReportTarget(msg)}
-                        className="opacity-0 group-hover:opacity-100 focus-visible:opacity-100 text-gray-400 hover:text-red-500 p-1 rounded transition-opacity focus-visible:outline focus-visible:outline-2"
-                        aria-label="메시지 신고"
-                        title="신고"
-                      >
-                        <Flag size={12} />
-                      </button>
-                    )}
+                      {canPin && (
+                        <button
+                          type="button"
+                          onClick={() => handlePinMessage(msg)}
+                          className="p-1 rounded-full text-gray-400 hover:text-amber-600 hover:bg-amber-50 transition-colors focus-visible:outline focus-visible:outline-2"
+                          aria-label="공지로 고정"
+                          title="공지로 고정"
+                        >
+                          <Pin size={12} />
+                        </button>
+                      )}
+                      {canReport && (
+                        <button
+                          type="button"
+                          onClick={() => setReportTarget(msg)}
+                          className="p-1 rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors focus-visible:outline focus-visible:outline-2"
+                          aria-label="메시지 신고"
+                          title="신고"
+                        >
+                          <Flag size={12} />
+                        </button>
+                      )}
+                    </div>
                   </div>
+
                   <span className="text-[10px] text-gray-400 mt-0.5 mx-1">{formatTime(msg)}</span>
                 </div>
               );
@@ -435,17 +550,43 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, currentUid, 
           )}
 
           <form onSubmit={handleSend} className="px-3 pb-3 pt-2 border-t border-gray-100">
+            {/* 답글 바 */}
+            {replyingTo && (
+              <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-indigo-50 rounded-lg text-xs border-l-2 border-indigo-400">
+                <CornerUpLeft size={12} className="text-indigo-400 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <span className="font-semibold text-indigo-600">{replyingTo.authorName}</span>
+                  <span className="block text-gray-500 truncate">{replyingTo.content || replyingTo.fileName || ''}</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setReplyingTo(null)}
+                  className="flex-shrink-0 text-gray-400 hover:text-red-500"
+                  aria-label="답글 취소"
+                >
+                  <X size={14} />
+                </button>
+              </div>
+            )}
             {attachment && (
               <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-indigo-50 rounded-lg text-xs text-indigo-700">
-                <span className="flex-1 truncate">{attachment.name}</span>
+                <span className="flex-1 min-w-0 overflow-hidden" title={attachment.name}>
+                  {truncateFileName(attachment.name)}
+                </span>
                 <button type="button" onClick={removeAttachment} className="flex-shrink-0 hover:text-red-500" aria-label="첨부 제거">
                   <X size={14} />
                 </button>
               </div>
             )}
+            {typingUsers.length > 0 && (
+              <p className="text-[11px] text-gray-400 mb-1 px-1 truncate">
+                {typingUsers.map((u) => u.name).join(', ')}
+                {typingUsers.length === 1 ? '님이' : '님이'} 입력 중…
+              </p>
+            )}
             <Textarea
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => { setInput(e.target.value); if (e.target.value) startTyping(); else stopTyping(); }}
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder="메시지 입력… (Enter 전송, 이미지 붙여넣기 가능)"

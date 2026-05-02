@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { Settings } from 'lucide-react';
+import { DemoButton } from '@/components/shared/demo-button';
 
 const FEATURES = [
   {
@@ -133,17 +134,25 @@ export default function HomePage() {
           가입 없이 <strong className="text-gray-900 font-semibold">30초</strong>면 워크숍이 시작됩니다.
         </p>
 
+        {/* 데모 CTA */}
+        <div className="flex flex-col items-center gap-2 mb-4">
+          <DemoButton />
+          <p className="text-xs text-gray-400">
+            가입 불필요 · 보드 1개 · 최대 50명 참여
+          </p>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
           <Link
             href="/dashboard"
-            className="group inline-flex items-center justify-center h-12 px-8 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-base transition-all shadow-md shadow-indigo-600/20 hover:shadow-lg hover:shadow-indigo-600/30 hover:-translate-y-0.5"
+            className="group inline-flex items-center justify-center h-11 px-6 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-indigo-300 text-gray-700 font-semibold text-sm transition-all"
           >
-            보드 만들기
-            <span className="ml-2 transition-transform group-hover:translate-x-0.5">→</span>
+            운영자로 시작하기
+            <span className="ml-1.5 transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
           <Link
             href="/boards/join"
-            className="inline-flex items-center justify-center h-12 px-8 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-gray-300 text-gray-900 font-semibold text-base transition-all"
+            className="inline-flex items-center justify-center h-11 px-6 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-gray-300 text-gray-700 font-semibold text-sm transition-all"
           >
             코드로 입장하기
           </Link>
