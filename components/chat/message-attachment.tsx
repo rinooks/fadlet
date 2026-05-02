@@ -2,13 +2,8 @@
 
 import { FileIcon, DownloadIcon, ExternalLinkIcon } from 'lucide-react';
 import type { Message } from '@/lib/types';
+import { formatFileSize } from '@/lib/utils/format-file-size';
 import { truncateFileName } from '@/lib/utils/truncate-file-name';
-
-function formatFileSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes}B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)}KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(1)}MB`;
-}
 
 interface MessageAttachmentProps {
   msg: Message;

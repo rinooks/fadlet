@@ -41,11 +41,11 @@ export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenD
 
   return (
     <div
-      className={`skin-post-card relative rounded-xl border-2 shadow-sm min-h-[120px] flex flex-col cursor-pointer hover:shadow-md transition-shadow ${COLOR_MAP[post.color]}`}
+      className={`skin-post-card relative rounded-md border-2 shadow-sm min-h-[120px] flex flex-col cursor-pointer hover:shadow-md transition-shadow ${COLOR_MAP[post.color]}`}
       onClick={() => !editing && onOpenDetail(post)}
     >
       {post.imageUrl && (
-        <div className="rounded-t-xl overflow-hidden">
+        <div className="rounded-t-md overflow-hidden">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.imageUrl}

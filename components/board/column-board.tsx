@@ -35,7 +35,7 @@ function DroppableColumn({ columnId, isGrid, postIds, children }: DroppableColum
     <SortableContext items={postIds} strategy={verticalListSortingStrategy}>
       <div
         ref={setNodeRef}
-        className={`flex-1 p-2 space-y-2 overflow-y-auto rounded-b-xl transition-colors ${
+        className={`flex-1 p-2 space-y-2 overflow-y-auto rounded-b-md transition-colors ${
           isOver ? 'bg-indigo-50' : ''
         } ${isGrid ? 'min-h-[120px]' : 'min-h-[200px]'}`}
       >
@@ -73,7 +73,7 @@ export function ColumnBoard({
   return (
     <>
       {isLocked && !isHost && (
-        <div className="text-center py-3 mb-3 bg-gray-50 rounded-lg border border-gray-200">
+        <div className="text-center py-3 mb-3 bg-gray-50 rounded-md border border-gray-200">
           <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
         </div>
       )}
@@ -85,11 +85,11 @@ export function ColumnBoard({
           return (
             <div
               key={col.id}
-              className={`flex flex-col rounded-xl border border-gray-200 bg-white/70 ${
+              className={`flex flex-col rounded-md border border-gray-200 bg-white/70 ${
                 isGrid ? 'min-h-[200px]' : 'min-w-[240px] flex-shrink-0 w-64'
               }`}
             >
-              <div className={`flex items-center justify-between px-3 py-2 rounded-t-xl font-semibold text-sm ${col.headerClass}`}>
+              <div className={`flex items-center justify-between px-3 py-2 rounded-t-md font-semibold text-sm ${col.headerClass}`}>
                 <span>{col.label}</span>
                 <span className="text-xs opacity-70">{colPosts.length}</span>
               </div>
@@ -116,7 +116,7 @@ export function ColumnBoard({
                 <div className="px-2 pb-2">
                   <button
                     onClick={() => setActiveColumn(col.id)}
-                    className="w-full text-xs text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 border border-dashed border-gray-300 hover:border-indigo-400 rounded-lg py-1.5 transition-colors"
+                    className="w-full text-xs text-gray-400 hover:text-indigo-600 hover:bg-indigo-50 border border-dashed border-gray-300 hover:border-indigo-400 rounded-md py-1.5 transition-colors"
                   >
                     + 추가
                   </button>

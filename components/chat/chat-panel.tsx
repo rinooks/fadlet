@@ -233,8 +233,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
         }
       : undefined;
 
-    console.log('[handleSend] replyingTo:', replyingTo?.id, '→ replyTo:', replyTo);
-
     if (attachment) {
       setSending(true);
       try {
@@ -431,7 +429,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                     </span>
                   )}
 
-                  {/* 답글 인용 블록 */}
                   {msg.replyTo && (
                     <button
                       type="button"
@@ -443,7 +440,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                     </button>
                   )}
 
-                  {/* 버블 + 반응 배지 + 액션 바 */}
                   <div className={`relative flex flex-col max-w-[88%]`}>
                     <div
                       className={`px-3 py-2 rounded-2xl text-sm ${
@@ -457,7 +453,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                       <MessageAttachment msg={msg} isMine={isMine} />
                     </div>
 
-                    {/* 이모지 반응 배지 — 버블 바로 아래 */}
                     {hasReactions && (
                       <div className={`flex flex-wrap gap-1 mt-1 ${isMine ? 'justify-end' : 'justify-start'}`}>
                         {EMOJI_LIST.map(({ key, emoji }) => {
@@ -483,7 +478,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                       </div>
                     )}
 
-                    {/* 호버 액션 바 — 버블 바깥 아래에 절대 배치 */}
                     <div className={`absolute top-full mt-1 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-100 px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMine ? 'right-0' : 'left-0'}`}>
                       {EMOJI_LIST.map(({ key, emoji, label }) => (
                         <button

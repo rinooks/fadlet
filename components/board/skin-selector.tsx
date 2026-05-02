@@ -6,11 +6,15 @@ import { SKINS } from '@/lib/skins';
 interface SkinSelectorProps {
   value: BoardSkin;
   onChange: (skin: BoardSkin) => void;
+  compact?: boolean;
 }
 
-export function SkinSelector({ value, onChange }: SkinSelectorProps) {
+export function SkinSelector({ value, onChange, compact = false }: SkinSelectorProps) {
+  const gridClass = compact ? 'grid grid-cols-2 gap-2' : 'grid grid-cols-2 sm:grid-cols-4 gap-2';
+  const swatchSize = compact ? 'w-4 h-4' : 'w-5 h-5';
+  const labelSize = compact ? 'text-xs' : 'text-sm';
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+    <div className={gridClass}>
       {SKINS.map((skin) => {
         const active = value === skin.id;
         return (
@@ -29,14 +33,16 @@ export function SkinSelector({ value, onChange }: SkinSelectorProps) {
               {skin.swatch.map((color, idx) => (
                 <span
                   key={idx}
-                  className="block w-5 h-5 rounded-md border border-black/10"
+                  className={`block ${swatchSize} rounded-md border border-black/10`}
                   style={{ background: color }}
                   aria-hidden
                 />
               ))}
             </div>
-            <span className="text-sm font-semibold text-gray-900">{skin.label}</span>
-            <span className="text-xs text-gray-500 leading-relaxed">{skin.description}</span>
+            <span className={`${labelSize} font-semibold text-gray-900`}>{skin.label}</span>
+            {!compact && (
+              <span className="text-xs text-gray-500 leading-relaxed">{skin.description}</span>
+            )}
           </button>
         );
       })}

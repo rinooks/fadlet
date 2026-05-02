@@ -10,8 +10,8 @@ const FEATURES = [
   },
   {
     icon: '🗺️',
-    title: '8가지 템플릿',
-    desc: '자유형·캔버스·브레인스토밍·KPT·4F·Q&A·찬반·9칸 윈도우.',
+    title: '9가지 템플릿',
+    desc: '자유형·캔버스·브레인스토밍·찬반·칸반·KPT·4F·Q&A·9칸 윈도우.',
   },
   {
     icon: '🎨',
@@ -40,6 +40,7 @@ const TEMPLATES = [
   { emoji: '🗺️', label: '캔버스', desc: '포스트를 원하는 위치에 자유롭게 배치합니다.' },
   { emoji: '💡', label: '브레인스토밍', desc: '아이디어를 자유롭게 쏟아냅니다.' },
   { emoji: '⚖️', label: '찬반', desc: '주제에 대한 찬성과 반대 의견을 나눕니다.' },
+  { emoji: '🗂️', label: '칸반', desc: '할 일·진행 중·완료로 작업 흐름을 시각화합니다.' },
   { emoji: '🔄', label: 'KPT', desc: 'Keep · Problem · Try 세 가지로 팀을 돌아봅니다.' },
   { emoji: '📋', label: '4F', desc: 'Fact · Feeling · Finding · Future로 경험을 회고합니다.' },
   { emoji: '❓', label: 'Q&A', desc: '질문과 답변을 나란히 모읍니다.' },

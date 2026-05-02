@@ -13,18 +13,19 @@ import { db } from '@/lib/firebase/client';
 import { participantsPath } from '@/lib/firebase/collections';
 import type { Participant, UserRole } from '@/lib/types';
 
-export function useParticipants(boardId: string) {
+export function useParticipants(boardId: string, options: { subscribe?: boolean } = {}) {
+  const { subscribe = false } = options;
   const [participants, setParticipants] = useState<(Participant & { id: string })[]>([]);
 
   useEffect(() => {
-    if (!boardId) return;
+    if (!boardId || !subscribe) return;
     const unsub = onSnapshot(collection(db, participantsPath(boardId)), (snap) => {
       setParticipants(
         snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Participant & { id: string })
       );
     });
     return unsub;
-  }, [boardId]);
+  }, [boardId, subscribe]);
 
   const joinBoard = useCallback(
     async (params: { userId: string; nickname: string; role: UserRole }) => {

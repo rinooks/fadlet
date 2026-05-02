@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 import { auth, db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
+import { SkinSelector } from '@/components/board/skin-selector';
 import { TemplateSelector } from '@/components/board/template-selector';
 import {
   Dialog,
@@ -16,7 +17,6 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import { SKINS } from '@/lib/skins';
 import type { BoardSkin, BoardTemplate } from '@/lib/types';
 
 export function DemoButton() {
@@ -96,28 +96,7 @@ export function DemoButton() {
             <div className="lg:w-64 flex flex-col gap-4 flex-shrink-0">
               <div>
                 <p className="text-sm font-semibold text-gray-700 mb-3">스킨</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {SKINS.map((s) => {
-                    const active = skin === s.id;
-                    return (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setSkin(s.id)}
-                        className={`flex flex-col items-start gap-2 rounded-xl border-2 p-3 text-left transition-colors ${
-                          active ? 'border-indigo-600 bg-indigo-50' : 'border-gray-200 bg-white hover:border-gray-300'
-                        }`}
-                      >
-                        <div className="flex items-center gap-1">
-                          {s.swatch.map((c, i) => (
-                            <span key={i} className="block w-4 h-4 rounded border border-black/10" style={{ background: c }} />
-                          ))}
-                        </div>
-                        <span className="text-xs font-semibold text-gray-900">{s.label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                <SkinSelector value={skin} onChange={setSkin} compact />
               </div>
 
               <button

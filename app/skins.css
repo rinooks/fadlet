@@ -153,12 +153,8 @@
   border-bottom-color: #0A0A0A !important;
 }
 
-/* 모서리 각 잡기 */
-.skin-root[data-skin="brutal"] [class*="rounded-2xl"],
-.skin-root[data-skin="brutal"] [class*="rounded-xl"],
-.skin-root[data-skin="brutal"] [class*="rounded-lg"],
-.skin-root[data-skin="brutal"] [class*="rounded-md"],
-.skin-root[data-skin="brutal"] [class*="rounded-full"]:not(.bg-green-400):not(.bg-red-600) {
+/* 모서리 각 잡기 — rounded-*, rounded-t-*, rounded-tl-*, rounded-full 등 모든 변형 */
+.skin-root[data-skin="brutal"] [class*="rounded"]:not(.bg-green-400):not(.bg-red-600) {
   border-radius: 0 !important;
 }
 
@@ -203,9 +199,8 @@
   box-shadow: 6px 6px 0 0 #0A0A0A !important;
 }
 
-/* 채팅 버블 */
+/* 채팅 버블 — 라운드 0은 위 통합 규칙에서 처리 */
 .skin-root[data-skin="brutal"] .rounded-2xl {
   border: 2.5px solid #0A0A0A !important;
   box-shadow: 3px 3px 0 0 #0A0A0A !important;
-  border-radius: 0 !important;
 }

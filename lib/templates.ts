@@ -49,6 +49,17 @@ export const TEMPLATES: TemplateDefinition[] = [
     ],
   },
   {
+    id: 'kanban',
+    label: '칸반',
+    description: '할 일 · 진행 중 · 완료로 작업 흐름을 시각화합니다.',
+    emoji: '🗂️',
+    columns: [
+      { id: 'todo', label: '📝 할 일', headerClass: 'bg-gray-500 text-white', defaultColor: 'gray' },
+      { id: 'doing', label: '🔄 진행 중', headerClass: 'bg-blue-500 text-white', defaultColor: 'blue' },
+      { id: 'done', label: '✅ 완료', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
+    ],
+  },
+  {
     id: 'kpt',
     label: 'KPT 회고',
     description: 'Keep · Problem · Try 세 가지로 팀을 돌아봅니다.',

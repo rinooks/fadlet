@@ -22,7 +22,8 @@ interface ProsConsBoardProps {
 const PANELS = [
   {
     id: 'pros',
-    label: '👍 찬성',
+    emoji: '👍',
+    label: '찬성',
     defaultColor: 'green' as PostColor,
     headerClass: 'bg-emerald-500 text-white',
     panelClass: 'bg-emerald-50/50',
@@ -31,7 +32,8 @@ const PANELS = [
   },
   {
     id: 'cons',
-    label: '👎 반대',
+    emoji: '👎',
+    label: '반대',
     defaultColor: 'pink' as PostColor,
     headerClass: 'bg-red-500 text-white',
     panelClass: 'bg-red-50/50',
@@ -39,31 +41,6 @@ const PANELS = [
     emptyClass: 'text-red-300',
   },
 ] as const;
-
-function DroppablePanel({
-  columnId,
-  postIds,
-  children,
-  isOver,
-  setNodeRef,
-}: {
-  columnId: string;
-  postIds: string[];
-  children: React.ReactNode;
-  isOver: boolean;
-  setNodeRef: (el: HTMLElement | null) => void;
-}) {
-  return (
-    <SortableContext items={postIds} strategy={verticalListSortingStrategy}>
-      <div
-        ref={setNodeRef}
-        className={`flex-1 overflow-y-auto p-3 space-y-2 transition-colors ${isOver ? 'bg-white/50' : ''}`}
-      >
-        {children}
-      </div>
-    </SortableContext>
-  );
-}
 
 function Panel({
   panel,
@@ -96,45 +73,43 @@ function Panel({
   return (
     <div className={`flex-1 flex flex-col min-w-0 ${panel.panelClass}`}>
       <div className={`flex items-center justify-between px-5 py-3 flex-shrink-0 ${panel.headerClass}`}>
-        <span className="font-bold text-base">{panel.label}</span>
+        <span className="font-bold text-base">{panel.emoji} {panel.label}</span>
         <span className="text-xs bg-white/20 px-2 py-0.5 rounded-full font-semibold">
           {posts.length}개
         </span>
       </div>
 
-      <DroppablePanel
-        columnId={panel.id}
-        postIds={posts.map((p) => p.id)}
-        isOver={isOver}
-        setNodeRef={setNodeRef}
-      >
-        {posts.map((post) => (
-          <SortablePostCard
-            key={post.id}
-            post={post}
-            currentUid={currentUid}
-            isHost={isHost}
-            canDrag={!isLocked || isHost}
-            onUpdate={onUpdatePost}
-            onDelete={onDeletePost}
-            onOpenDetail={onOpenDetail}
-          />
-        ))}
-        {posts.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 gap-2">
-            <span className={`text-4xl opacity-30 ${panel.emptyClass}`}>
-              {panel.id === 'pros' ? '👍' : '👎'}
-            </span>
-            <p className="text-xs text-gray-400">아직 의견이 없습니다</p>
-          </div>
-        )}
-      </DroppablePanel>
+      <SortableContext items={posts.map((p) => p.id)} strategy={verticalListSortingStrategy}>
+        <div
+          ref={setNodeRef}
+          className={`flex-1 overflow-y-auto p-3 space-y-2 transition-colors ${isOver ? 'bg-white/50' : ''}`}
+        >
+          {posts.map((post) => (
+            <SortablePostCard
+              key={post.id}
+              post={post}
+              currentUid={currentUid}
+              isHost={isHost}
+              canDrag={!isLocked || isHost}
+              onUpdate={onUpdatePost}
+              onDelete={onDeletePost}
+              onOpenDetail={onOpenDetail}
+            />
+          ))}
+          {posts.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-16 gap-2">
+              <span className={`text-4xl opacity-30 ${panel.emptyClass}`}>{panel.emoji}</span>
+              <p className="text-xs text-gray-400">아직 의견이 없습니다</p>
+            </div>
+          )}
+        </div>
+      </SortableContext>
 
       {canPost && (
         <div className="px-3 py-2 flex-shrink-0">
           <button
             onClick={onClickAdd}
-            className={`w-full text-xs text-gray-500 border border-dashed border-gray-300 rounded-lg py-2 transition-colors ${panel.addBtnClass}`}
+            className={`w-full text-xs text-gray-500 border border-dashed border-gray-300 rounded-md py-2 transition-colors ${panel.addBtnClass}`}
           >
             + 의견 추가
           </button>
@@ -157,9 +132,12 @@ export function ProsConsBoard({
 }: ProsConsBoardProps) {
   const [activeColumn, setActiveColumn] = useState<string | null>(null);
 
-  const prosPosts = posts.filter((p) => p.columnId === 'pros');
-  const consPosts = posts.filter((p) => p.columnId === 'cons');
-  const postsByPanel = { pros: prosPosts, cons: consPosts };
+  const postsByPanel: Record<string, Post[]> = { pros: [], cons: [] };
+  for (const p of posts) {
+    if (p.columnId === 'pros' || p.columnId === 'cons') postsByPanel[p.columnId].push(p);
+  }
+
+  const activePanel = PANELS.find((p) => p.id === activeColumn);
 
   return (
     <div className="flex flex-col flex-1 overflow-hidden h-full">
@@ -169,35 +147,33 @@ export function ProsConsBoard({
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
-        {PANELS.map((panel, idx) => (
-          <div key={panel.id} className="flex flex-1 min-w-0 overflow-hidden">
-            {idx > 0 && <div className="w-px bg-gray-300 flex-shrink-0" />}
-            <Panel
-              panel={panel}
-              posts={postsByPanel[panel.id]}
-              canPost={canPost}
-              currentUid={currentUid}
-              isHost={isHost}
-              isLocked={isLocked}
-              onUpdatePost={onUpdatePost}
-              onDeletePost={onDeletePost}
-              onOpenDetail={onOpenDetail}
-              onClickAdd={() => setActiveColumn(panel.id)}
-            />
-          </div>
+      <div className="flex flex-1 overflow-hidden divide-x divide-gray-300">
+        {PANELS.map((panel) => (
+          <Panel
+            key={panel.id}
+            panel={panel}
+            posts={postsByPanel[panel.id]}
+            canPost={canPost}
+            currentUid={currentUid}
+            isHost={isHost}
+            isLocked={isLocked}
+            onUpdatePost={onUpdatePost}
+            onDeletePost={onDeletePost}
+            onOpenDetail={onOpenDetail}
+            onClickAdd={() => setActiveColumn(panel.id)}
+          />
         ))}
       </div>
 
-      {activeColumn && (
+      {activePanel && (
         <NewPostDialog
           open
           onClose={() => setActiveColumn(null)}
           onSubmit={(content, color, imageFile) =>
-            onAddPost(content, color, imageFile, activeColumn)
+            onAddPost(content, color, imageFile, activePanel.id)
           }
-          defaultColor={PANELS.find((p) => p.id === activeColumn)?.defaultColor}
-          columnLabel={PANELS.find((p) => p.id === activeColumn)?.label}
+          defaultColor={activePanel.defaultColor}
+          columnLabel={`${activePanel.emoji} ${activePanel.label}`}
         />
       )}
     </div>

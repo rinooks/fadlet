@@ -13,7 +13,7 @@ import {
   serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { messagesPath } from '@/lib/firebase/collections';
 import type { EmojiType, LinkPreview, Message, MessageReplyTo, MessageType, UserRole } from '@/lib/types';
@@ -23,6 +23,11 @@ const URL_REGEX = /https?:\/\/[^\s]+/g;
 export function useMessages(boardId: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
+  const messagesRef = useRef<Message[]>([]);
+
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
 
   useEffect(() => {
     if (!boardId) return;
@@ -35,8 +40,6 @@ export function useMessages(boardId: string) {
       q,
       (snap) => {
         const msgs = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Message);
-        const withReply = msgs.filter((m) => m.replyTo);
-        if (withReply.length > 0) console.log('[useMessages] messages with replyTo:', withReply.length, withReply.map((m) => ({ id: m.id, replyTo: m.replyTo })));
         setMessages(msgs);
         setLoading(false);
       },
@@ -93,12 +96,11 @@ export function useMessages(boardId: string) {
       }
     }
 
-    console.log('[sendMessage] writing to Firestore:', JSON.stringify(data, null, 2));
     await addDoc(collection(db, messagesPath(boardId)), data);
   }
 
   const toggleReaction = useCallback(async (messageId: string, userId: string, emoji: EmojiType) => {
-    const msg = messages.find((m) => m.id === messageId);
+    const msg = messagesRef.current.find((m) => m.id === messageId);
     const reactors = (msg?.reactions?.[emoji] ?? []) as string[];
     const ref = doc(db, messagesPath(boardId), messageId);
     if (reactors.includes(userId)) {
@@ -106,7 +108,7 @@ export function useMessages(boardId: string) {
     } else {
       await updateDoc(ref, { [`reactions.${emoji}`]: arrayUnion(userId) });
     }
-  }, [boardId, messages]);
+  }, [boardId]);
 
   return { messages, loading, sendMessage, toggleReaction };
 }
