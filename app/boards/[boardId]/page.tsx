@@ -226,16 +226,13 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     fileAttachment?: { url: string; name: string; size: number; type: 'image' | 'file' },
     replyTo?: MessageReplyTo,
   ) {
-    console.log('[handleSendMessage] uid:', uid, 'nickname:', nickname, 'content:', content, 'replyTo:', replyTo);
-    if (!uid || !nickname) { console.warn('[handleSendMessage] early return — uid or nickname missing'); return; }
+    if (!uid || !nickname) return;
     if (checkBanned(content)) throw new Error('banned');
-    console.log('[handleSendMessage] calling sendMessage...');
     if (fileAttachment) {
       await sendMessage({ authorId: uid, authorName: nickname, role, content, type: fileAttachment.type, fileUrl: fileAttachment.url, fileName: fileAttachment.name, fileSize: fileAttachment.size, replyTo });
     } else {
       await sendMessage({ authorId: uid, authorName: nickname, role, content, replyTo });
     }
-    console.log('[handleSendMessage] sendMessage done');
   }
 
   function handleToggleReaction(messageId: string, emoji: EmojiType) {
@@ -296,7 +293,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               className="hidden sm:flex items-center gap-0.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0"
             >
               <ArrowLeft size={12} />
-              대시보드
+              내 워크스페이스
             </Link>
           )}
           <span className="text-gray-300 hidden sm:inline" aria-hidden>|</span>

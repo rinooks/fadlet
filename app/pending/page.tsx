@@ -45,7 +45,7 @@ export default function PendingApprovalPage() {
         </p>
         <p className="text-sm text-gray-500 mb-6 leading-relaxed">
           {isPending
-            ? '운영자 권한이 승인되면 자동으로 대시보드로 이동합니다.'
+            ? '운영자 권한이 승인되면 자동으로 내 워크스페이스로 이동합니다.'
             : '운영자 등록 정보를 확인 중입니다.'}
         </p>
         <div className="flex flex-col gap-2">

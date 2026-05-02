@@ -72,7 +72,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     try {
       await leaveWorkspace(wsId, user.uid);
       toast.success('워크스페이스를 떠났습니다.');
-      router.push('/workspaces');
+      router.push('/dashboard');
     } catch {
       toast.error('탈퇴에 실패했습니다.');
     }
@@ -101,7 +101,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen">
         <p className="text-gray-500 mb-3">워크스페이스를 찾을 수 없습니다.</p>
-        <Link href="/workspaces" className="text-sm text-indigo-600 hover:underline">목록으로</Link>
+        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">내 워크스페이스로</Link>
       </div>
     );
   }
@@ -119,27 +119,38 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
         <p className="text-gray-700 font-semibold mb-1">{workspace.name}</p>
         <p className="text-sm text-gray-500 mb-4">멤버만 접근할 수 있습니다.</p>
-        <Link href="/workspaces" className="text-sm text-indigo-600 hover:underline">목록으로</Link>
+        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">내 워크스페이스로</Link>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3 min-w-0">
-          <Link href="/" className="text-indigo-600 font-bold text-lg hover:text-indigo-700 transition-colors">Fadlet</Link>
-          <span className="text-gray-300">|</span>
-          <h1 className="text-sm font-semibold text-gray-900 truncate">{workspace.name}</h1>
+      <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
+        <nav aria-label="현재 위치" className="flex items-center gap-2 min-w-0 flex-1 text-sm">
+          <Link href="/" className="text-indigo-600 font-bold text-lg hover:text-indigo-700 transition-colors flex-shrink-0">
+            Fadlet
+          </Link>
+          <span className="text-gray-300 flex-shrink-0" aria-hidden>›</span>
+          <Link
+            href="/dashboard"
+            className="text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0 hidden sm:inline"
+          >
+            내 워크스페이스
+          </Link>
+          <span className="text-gray-300 flex-shrink-0 hidden sm:inline" aria-hidden>›</span>
+          <h1 className="font-semibold text-gray-900 truncate" aria-current="page">
+            {workspace.name}
+          </h1>
           <button
             onClick={copyCode}
-            className="flex items-center gap-1 font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100"
+            className="flex items-center gap-1 font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100 flex-shrink-0"
             aria-label="코드 복사"
           >
             {workspace.workspaceCode}
             <Copy size={10} />
           </button>
-        </div>
+        </nav>
         <div className="flex items-center gap-2 flex-shrink-0">
           {!isOwner && (
             <Button
@@ -151,9 +162,6 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
               <LogOut size={12} className="mr-1" /> 떠나기
             </Button>
           )}
-          <Link href="/workspaces" className="text-xs text-gray-500 hover:underline">
-            ← 목록
-          </Link>
         </div>
       </header>
 

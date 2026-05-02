@@ -47,19 +47,16 @@ export default function AdminPage() {
 
   const [operators, setOperators] = useState<Operator[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  // uid → wsId[] 멤버십 맵
   const [wsMembership, setWsMembership] = useState<Map<string, string[]>>(new Map());
   const [boards, setBoards] = useState<Board[]>([]);
   const [loadingOps, setLoadingOps] = useState(true);
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  // 인라인 이름 변경 상태
   const [renamingWsId, setRenamingWsId] = useState<string | null>(null);
   const [renamingBoardId, setRenamingBoardId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
   const renameInputRef = useRef<HTMLInputElement>(null);
 
-  // 삭제 확인 상태
   const [deletingWsId, setDeletingWsId] = useState<string | null>(null);
   const [deletingBoardId, setDeletingBoardId] = useState<string | null>(null);
 
@@ -95,7 +92,6 @@ export default function AdminPage() {
       () => {},
     );
 
-    // members collectionGroup → uid별 멤버십 맵 (대시보드와 동일한 기준)
     const memberUnsub = onSnapshot(
       collectionGroup(db, 'members'),
       (snap) => {
@@ -126,7 +122,6 @@ export default function AdminPage() {
     };
   }, [isSuperAdmin]);
 
-  // 이름 변경 시작 시 input 포커스
   useEffect(() => {
     if ((renamingWsId || renamingBoardId) && renameInputRef.current) {
       renameInputRef.current.focus();
@@ -134,10 +129,8 @@ export default function AdminPage() {
     }
   }, [renamingWsId, renamingBoardId]);
 
-  // 워크스페이스 id → 문서 빠른 조회
   const wsById = useMemo(() => new Map(workspaces.map((w) => [w.id, w])), [workspaces]);
 
-  // uid → 멤버로 속한 Workspace[] (대시보드와 동일 기준)
   const wsByMember = useMemo(() => {
     const map = new Map<string, Workspace[]>();
     for (const [uid, wsIds] of wsMembership) {
@@ -273,7 +266,7 @@ export default function AdminPage() {
           </span>
         </div>
         <Link href="/dashboard" className="text-xs text-indigo-600 hover:underline">
-          ← 대시보드
+          ← 내 워크스페이스
         </Link>
       </header>
 
@@ -362,7 +355,6 @@ export default function AdminPage() {
                     {isExpanded && (
                       <div className="bg-gray-50 px-4 py-3 border-t border-gray-100">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {/* 워크스페이스 */}
                           <div>
                             <p className="text-[11px] uppercase font-bold text-gray-500 mb-1.5">
                               워크스페이스 ({opWorkspaces.length})
@@ -453,7 +445,6 @@ export default function AdminPage() {
                             )}
                           </div>
 
-                          {/* 보드 */}
                           <div>
                             <p className="text-[11px] uppercase font-bold text-gray-500 mb-1.5">
                               보드 ({opBoards.length})

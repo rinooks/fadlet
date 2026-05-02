@@ -88,7 +88,7 @@ export default function AnalyticsPage({ params }: PageProps) {
   const { board, loading: boardLoading } = useBoard(boardId);
   const { posts, loading: postsLoading } = usePosts(boardId);
   const { messages, loading: msgsLoading } = useMessages(boardId);
-  const { participants } = useParticipants(boardId);
+  const { participants } = useParticipants(boardId, { subscribe: true });
 
   const isAuthorized = !!user && !!board && board.ownerId === user.uid;
 
@@ -153,7 +153,7 @@ export default function AnalyticsPage({ params }: PageProps) {
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
         <p className="text-gray-700 font-semibold mb-1">접근 권한이 없습니다</p>
         <p className="text-sm text-gray-500 mb-4">이 보드의 운영자만 분석을 볼 수 있습니다.</p>
-        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">대시보드로</Link>
+        <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">내 워크스페이스로</Link>
       </div>
     );
   }

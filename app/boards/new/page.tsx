@@ -139,16 +139,16 @@ function NewBoardForm() {
           </p>
           <div className="flex flex-col gap-2">
             <Link
-              href="/workspaces"
+              href="/dashboard"
               className="inline-flex items-center justify-center h-11 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-sm transition-colors"
             >
-              워크스페이스로 이동
+              내 워크스페이스로
             </Link>
             <Link
-              href="/dashboard"
+              href="/"
               className="inline-flex items-center justify-center h-11 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700 font-semibold text-sm transition-colors"
             >
-              대시보드
+              홈
             </Link>
           </div>
         </div>

@@ -2,20 +2,32 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { KeyRound, Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { BoardActionsMenu } from '@/components/board/board-actions-menu';
-import { BoardDeleteDialog } from '@/components/board/board-delete-dialog';
-import { BoardRenameDialog } from '@/components/board/board-rename-dialog';
+import { Input } from '@/components/ui/input';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
-import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
+import {
+  createWorkspace,
+  joinWorkspaceByCode,
+  useMyWorkspaces,
+} from '@/lib/hooks/use-workspaces';
 import type { Board } from '@/lib/types';
+
+const PREVIEW_BOARDS_PER_WORKSPACE = 3;
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -23,57 +35,12 @@ export default function DashboardPage() {
   const { workspaces, loading: wsLoading } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
-  const [renameTarget, setRenameTarget] = useState<Board | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<Board | null>(null);
-  const hasWorkspace = workspaces.length > 0;
 
-  async function submitRename(nextTitle: string) {
-    if (!renameTarget) return;
-    try {
-      await updateDoc(doc(db, boardsPath(), renameTarget.id), {
-        title: nextTitle,
-        updatedAt: serverTimestamp(),
-      });
-      toast.success('보드 이름을 변경했습니다.');
-    } catch {
-      toast.error('이름 변경에 실패했습니다.');
-    }
-  }
-
-  async function submitDelete() {
-    if (!deleteTarget) return;
-    try {
-      await deleteDoc(doc(db, boardsPath(), deleteTarget.id));
-      toast.success('보드를 삭제했습니다.');
-    } catch {
-      toast.error('삭제에 실패했습니다.');
-    }
-  }
-
-  // 보드를 워크스페이스별로 그룹핑 (사용자의 워크스페이스 순서 + 그 외 + 개인)
-  const groupedBoards = useMemo(() => {
-    const groups: { id: string; label: string; code?: string; boards: Board[] }[] = [];
-    const wsMap = new Map(workspaces.map((w) => [w.id, w]));
-    const seen = new Set<string>();
-
-    // 1) 사용자가 멤버인 워크스페이스 순서대로
-    for (const ws of workspaces) {
-      const list = boards.filter((b) => b.workspaceId === ws.id);
-      if (list.length === 0) continue;
-      groups.push({ id: ws.id, label: ws.name, code: ws.workspaceCode, boards: list });
-      seen.add(ws.id);
-    }
-
-    // 2) 'default' 또는 알 수 없는 워크스페이스의 보드를 묶음
-    const orphan = boards.filter(
-      (b) => !b.workspaceId || b.workspaceId === 'default' || (!seen.has(b.workspaceId) && !wsMap.has(b.workspaceId)),
-    );
-    if (orphan.length > 0) {
-      groups.push({ id: '__orphan__', label: '기타 / 개인', boards: orphan });
-    }
-
-    return groups;
-  }, [boards, workspaces]);
+  const [createOpen, setCreateOpen] = useState(false);
+  const [joinOpen, setJoinOpen] = useState(false);
+  const [newName, setNewName] = useState('');
+  const [joinCode, setJoinCode] = useState('');
+  const [busy, setBusy] = useState(false);
 
   useEffect(() => {
     if (loading) return;
@@ -83,10 +50,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!user || !isOperator) return;
-    const q = query(
-      collection(db, boardsPath()),
-      where('ownerId', '==', user.uid)
-    );
+    const q = query(collection(db, boardsPath()), where('ownerId', '==', user.uid));
     const unsub = onSnapshot(
       q,
       (snap) => {
@@ -102,10 +66,65 @@ export default function DashboardPage() {
       (err) => {
         console.error('[dashboard] boards snapshot error', err);
         setBoardsLoading(false);
-      }
+      },
     );
     return unsub;
   }, [user, isOperator]);
+
+  const boardsByWorkspace = useMemo(() => {
+    const map = new Map<string, Board[]>();
+    for (const b of boards) {
+      const key = b.workspaceId || 'default';
+      const list = map.get(key) ?? [];
+      list.push(b);
+      map.set(key, list);
+    }
+    return map;
+  }, [boards]);
+
+  async function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !newName.trim() || busy) return;
+    setBusy(true);
+    try {
+      const wsId = await createWorkspace({
+        name: newName,
+        ownerUid: user.uid,
+        ownerName: user.displayName ?? user.email ?? '운영자',
+        ownerEmail: user.email ?? undefined,
+      });
+      toast.success('워크스페이스를 만들었습니다.');
+      setNewName('');
+      setCreateOpen(false);
+      router.push(`/workspaces/${wsId}`);
+    } catch {
+      toast.error('워크스페이스 생성에 실패했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleJoin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!user || !joinCode.trim() || busy) return;
+    setBusy(true);
+    try {
+      const wsId = await joinWorkspaceByCode({
+        code: joinCode,
+        uid: user.uid,
+        displayName: user.displayName ?? user.email ?? '운영자',
+        email: user.email ?? undefined,
+      });
+      toast.success('워크스페이스에 가입했습니다.');
+      setJoinCode('');
+      setJoinOpen(false);
+      router.push(`/workspaces/${wsId}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : '가입에 실패했습니다.');
+    } finally {
+      setBusy(false);
+    }
+  }
 
   if (loading || !isOperator) {
     return (
@@ -121,31 +140,15 @@ export default function DashboardPage() {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <Link href="/" className="text-indigo-600 font-bold text-lg sm:text-xl hover:text-indigo-700 transition-colors">Fadlet</Link>
           <span className="text-gray-300 hidden sm:inline">|</span>
-          <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 보드</span>
+          <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 워크스페이스</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
-          <Link
-            href="/workspaces"
-            className="text-xs text-indigo-600 hover:underline font-semibold"
-            aria-label="워크스페이스"
-          >
-            <span className="sm:hidden">👥</span>
-            <span className="hidden sm:inline">👥 워크스페이스</span>
-          </Link>
-          <Link
-            href="/help"
-            className="text-xs text-indigo-600 hover:underline font-semibold"
-            aria-label="가이드"
-          >
+          <Link href="/help" className="text-xs text-indigo-600 hover:underline font-semibold" aria-label="가이드">
             <span className="sm:hidden">📖</span>
             <span className="hidden sm:inline">📖 가이드</span>
           </Link>
           {isSuperAdmin && (
-            <Link
-              href="/admin"
-              className="text-xs text-amber-700 hover:underline font-semibold"
-              aria-label="관리자"
-            >
+            <Link href="/admin" className="text-xs text-amber-700 hover:underline font-semibold" aria-label="관리자">
               <span className="sm:hidden">🛡</span>
               <span className="hidden sm:inline">🛡 관리자</span>
             </Link>
@@ -154,118 +157,177 @@ export default function DashboardPage() {
           <span className="text-sm text-gray-500 hidden lg:inline truncate max-w-[180px]">
             {user?.displayName ?? user?.email}
           </span>
-          <Button variant="outline" size="sm" onClick={logout} className="text-xs">
-            로그아웃
-          </Button>
+          <Button variant="outline" size="sm" onClick={logout} className="text-xs">로그아웃</Button>
         </div>
       </header>
 
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
+      <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="flex items-center justify-between mb-5 sm:mb-6 gap-3">
-          <h2 className="text-base sm:text-lg font-bold text-gray-900">내 보드 목록</h2>
-          <Button
-            onClick={() => router.push(hasWorkspace ? '/boards/new' : '/workspaces')}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold flex-shrink-0"
-          >
-            <span className="sm:hidden">{hasWorkspace ? '+ 새 보드' : '+ 워크스페이스'}</span>
-            <span className="hidden sm:inline">{hasWorkspace ? '+ 새 보드 만들기' : '+ 워크스페이스 만들기'}</span>
-          </Button>
-        </div>
-
-        {!hasWorkspace && (
-          <div className="rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 mb-5 flex items-start gap-3">
-            <span className="text-xl">💡</span>
-            <div className="text-sm text-indigo-900 leading-relaxed">
-              보드는 워크스페이스 안에서만 만들 수 있습니다. 먼저{' '}
-              <Link href="/workspaces" className="underline font-semibold">워크스페이스</Link>를
-              만들거나 초대 코드로 참여하세요.
-            </div>
-          </div>
-        )}
-
-        {(boardsLoading || wsLoading) ? (
-          <p className="text-gray-400 text-sm text-center py-16">불러오는 중...</p>
-        ) : boards.length === 0 ? (
-          <div className="text-center py-16">
-            <p className="text-gray-400 text-sm mb-4">아직 만든 보드가 없습니다.</p>
+          <h2 className="text-base sm:text-lg font-bold text-gray-900">내 워크스페이스</h2>
+          <div className="flex items-center gap-2">
             <Button
-              onClick={() => router.push(hasWorkspace ? '/boards/new' : '/workspaces')}
+              onClick={() => setJoinOpen(true)}
               variant="outline"
+              size="sm"
+              className="font-semibold"
             >
-              {hasWorkspace ? '첫 번째 보드 만들기' : '워크스페이스 먼저 만들기'}
+              <KeyRound size={14} className="mr-1" />
+              <span className="hidden sm:inline">코드로 가입</span>
+              <span className="sm:hidden">가입</span>
+            </Button>
+            <Button
+              onClick={() => setCreateOpen(true)}
+              size="sm"
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+            >
+              <Plus size={14} className="mr-1" />
+              <span className="hidden sm:inline">새 워크스페이스</span>
+              <span className="sm:hidden">생성</span>
             </Button>
           </div>
+        </div>
+
+        {(wsLoading || boardsLoading) ? (
+          <p className="text-gray-400 text-sm text-center py-16">불러오는 중...</p>
+        ) : workspaces.length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-md p-10 text-center">
+            <Users size={32} className="text-gray-300 mx-auto mb-3" />
+            <p className="text-sm text-gray-600 mb-1 font-semibold">아직 워크스페이스가 없습니다.</p>
+            <p className="text-xs text-gray-500 mb-4">
+              팀 워크스페이스를 만들거나 초대 코드로 참여해 보세요.
+            </p>
+            <div className="flex items-center justify-center gap-2">
+              <Button onClick={() => setCreateOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+                <Plus size={14} className="mr-1" />
+                새 워크스페이스
+              </Button>
+              <Button onClick={() => setJoinOpen(true)} variant="outline">
+                <KeyRound size={14} className="mr-1" />
+                코드로 가입
+              </Button>
+            </div>
+          </div>
         ) : (
-          <div className="flex flex-col gap-8">
-            {groupedBoards.map((group) => (
-              <section key={group.id}>
-                <div className="flex items-baseline gap-2 mb-3">
-                  <h3 className="text-sm font-bold text-gray-900">
-                    {group.id === '__orphan__' ? '🗂 ' : '👥 '}
-                    {group.label}
-                  </h3>
-                  {group.code && (
-                    <Link
-                      href={`/workspaces/${group.id}`}
-                      className="font-mono text-[11px] font-semibold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100"
-                    >
-                      {group.code}
-                    </Link>
-                  )}
-                  <span className="text-xs text-gray-400">{group.boards.length}개</span>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {group.boards.map((board) => (
-                    <Link
-                      key={board.id}
-                      href={`/boards/${board.id}`}
-                      className="relative bg-white rounded-xl border border-gray-200 p-5 hover:border-indigo-300 hover:shadow-md transition-all group block"
-                    >
-                      <div className="flex items-start justify-between mb-3 gap-2">
-                        <h4 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 flex-1 min-w-0">
-                          {board.title}
-                        </h4>
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          {board.settings?.lockedAt && (
-                            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">
-                              잠김
-                            </span>
-                          )}
-                          <BoardActionsMenu
-                            onRename={() => setRenameTarget(board)}
-                            onDelete={() => setDeleteTarget(board)}
-                          />
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
-                          {board.boardCode}
-                        </span>
-                        <span className="text-xs text-gray-400">
-                          {board.createdAt?.toDate?.().toLocaleDateString('ko-KR') ?? ''}
-                        </span>
-                      </div>
-                    </Link>
-                  ))}
-                </div>
-              </section>
-            ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {workspaces.map((ws) => {
+              const wsBoards = boardsByWorkspace.get(ws.id) ?? [];
+              const preview = wsBoards.slice(0, PREVIEW_BOARDS_PER_WORKSPACE);
+              const more = wsBoards.length - preview.length;
+              const isOwner = ws.ownerUid === user?.uid;
+              return (
+                <Link
+                  key={ws.id}
+                  href={`/workspaces/${ws.id}`}
+                  className="bg-white rounded-md border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-md transition-all group flex flex-col"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 transition-colors line-clamp-2 flex-1 min-w-0">
+                      {ws.name}
+                    </h3>
+                    {isOwner && (
+                      <span className="text-[10px] uppercase font-bold text-amber-700 bg-amber-100 px-1.5 py-0.5 rounded flex-shrink-0">
+                        관리자
+                      </span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mb-3">
+                    <span className="font-mono text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                      {ws.workspaceCode}
+                    </span>
+                    <span className="text-xs text-gray-400">보드 {wsBoards.length}개</span>
+                  </div>
+
+                  <div className="border-t border-gray-100 pt-2.5 flex-1 min-h-[80px]">
+                    {preview.length === 0 ? (
+                      <p className="text-xs text-gray-400 text-center py-4">아직 보드가 없습니다.</p>
+                    ) : (
+                      <ul className="flex flex-col gap-1">
+                        {preview.map((b) => (
+                          <li
+                            key={b.id}
+                            className="text-xs text-gray-700 truncate flex items-center gap-1.5"
+                          >
+                            <span className="text-gray-300">·</span>
+                            <span className="truncate">{b.title}</span>
+                          </li>
+                        ))}
+                        {more > 0 && (
+                          <li className="text-[11px] text-gray-400 mt-1">+{more}개 더보기</li>
+                        )}
+                      </ul>
+                    )}
+                  </div>
+                </Link>
+              );
+            })}
           </div>
         )}
       </main>
 
-      <BoardRenameDialog
-        open={!!renameTarget}
-        initialTitle={renameTarget?.title ?? ''}
-        onClose={() => setRenameTarget(null)}
-        onSubmit={submitRename}
-      />
-      <BoardDeleteDialog
-        open={!!deleteTarget}
-        boardTitle={deleteTarget?.title ?? ''}
-        onClose={() => setDeleteTarget(null)}
-        onConfirm={submitDelete}
-      />
+      <Dialog open={createOpen} onOpenChange={setCreateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>새 워크스페이스 만들기</DialogTitle>
+            <DialogDescription>
+              팀 이름을 입력하면 6자리 초대 코드가 자동 발급됩니다.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleCreate} className="flex flex-col gap-3 mt-2">
+            <Input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="예: 인사팀"
+              maxLength={40}
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setCreateOpen(false)} disabled={busy}>
+                취소
+              </Button>
+              <Button
+                type="submit"
+                disabled={busy || !newName.trim()}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              >
+                만들기
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={joinOpen} onOpenChange={setJoinOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>워크스페이스 가입</DialogTitle>
+            <DialogDescription>
+              초대받은 6자리 코드를 입력하세요.
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleJoin} className="flex flex-col gap-3 mt-2">
+            <Input
+              value={joinCode}
+              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+              placeholder="예: K3F2X9"
+              maxLength={6}
+              className="font-mono uppercase tracking-widest text-center"
+              autoFocus
+            />
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setJoinOpen(false)} disabled={busy}>
+                취소
+              </Button>
+              <Button
+                type="submit"
+                disabled={busy || joinCode.trim().length !== 6}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              >
+                가입
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
