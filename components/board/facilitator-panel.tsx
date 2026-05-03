@@ -50,6 +50,8 @@ export function FacilitatorPanel({
   const [newTitle, setNewTitle] = useState('');
   const [newMinutes, setNewMinutes] = useState('5');
   const [newActivity, setNewActivity] = useState<ActivityType>('brainstorming');
+  const [newPollQuestion, setNewPollQuestion] = useState('');
+  const [newPollOptionsText, setNewPollOptionsText] = useState('');
   const [announcementDraft, setAnnouncementDraft] = useState(pinnedAnnouncement?.content ?? '');
   const [newWord, setNewWord] = useState('');
   const [busy, setBusy] = useState(false);
@@ -61,11 +63,28 @@ export function FacilitatorPanel({
   async function handleAddStage() {
     const minutes = Number(newMinutes);
     if (Number.isNaN(minutes) || minutes < 0) return;
+    let activityConfig;
+    if (isWorkshop && newActivity === 'poll') {
+      const opts = newPollOptionsText
+        .split('\n')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      if (!newPollQuestion.trim() || opts.length < 2) return;
+      activityConfig = { poll: { question: newPollQuestion.trim(), options: opts } };
+    }
     setBusy(true);
     try {
-      await addStage(stages, newTitle, Math.floor(minutes * 60), isWorkshop ? newActivity : undefined);
+      await addStage(
+        stages,
+        newTitle,
+        Math.floor(minutes * 60),
+        isWorkshop ? newActivity : undefined,
+        activityConfig,
+      );
       setNewTitle('');
       setNewMinutes('5');
+      setNewPollQuestion('');
+      setNewPollOptionsText('');
     } finally {
       setBusy(false);
     }
@@ -228,12 +247,41 @@ export function FacilitatorPanel({
                     onChange={(e) => setNewActivity(e.target.value as ActivityType)}
                     className="w-full h-8 px-2 rounded-md border border-gray-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
                   >
-                    {TEMPLATES.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.emoji} {t.label}
-                      </option>
-                    ))}
+                    <optgroup label="보드형">
+                      {TEMPLATES.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.emoji} {t.label}
+                        </option>
+                      ))}
+                    </optgroup>
+                    <optgroup label="라이브">
+                      <option value="poll">📊 라이브 폴</option>
+                      <option value="wordcloud">☁️ 워드클라우드</option>
+                    </optgroup>
                   </select>
+                </div>
+              )}
+              {isWorkshop && newActivity === 'poll' && (
+                <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-1">폴 질문</label>
+                    <Input
+                      value={newPollQuestion}
+                      onChange={(e) => setNewPollQuestion(e.target.value)}
+                      placeholder="예: 최우선으로 추진할 안건은?"
+                      className="text-sm h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-1">옵션 (한 줄에 하나, 최소 2개)</label>
+                    <Textarea
+                      value={newPollOptionsText}
+                      onChange={(e) => setNewPollOptionsText(e.target.value)}
+                      rows={4}
+                      placeholder={'A안\nB안\nC안'}
+                      className="text-sm"
+                    />
+                  </div>
                 </div>
               )}
             </div>

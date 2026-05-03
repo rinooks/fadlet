@@ -26,6 +26,7 @@ import { SortablePostCard } from '@/components/board/sortable-post-card';
 import { PostDetailModal } from '@/components/board/post-detail-modal';
 import { StageBanner } from '@/components/board/stage-banner';
 import { ChatPanel } from '@/components/chat/chat-panel';
+import { PollBoard } from '@/components/activities/poll-board';
 import { ExportMenu } from '@/components/shared/export-menu';
 import { ShareDialog } from '@/components/shared/share-dialog';
 import { getTemplate } from '@/lib/templates';
@@ -507,6 +508,19 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 </p>
               )}
             </div>
+          </div>
+        ) : isLive && currentStage && activeActivity === 'poll' && currentStage.activityConfig?.poll ? (
+          <PollBoard
+            boardId={boardId}
+            stageId={currentStage.id}
+            stageTitle={currentStage.title}
+            config={currentStage.activityConfig.poll}
+            currentUid={uid ?? ''}
+            isHost={role === 'host'}
+          />
+        ) : isLive ? (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <p className="text-sm text-gray-500">이 활동은 아직 준비 중입니다.</p>
           </div>
         ) : isCanvas ? (
           <div className="flex-1 flex flex-col min-w-0">

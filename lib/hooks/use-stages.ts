@@ -3,7 +3,7 @@
 import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
-import type { ActivityType, Stage } from '@/lib/types';
+import type { ActivityConfig, ActivityType, Stage } from '@/lib/types';
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
@@ -17,19 +17,26 @@ export function useStages(boardId: string) {
     });
   }
 
-  async function addStage(current: Stage[], title: string, durationSec: number, activityType?: ActivityType) {
+  async function addStage(
+    current: Stage[],
+    title: string,
+    durationSec: number,
+    activityType?: ActivityType,
+    activityConfig?: ActivityConfig,
+  ) {
     const next: Stage = {
       id: genId(),
       title: title.trim() || `단계 ${current.length + 1}`,
       durationSec: Math.max(0, Math.floor(durationSec)),
       order: current.length,
       ...(activityType ? { activityType } : {}),
+      ...(activityConfig ? { activityConfig } : {}),
     };
     await setStages([...current, next]);
     return next;
   }
 
-  async function updateStage(current: Stage[], id: string, patch: Partial<Pick<Stage, 'title' | 'durationSec' | 'activityType'>>) {
+  async function updateStage(current: Stage[], id: string, patch: Partial<Pick<Stage, 'title' | 'durationSec' | 'activityType' | 'activityConfig'>>) {
     const next = current.map((s) => (s.id === id ? { ...s, ...patch } : s));
     await setStages(next);
   }
