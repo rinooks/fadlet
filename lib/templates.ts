@@ -4,6 +4,8 @@ export interface TemplateColumn {
   id: string;
   label: string;
   headerClass: string;
+  /** 인라인 헤더 스타일 (있으면 headerClass보다 우선) */
+  headerStyle?: React.CSSProperties;
   defaultColor: PostColor;
 }
 

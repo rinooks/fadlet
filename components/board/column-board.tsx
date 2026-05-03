@@ -106,7 +106,10 @@ export function ColumnBoard({
                 isGrid ? 'min-h-[200px]' : 'min-w-[240px] flex-shrink-0 w-64'
               } ${showFlow ? 'mx-1' : ''}`}
             >
-              <div className={`flex items-center justify-between px-3 py-2 rounded-t-md font-semibold text-sm ${col.headerClass}`}>
+              <div
+                className={`flex items-center justify-between px-3 py-2 rounded-t-md font-semibold text-sm ${col.headerStyle ? '' : col.headerClass}`}
+                style={col.headerStyle}
+              >
                 <span>{col.label}</span>
                 <span className="text-xs opacity-70">{colPosts.length}</span>
               </div>

@@ -47,8 +47,9 @@ import { db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
-import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, KanbanColumn, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
 import { getBackground } from '@/lib/backgrounds';
+import { DEFAULT_KANBAN_COLUMNS } from '@/lib/kanban-colors';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 
 interface PageProps {
@@ -182,6 +183,17 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       });
     } catch {
       toast.error('배경 색상 변경에 실패했습니다.');
+    }
+  }
+
+  async function handleKanbanColumnsChange(columns: KanbanColumn[]) {
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        kanbanColumns: columns,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      toast.error('칸반 컬럼 변경에 실패했습니다.');
     }
   }
 
@@ -346,7 +358,30 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const boardTemplateId: BoardTemplate = (activeActivity && !isLive)
     ? (activeActivity as BoardTemplate)
     : 'free';
-  const template = getTemplate(boardTemplateId);
+  const baseTemplate = getTemplate(boardTemplateId);
+  const template = (boardTemplateId === 'kanban' && board?.kanbanColumns && board.kanbanColumns.length > 0)
+    ? {
+        ...baseTemplate,
+        columns: board.kanbanColumns.map((c) => ({
+          id: c.id,
+          label: c.label,
+          headerClass: '',
+          headerStyle: { backgroundColor: c.headerColor, color: '#fff' },
+          defaultColor: c.defaultPostColor,
+        })),
+      }
+    : boardTemplateId === 'kanban' && (!board?.kanbanColumns || board.kanbanColumns.length === 0)
+      ? {
+          ...baseTemplate,
+          columns: DEFAULT_KANBAN_COLUMNS.map((c) => ({
+            id: c.id,
+            label: c.label,
+            headerClass: '',
+            headerStyle: { backgroundColor: c.headerColor, color: '#fff' },
+            defaultColor: c.defaultPostColor,
+          })),
+        }
+      : baseTemplate;
   const hasActiveActivity = !!activeActivity;
   const isFreeLayout = template.columns === null;
   const isCanvas = template.id === 'canvas';
@@ -826,6 +861,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           customBackgroundColor={board.customBackgroundColor}
           onBackgroundChange={handleBackgroundChange}
           onCustomBackgroundColorChange={handleCustomBackgroundColorChange}
+          boardTemplate={board.template}
+          kanbanColumns={board.kanbanColumns}
+          onKanbanColumnsChange={handleKanbanColumnsChange}
           isHostUser={isHostUser}
         />
       )}

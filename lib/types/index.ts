@@ -50,6 +50,15 @@ export interface Stage {
   activityConfig?: ActivityConfig;
 }
 
+export interface KanbanColumn {
+  id: string;
+  label: string;
+  /** 헤더 배경 (HEX) */
+  headerColor: string;
+  /** 새 포스트 작성 시 기본 색상 */
+  defaultPostColor: PostColor;
+}
+
 export interface ActivityState {
   resultsVisible: boolean;
   closed: boolean;
@@ -113,6 +122,7 @@ export interface Board {
   skin?: BoardSkin;
   background?: BoardBackground;
   customBackgroundColor?: string;
+  kanbanColumns?: KanbanColumn[];
   ownerId: string;
   workspaceId: string;
   isDemo?: boolean;

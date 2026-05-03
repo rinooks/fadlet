@@ -51,6 +51,7 @@
 - [x] **워크스페이스 보드 카드에도 배경 반영** — [`workspaces/[wsId]/page.tsx`](app/workspaces/[wsId]/page.tsx) 카드 자체에 `getBackground(board.background).style` 적용
 - [x] **커스텀 배경색** — [`backgrounds.ts`](lib/backgrounds.ts) 8번째 옵션 🎨 커스텀, [`BackgroundSelector`](components/board/background-selector.tsx)에 `input[type=color]` + HEX 입력. `Board.customBackgroundColor` 필드 추가
 - [x] **포스트 투명도 제거** — [`post-card.tsx`](components/board/post-card.tsx) 편집 textarea, [`sortable-post-card.tsx`](components/board/sortable-post-card.tsx) 드래그 핸들, [`skins.css`](app/skins.css) glass 스킨 포스트 배경 — 모두 `bg-white/rgba(...)` → 불투명
+- [x] **칸반 컬럼 동적 편집** — [`KanbanColumn`](lib/types/index.ts), [`kanban-colors.ts`](lib/kanban-colors.ts) 10색 팔레트, [`KanbanColumnEditor`](components/board/kanban-column-editor.tsx) 인라인 편집(추가/삭제/순서/색상 팝오버 + 커스텀), [`column-board.tsx`](components/board/column-board.tsx) `headerStyle` 인라인 지원, [`boards/[boardId]/page.tsx`](app/boards/[boardId]/page.tsx) 칸반일 때 동적 template 생성
 
 ---
 

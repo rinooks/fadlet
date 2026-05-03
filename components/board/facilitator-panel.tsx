@@ -11,8 +11,9 @@ import { useAnnouncement } from '@/lib/hooks/use-announcement';
 import { useBannedWords } from '@/lib/hooks/use-banned-words';
 import { SkinSelector } from '@/components/board/skin-selector';
 import { BackgroundSelector } from '@/components/board/background-selector';
+import { KanbanColumnEditor } from '@/components/board/kanban-column-editor';
 import { TEMPLATES } from '@/lib/templates';
-import type { ActivityType, BoardBackground, BoardMode, BoardSkin, PinnedAnnouncement, Stage } from '@/lib/types';
+import type { ActivityType, BoardBackground, BoardMode, BoardSkin, BoardTemplate, KanbanColumn, PinnedAnnouncement, Stage } from '@/lib/types';
 
 interface FacilitatorPanelProps {
   open: boolean;
@@ -30,6 +31,9 @@ interface FacilitatorPanelProps {
   customBackgroundColor?: string;
   onBackgroundChange: (bg: BoardBackground) => Promise<void>;
   onCustomBackgroundColorChange: (color: string) => Promise<void>;
+  boardTemplate: BoardTemplate;
+  kanbanColumns?: KanbanColumn[];
+  onKanbanColumnsChange: (columns: KanbanColumn[]) => Promise<void>;
   isHostUser: boolean;
 }
 
@@ -49,6 +53,9 @@ export function FacilitatorPanel({
   customBackgroundColor,
   onBackgroundChange,
   onCustomBackgroundColorChange,
+  boardTemplate,
+  kanbanColumns,
+  onKanbanColumnsChange,
   isHostUser,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
@@ -203,6 +210,19 @@ export function FacilitatorPanel({
               onCustomColorChange={async (color) => { await onCustomBackgroundColorChange(color); }}
             />
           </section>
+
+          {boardTemplate === 'kanban' && (
+            <section>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">🗂️ 칸반 컬럼</h3>
+              <p className="text-xs text-gray-500 mb-3">
+                컬럼을 자유롭게 추가/편집/삭제하고 색상을 지정합니다.
+              </p>
+              <KanbanColumnEditor
+                columns={kanbanColumns}
+                onChange={onKanbanColumnsChange}
+              />
+            </section>
+          )}
 
           {/* 단계 관리·공지·키워드 — 호스트(보드 소유자)만 */}
           {isHostUser && (<><section>
