@@ -10,12 +10,14 @@ import { useStages } from '@/lib/hooks/use-stages';
 import { useAnnouncement } from '@/lib/hooks/use-announcement';
 import { useBannedWords } from '@/lib/hooks/use-banned-words';
 import { SkinSelector } from '@/components/board/skin-selector';
-import type { BoardSkin, PinnedAnnouncement, Stage } from '@/lib/types';
+import { TEMPLATES } from '@/lib/templates';
+import type { ActivityType, BoardMode, BoardSkin, PinnedAnnouncement, Stage } from '@/lib/types';
 
 interface FacilitatorPanelProps {
   open: boolean;
   onClose: () => void;
   boardId: string;
+  mode: BoardMode;
   stages: Stage[];
   pinnedAnnouncement: PinnedAnnouncement | null | undefined;
   bannedWords: string[] | undefined;
@@ -30,6 +32,7 @@ export function FacilitatorPanel({
   open,
   onClose,
   boardId,
+  mode,
   stages,
   pinnedAnnouncement,
   bannedWords,
@@ -43,8 +46,10 @@ export function FacilitatorPanel({
   const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
   const { addWord, removeWord } = useBannedWords(boardId, bannedWords);
 
+  const isWorkshop = mode === 'workshop';
   const [newTitle, setNewTitle] = useState('');
   const [newMinutes, setNewMinutes] = useState('5');
+  const [newActivity, setNewActivity] = useState<ActivityType>('brainstorming');
   const [announcementDraft, setAnnouncementDraft] = useState(pinnedAnnouncement?.content ?? '');
   const [newWord, setNewWord] = useState('');
   const [busy, setBusy] = useState(false);
@@ -58,7 +63,7 @@ export function FacilitatorPanel({
     if (Number.isNaN(minutes) || minutes < 0) return;
     setBusy(true);
     try {
-      await addStage(stages, newTitle, Math.floor(minutes * 60));
+      await addStage(stages, newTitle, Math.floor(minutes * 60), isWorkshop ? newActivity : undefined);
       setNewTitle('');
       setNewMinutes('5');
     } finally {
@@ -145,8 +150,14 @@ export function FacilitatorPanel({
 
           {/* 단계 관리·공지·키워드 — 호스트(보드 소유자)만 */}
           {isHostUser && (<><section>
-            <h3 className="text-sm font-semibold text-gray-900 mb-2">📍 워크숍 단계</h3>
-            <p className="text-xs text-gray-500 mb-3">참여자에게 현재 단계와 남은 시간이 표시됩니다.</p>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">
+              {isWorkshop ? '🎬 워크숍 단계' : '📍 워크숍 단계'}
+            </h3>
+            <p className="text-xs text-gray-500 mb-3">
+              {isWorkshop
+                ? '단계마다 활동이 자동 전환됩니다. 시작 시 타이머가 부여됩니다.'
+                : '참여자에게 현재 단계와 남은 시간이 표시됩니다.'}
+            </p>
 
             {sorted.length === 0 && (
               <p className="text-xs text-gray-400 mb-3 py-3 text-center bg-gray-50 rounded-md">
@@ -162,6 +173,7 @@ export function FacilitatorPanel({
                   index={idx}
                   total={sorted.length}
                   busy={busy}
+                  isWorkshop={isWorkshop}
                   onUpdate={async (patch) => {
                     setBusy(true);
                     try { await updateStage(stages, stage.id, patch); } finally { setBusy(false); }
@@ -178,34 +190,52 @@ export function FacilitatorPanel({
               ))}
             </ul>
 
-            <div className="flex gap-2 items-end p-3 bg-gray-50 rounded-lg">
-              <div className="flex-1">
-                <label className="block text-[11px] font-medium text-gray-500 mb-1">단계 제목</label>
-                <Input
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="예: 아이스브레이킹"
-                  className="text-sm h-8"
-                />
+            <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-md">
+              <div className="flex gap-2 items-end">
+                <div className="flex-1">
+                  <label className="block text-[11px] font-medium text-gray-500 mb-1">단계 제목</label>
+                  <Input
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="예: 아이스브레이킹"
+                    className="text-sm h-8"
+                  />
+                </div>
+                <div className="w-20">
+                  <label className="block text-[11px] font-medium text-gray-500 mb-1">분</label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={newMinutes}
+                    onChange={(e) => setNewMinutes(e.target.value)}
+                    className="text-sm h-8"
+                  />
+                </div>
+                <Button
+                  onClick={handleAddStage}
+                  disabled={busy}
+                  size="sm"
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white h-8"
+                >
+                  <Plus size={14} />
+                </Button>
               </div>
-              <div className="w-20">
-                <label className="block text-[11px] font-medium text-gray-500 mb-1">분</label>
-                <Input
-                  type="number"
-                  min={0}
-                  value={newMinutes}
-                  onChange={(e) => setNewMinutes(e.target.value)}
-                  className="text-sm h-8"
-                />
-              </div>
-              <Button
-                onClick={handleAddStage}
-                disabled={busy}
-                size="sm"
-                className="bg-indigo-600 hover:bg-indigo-700 text-white h-8"
-              >
-                <Plus size={14} />
-              </Button>
+              {isWorkshop && (
+                <div>
+                  <label className="block text-[11px] font-medium text-gray-500 mb-1">활동 종류</label>
+                  <select
+                    value={newActivity}
+                    onChange={(e) => setNewActivity(e.target.value as ActivityType)}
+                    className="w-full h-8 px-2 rounded-md border border-gray-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
+                  >
+                    {TEMPLATES.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.emoji} {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
             </div>
           </section>
 
@@ -314,52 +344,76 @@ interface StageRowProps {
   index: number;
   total: number;
   busy: boolean;
-  onUpdate: (patch: Partial<Pick<Stage, 'title' | 'durationSec'>>) => Promise<void>;
+  isWorkshop: boolean;
+  onUpdate: (patch: Partial<Pick<Stage, 'title' | 'durationSec' | 'activityType'>>) => Promise<void>;
   onMove: (direction: -1 | 1) => Promise<void>;
   onRemove: () => Promise<void>;
 }
 
-function StageRow({ stage, index, total, busy, onUpdate, onMove, onRemove }: StageRowProps) {
+function StageRow({ stage, index, total, busy, isWorkshop, onUpdate, onMove, onRemove }: StageRowProps) {
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState(stage.title);
   const [minutes, setMinutes] = useState(String(Math.round(stage.durationSec / 60)));
+  const [activity, setActivity] = useState<ActivityType>(stage.activityType ?? 'brainstorming');
+
+  const stageTemplate = stage.activityType ? TEMPLATES.find((t) => t.id === stage.activityType) : null;
 
   async function save() {
     const m = Number(minutes);
     if (Number.isNaN(m) || m < 0) return;
-    await onUpdate({ title: title.trim() || stage.title, durationSec: Math.floor(m * 60) });
+    await onUpdate({
+      title: title.trim() || stage.title,
+      durationSec: Math.floor(m * 60),
+      ...(isWorkshop ? { activityType: activity } : {}),
+    });
     setEditing(false);
   }
 
   if (editing) {
     return (
-      <li className="flex gap-2 items-center p-2 bg-indigo-50 rounded-lg border border-indigo-200">
-        <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-sm h-8 flex-1" />
-        <Input
-          type="number"
-          min={0}
-          value={minutes}
-          onChange={(e) => setMinutes(e.target.value)}
-          className="text-sm h-8 w-16"
-        />
-        <Button onClick={save} disabled={busy} size="sm" className="h-7 bg-indigo-600 hover:bg-indigo-700 text-white text-xs">저장</Button>
-        <button
-          onClick={() => { setTitle(stage.title); setMinutes(String(Math.round(stage.durationSec / 60))); setEditing(false); }}
-          className="text-xs text-gray-500 hover:text-gray-800 px-1"
-        >
-          취소
-        </button>
+      <li className="flex flex-col gap-2 p-2 bg-indigo-50 rounded-md border border-indigo-200">
+        <div className="flex gap-2 items-center">
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-sm h-8 flex-1" />
+          <Input
+            type="number"
+            min={0}
+            value={minutes}
+            onChange={(e) => setMinutes(e.target.value)}
+            className="text-sm h-8 w-16"
+          />
+          <Button onClick={save} disabled={busy} size="sm" className="h-7 bg-indigo-600 hover:bg-indigo-700 text-white text-xs">저장</Button>
+          <button
+            onClick={() => { setTitle(stage.title); setMinutes(String(Math.round(stage.durationSec / 60))); setActivity(stage.activityType ?? 'brainstorming'); setEditing(false); }}
+            className="text-xs text-gray-500 hover:text-gray-800 px-1"
+          >
+            취소
+          </button>
+        </div>
+        {isWorkshop && (
+          <select
+            value={activity}
+            onChange={(e) => setActivity(e.target.value as ActivityType)}
+            className="w-full h-8 px-2 rounded-md border border-indigo-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
+          >
+            {TEMPLATES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.emoji} {t.label}
+              </option>
+            ))}
+          </select>
+        )}
       </li>
     );
   }
 
   return (
-    <li className="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-lg group">
+    <li className="flex items-center gap-2 p-2 bg-white border border-gray-200 rounded-md group">
       <span className="text-[11px] font-bold text-gray-400 w-6 text-center flex-shrink-0">{index + 1}</span>
       <button
         onClick={() => setEditing(true)}
         className="flex-1 text-left text-sm text-gray-900 truncate hover:underline focus-visible:outline focus-visible:outline-2 rounded"
       >
+        {stageTemplate && <span className="mr-1">{stageTemplate.emoji}</span>}
         {stage.title}
       </button>
       <span className="text-xs text-gray-500 flex-shrink-0">{Math.round(stage.durationSec / 60)}분</span>

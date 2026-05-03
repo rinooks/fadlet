@@ -247,7 +247,7 @@ export default function DashboardPage() {
                             key={b.id}
                             className="text-xs text-gray-700 truncate flex items-center gap-1.5"
                           >
-                            <span className="text-gray-300">·</span>
+                            <span className="text-gray-300">{b.mode === 'workshop' ? '🎬' : '·'}</span>
                             <span className="truncate">{b.title}</span>
                           </li>
                         ))}

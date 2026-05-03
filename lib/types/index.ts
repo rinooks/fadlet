@@ -4,6 +4,8 @@ export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray'
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
 export type BoardTemplate = 'free' | 'canvas' | 'brainstorming' | 'proscons' | 'kanban' | 'kpt' | '4f' | 'qna' | 'nineWindow';
+export type ActivityType = BoardTemplate;
+export type BoardMode = 'single' | 'workshop';
 export type EmojiType = 'thumbsup' | 'heart' | 'party' | 'bulb' | 'thinking';
 export type ReportTarget = 'message' | 'post';
 export type ReportStatus = 'open' | 'resolved';
@@ -21,6 +23,7 @@ export interface Stage {
   title: string;
   durationSec: number;
   order: number;
+  activityType?: ActivityType;
 }
 
 export type TimerStatus = 'idle' | 'running' | 'paused';
@@ -45,6 +48,7 @@ export interface Board {
   title: string;
   boardCode: string;
   template: BoardTemplate;
+  mode?: BoardMode;
   skin?: BoardSkin;
   ownerId: string;
   workspaceId: string;
@@ -67,6 +71,7 @@ export interface Post {
   imageUrl?: string;
   color: PostColor;
   columnId?: string;
+  stageId?: string;
   position: { x: number; y: number } | null;
   order?: number;
   createdAt: Timestamp;

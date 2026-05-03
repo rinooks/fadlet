@@ -40,6 +40,7 @@ export function DemoButton() {
         title: '데모 보드',
         boardCode,
         template,
+        mode: 'single',
         skin,
         ownerId: user.uid,
         workspaceId: 'demo',

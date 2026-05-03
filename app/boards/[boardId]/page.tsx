@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { ArrowLeft, ChevronLeft } from 'lucide-react';
-import { use, useEffect, useState } from 'react';
+import { use, useEffect, useRef, useState } from 'react';
 import {
   DndContext,
   DragEndEvent,
@@ -162,7 +162,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     if (checkBanned(content)) throw new Error('banned');
     let imageUrl: string | undefined;
     if (imageFile) imageUrl = await uploadPostImage(imageFile, boardId);
-    await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl, columnId });
+    const stageId = isWorkshopMode ? currentStage?.id : undefined;
+    await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl, columnId, stageId });
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -240,6 +241,51 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     toggleReaction(messageId, uid, emoji).catch(() => {});
   }
 
+  const lastStageIdRef = useRef<string | null | undefined>(undefined);
+  useEffect(() => {
+    const isWorkshopMode = (board?.mode ?? 'single') === 'workshop';
+    if (!isWorkshopMode) return;
+    const newId = board?.timer?.stageId ?? null;
+    if (lastStageIdRef.current === undefined) {
+      lastStageIdRef.current = newId;
+      return;
+    }
+    if (lastStageIdRef.current === newId) return;
+    lastStageIdRef.current = newId;
+    if (newId) {
+      const stages = [...(board?.stages ?? [])].sort((a, b) => a.order - b.order);
+      const stage = stages.find((s) => s.id === newId);
+      if (stage) {
+        const tmpl = stage.activityType ? getTemplate(stage.activityType) : null;
+        toast(`📍 ${stage.title}${tmpl ? ` (${tmpl.emoji} ${tmpl.label})` : ''} 시작`);
+      }
+    }
+  }, [board?.mode, board?.timer?.stageId, board?.stages]);
+
+  const overdueNotifiedRef = useRef<string | null>(null);
+  useEffect(() => {
+    const isWorkshopMode = (board?.mode ?? 'single') === 'workshop';
+    if (!isWorkshopMode || role !== 'host') return;
+    const stages = [...(board?.stages ?? [])].sort((a, b) => a.order - b.order);
+    const stage = stages.find((s) => s.id === (board?.timer?.stageId ?? null));
+    if (!stage || stage.durationSec <= 0) return;
+    const timer = board?.timer;
+    if (!timer || timer.status !== 'running' || !timer.startedAt) return;
+    const totalMs = stage.durationSec * 1000;
+    const startedAt = timer.startedAt;
+    const accumulatedMs = timer.accumulatedMs;
+    const stageId = stage.id;
+    const stageTitle = stage.title;
+    const interval = setInterval(() => {
+      const elapsed = (Date.now() - startedAt) + accumulatedMs;
+      if (elapsed >= totalMs && overdueNotifiedRef.current !== stageId) {
+        overdueNotifiedRef.current = stageId;
+        toast.warning(`⏰ "${stageTitle}" 시간이 종료되었습니다`);
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [board?.mode, board?.timer, board?.stages, role]);
+
   if (authLoading || boardLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -260,11 +306,24 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const isLocked = !!board?.settings?.lockedAt;
   const allowChat = board?.settings?.allowChat !== false;
   const canPost = role === 'host' || !isLocked;
-  const template = getTemplate(board?.template ?? 'free');
+  const boardMode = board?.mode ?? 'single';
+  const isWorkshopMode = boardMode === 'workshop';
+  const sortedStages = [...(board?.stages ?? [])].sort((a, b) => a.order - b.order);
+  const currentStageId = board?.timer?.stageId ?? null;
+  const currentStage = sortedStages.find((s) => s.id === currentStageId) ?? null;
+  const activeActivity = isWorkshopMode
+    ? (currentStage?.activityType ?? null)
+    : (board?.template ?? 'free');
+  const template = activeActivity ? getTemplate(activeActivity) : getTemplate('free');
+  const hasActiveActivity = !!activeActivity;
   const isFreeLayout = template.columns === null;
   const isCanvas = template.id === 'canvas';
   const isProscons = template.id === 'proscons';
   const skin = board?.skin ?? 'standard';
+  const showWorkshopEmptyHint = isWorkshopMode && !hasActiveActivity;
+  const visiblePosts = isWorkshopMode && currentStage
+    ? posts.filter((p) => p.stageId === currentStage.id)
+    : posts;
 
   return (
     <div data-skin={skin} className="skin-root flex flex-col h-screen h-dvh bg-gray-50">
@@ -298,9 +357,16 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           )}
           <span className="text-gray-300 hidden sm:inline" aria-hidden>|</span>
           <h1 className="text-sm font-semibold text-gray-900 truncate">{board?.title}</h1>
-          <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline">
-            {template.emoji} {template.label}
-          </span>
+          {isWorkshopMode ? (
+            <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline">
+              🎬 워크숍
+              {hasActiveActivity && currentStage && ` · ${template.emoji} ${currentStage.title}`}
+            </span>
+          ) : (
+            <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0 hidden sm:inline">
+              {template.emoji} {template.label}
+            </span>
+          )}
           {isLocked && (
             <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full flex-shrink-0">
               🔒 잠김
@@ -411,17 +477,36 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           onPause={pauseTimer}
           onResume={resumeTimer}
           onStop={stopTimer}
-          onSelect={selectStage}
+          onSelect={isWorkshopMode ? startTimer : selectStage}
         />
       )}
 
       {/* 메인 영역 */}
       <div className="flex flex-1 overflow-hidden">
-        {/* 보드 캔버스 */}
-        {isCanvas ? (
+        {showWorkshopEmptyHint ? (
+          <div className="flex-1 flex items-center justify-center p-8">
+            <div className="max-w-md text-center">
+              <div className="text-5xl mb-4">🎬</div>
+              <h2 className="text-lg font-bold text-gray-900 mb-2">워크숍 단계가 시작되지 않았습니다</h2>
+              {sortedStages.length === 0 ? (
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {role === 'host'
+                    ? '운영자 패널을 열어 단계를 추가해 보세요. 단계를 시작하면 모든 참여자 화면이 그 활동으로 자동 전환됩니다.'
+                    : '운영자가 곧 단계를 시작합니다. 잠시만 기다려주세요.'}
+                </p>
+              ) : (
+                <p className="text-sm text-gray-500 leading-relaxed">
+                  {role === 'host'
+                    ? '하단 단계 배너에서 ▶ 시작 버튼을 누르면 첫 단계가 시작됩니다.'
+                    : '운영자가 단계를 시작하면 화면이 자동으로 전환됩니다.'}
+                </p>
+              )}
+            </div>
+          </div>
+        ) : isCanvas ? (
           <div className="flex-1 flex flex-col min-w-0">
             <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-white flex-shrink-0">
-              <span className="text-xs text-gray-400">{posts.length}개의 포스트 · 드래그하여 위치 변경</span>
+              <span className="text-xs text-gray-400">{visiblePosts.length}개의 포스트 · 드래그하여 위치 변경</span>
               {canPost && (
                 <Button
                   onClick={() => setShowNewPost(true)}
@@ -437,7 +522,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
               ) : (
                 <CanvasBoard
-                  posts={posts}
+                  posts={visiblePosts}
                   canDrag={!isLocked || role === 'host'}
                   currentUid={uid ?? ''}
                   isHost={role === 'host'}
@@ -455,13 +540,13 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               /* 찬반 템플릿 — 전체 높이 좌우 분할 */
               <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="flex items-center justify-between px-4 py-2 border-b border-gray-100 bg-white flex-shrink-0">
-                  <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                  <span className="text-xs text-gray-400">{visiblePosts.length}개의 포스트</span>
                 </div>
                 {postsLoading ? (
                   <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
                 ) : (
                   <ProsConsBoard
-                    posts={posts}
+                    posts={visiblePosts}
                     canPost={canPost}
                     currentUid={uid ?? ''}
                     isHost={role === 'host'}
@@ -479,7 +564,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                   /* 자유형 / 브레인스토밍 */
                   <>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                      <span className="text-xs text-gray-400">{visiblePosts.length}개의 포스트</span>
                       {canPost && (
                         <Button
                           onClick={() => setShowNewPost(true)}
@@ -499,7 +584,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
                     {postsLoading ? (
                       <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
-                    ) : posts.length === 0 ? (
+                    ) : visiblePosts.length === 0 ? (
                       <div className="text-center py-16">
                         <p className="text-gray-400 text-sm mb-3">아직 포스트가 없습니다.</p>
                         {canPost && (
@@ -509,9 +594,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                         )}
                       </div>
                     ) : (
-                      <SortableContext items={posts.map((p) => p.id)} strategy={rectSortingStrategy}>
+                      <SortableContext items={visiblePosts.map((p) => p.id)} strategy={rectSortingStrategy}>
                         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-                          {posts.map((post) => (
+                          {visiblePosts.map((post) => (
                             <SortablePostCard
                               key={post.id}
                               post={post}
@@ -531,14 +616,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                   /* 컬럼형 템플릿 */
                   <>
                     <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs text-gray-400">{posts.length}개의 포스트</span>
+                      <span className="text-xs text-gray-400">{visiblePosts.length}개의 포스트</span>
                     </div>
                     {postsLoading ? (
                       <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
                     ) : (
                       <ColumnBoard
                         template={template}
-                        posts={posts}
+                        posts={visiblePosts}
                         canPost={canPost}
                         currentUid={uid ?? ''}
                         isHost={role === 'host'}
@@ -664,6 +749,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           open={showFacilitator}
           onClose={() => setShowFacilitator(false)}
           boardId={boardId}
+          mode={board.mode ?? 'single'}
           stages={board.stages ?? []}
           pinnedAnnouncement={board.pinnedAnnouncement}
           bannedWords={board.bannedWords}

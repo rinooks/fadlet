@@ -43,6 +43,7 @@ export function usePosts(boardId: string) {
     color: PostColor;
     imageUrl?: string;
     columnId?: string;
+    stageId?: string;
     position?: { x: number; y: number };
   }) {
     const payload: Record<string, unknown> = {
@@ -57,6 +58,7 @@ export function usePosts(boardId: string) {
     };
     if (params.imageUrl) payload.imageUrl = params.imageUrl;
     if (params.columnId) payload.columnId = params.columnId;
+    if (params.stageId) payload.stageId = params.stageId;
     await addDoc(collection(db, postsPath(boardId)), payload);
   }
 

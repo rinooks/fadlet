@@ -18,7 +18,7 @@ import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import { getSkinMeta } from '@/lib/skins';
 import { getTemplate } from '@/lib/templates';
-import type { BoardSkin, BoardTemplate } from '@/lib/types';
+import type { BoardMode, BoardSkin, BoardTemplate } from '@/lib/types';
 
 function NewBoardForm() {
   const router = useRouter();
@@ -27,11 +27,12 @@ function NewBoardForm() {
   const { workspaces, loading: wsLoading } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const queryWsId = searchParams.get('workspaceId');
   const [title, setTitle] = useState('');
+  const [mode, setMode] = useState<BoardMode>('single');
   const [template, setTemplate] = useState<BoardTemplate>('free');
   const [skin, setSkin] = useState<BoardSkin>('standard');
   const [allowChat, setAllowChat] = useState(true);
   const [workspaceId, setWorkspaceId] = useState<string>(queryWsId ?? '');
-  const [step, setStep] = useState<1 | 2>(1);
+  const [step, setStep] = useState<0 | 1 | 2>(0);
   const [creating, setCreating] = useState(false);
 
   // 워크스페이스 목록이 로드되면 기본값을 첫 번째로 세팅 (쿼리 파람이 우선)
@@ -59,7 +60,8 @@ function NewBoardForm() {
       const docRef = await addDoc(collection(db, boardsPath()), {
         title: title.trim(),
         boardCode,
-        template,
+        template: mode === 'workshop' ? 'free' : template,
+        mode,
         skin,
         ownerId: user.uid,
         workspaceId,
@@ -172,9 +174,64 @@ function NewBoardForm() {
           </Link>
         </div>
 
+        {step === 0 && (
+          <>
+            <p className="text-gray-400 text-sm mb-6">보드 유형을 선택하세요.</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
+              <button
+                type="button"
+                onClick={() => { setMode('single'); setStep(1); }}
+                className="flex flex-col items-start gap-3 rounded-md border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50 p-5 text-left transition-colors"
+              >
+                <span className="text-3xl">🎯</span>
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-1">단일 보드</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    한 가지 템플릿으로 가볍게 작업합니다.<br />
+                    브레인스토밍·회고·칸반·찬반 등.
+                  </p>
+                </div>
+                <span className="text-[11px] text-gray-400 mt-auto">패들렛 스타일 · 빠른 시작</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('workshop'); setStep(1); }}
+                className="flex flex-col items-start gap-3 rounded-md border-2 border-gray-200 hover:border-indigo-400 hover:bg-indigo-50/50 p-5 text-left transition-colors"
+              >
+                <span className="text-3xl">🎬</span>
+                <div>
+                  <h3 className="font-bold text-gray-900 mb-1">워크숍</h3>
+                  <p className="text-xs text-gray-500 leading-relaxed">
+                    여러 단계를 조합해 하나의 워크숍을 진행합니다.<br />
+                    단계별로 활동/시간이 자동 전환됩니다.
+                  </p>
+                </div>
+                <span className="text-[11px] text-gray-400 mt-auto">발산 → 정리 → 투표 등 시퀀스</span>
+              </button>
+            </div>
+          </>
+        )}
+
         {step === 1 && (
           <>
-            <p className="text-gray-400 text-sm mb-6">보드 제목을 입력하고 템플릿을 선택하세요.</p>
+            <div className="flex items-center gap-2 mb-2">
+              <button
+                type="button"
+                onClick={() => setStep(0)}
+                className="text-xs text-indigo-600 hover:underline"
+              >
+                ← 유형 변경
+              </button>
+              <span className="text-xs text-gray-400">·</span>
+              <span className="text-xs text-gray-500 font-semibold">
+                {mode === 'workshop' ? '🎬 워크숍' : '🎯 단일 보드'}
+              </span>
+            </div>
+            <p className="text-gray-400 text-sm mb-6">
+              {mode === 'workshop'
+                ? '제목과 스킨을 정하면 됩니다. 단계는 보드 안에서 직접 추가합니다.'
+                : '보드 제목과 템플릿을 선택하세요.'}
+            </p>
             <form
               onSubmit={(e) => { e.preventDefault(); if (title.trim()) setStep(2); }}
               className="flex flex-col gap-6"
@@ -182,7 +239,7 @@ function NewBoardForm() {
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-gray-700">보드 제목</label>
                 <Input
-                  placeholder="예: Q1 회고 워크숍"
+                  placeholder={mode === 'workshop' ? '예: Q1 팀 비전 정렬 워크숍' : '예: Q1 회고 보드'}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
                   maxLength={60}
@@ -205,10 +262,12 @@ function NewBoardForm() {
                   ))}
                 </select>
               </div>
-              <div className="flex flex-col gap-2">
-                <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
-                <TemplateSelector value={template} onChange={setTemplate} />
-              </div>
+              {mode === 'single' && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-700">템플릿 선택</label>
+                  <TemplateSelector value={template} onChange={setTemplate} />
+                </div>
+              )}
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-semibold text-gray-700">스킨 선택</label>
                 <SkinSelector value={skin} onChange={setSkin} />
@@ -249,7 +308,16 @@ function NewBoardForm() {
           <>
             <p className="text-gray-400 text-sm mb-6">내용을 확인하고 보드를 생성하세요.</p>
             <div className="flex flex-col gap-4">
-              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
+              <div className="rounded-md border border-gray-200 px-4 py-4 flex flex-col gap-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-gray-400 uppercase tracking-wide">유형</span>
+                  <button onClick={() => setStep(0)} className="text-xs text-indigo-600 hover:underline">변경</button>
+                </div>
+                <p className="font-semibold text-gray-900">
+                  {mode === 'workshop' ? '🎬 워크숍 (단계 시퀀스)' : '🎯 단일 보드'}
+                </p>
+              </div>
+              <div className="rounded-md border border-gray-200 px-4 py-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">보드 제목</span>
                   <button
@@ -261,7 +329,7 @@ function NewBoardForm() {
                 </div>
                 <p className="font-semibold text-gray-900">{title}</p>
               </div>
-              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
+              <div className="rounded-md border border-gray-200 px-4 py-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">워크스페이스</span>
                   <button onClick={() => setStep(1)} className="text-xs text-indigo-600 hover:underline">변경</button>
@@ -270,21 +338,23 @@ function NewBoardForm() {
                   {workspaces.find((w) => w.id === workspaceId)?.name ?? '—'}
                 </p>
               </div>
-              <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-400 uppercase tracking-wide">템플릿</span>
-                  <button
-                    onClick={() => setStep(1)}
-                    className="text-xs text-indigo-600 hover:underline"
-                  >
-                    변경
-                  </button>
+              {mode === 'single' && (
+                <div className="rounded-md border border-gray-200 px-4 py-4 flex flex-col gap-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-gray-400 uppercase tracking-wide">템플릿</span>
+                    <button
+                      onClick={() => setStep(1)}
+                      className="text-xs text-indigo-600 hover:underline"
+                    >
+                      변경
+                    </button>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{getTemplate(template).emoji}</span>
+                    <span className="font-semibold text-gray-900">{getTemplate(template).label}</span>
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <span className="text-xl">{getTemplate(template).emoji}</span>
-                  <span className="font-semibold text-gray-900">{getTemplate(template).label}</span>
-                </div>
-              </div>
+              )}
               <div className="rounded-xl border border-gray-200 px-4 py-4 flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-xs text-gray-400 uppercase tracking-wide">스킨</span>
