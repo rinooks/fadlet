@@ -400,7 +400,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             </button>
           )}
           <div className="hidden md:flex items-center gap-2">
-            <ExportMenu boardId={boardId} />
+            <ExportMenu boardId={boardId} isWorkshop={isWorkshopMode} />
             {isHostUser && (
               <>
                 <Button

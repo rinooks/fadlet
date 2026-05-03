@@ -5,9 +5,10 @@ import { Download, ChevronDown } from 'lucide-react';
 
 interface ExportMenuProps {
   boardId: string;
+  isWorkshop?: boolean;
 }
 
-export function ExportMenu({ boardId }: ExportMenuProps) {
+export function ExportMenu({ boardId, isWorkshop = false }: ExportMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -19,7 +20,7 @@ export function ExportMenu({ boardId }: ExportMenuProps) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
-  function openExport(type: 'board' | 'chat' | 'both') {
+  function openExport(type: 'board' | 'chat' | 'both' | 'workshop') {
     window.open(`/boards/${boardId}/export?type=${type}`, '_blank', 'noopener');
     setOpen(false);
   }
@@ -41,8 +42,21 @@ export function ExportMenu({ boardId }: ExportMenuProps) {
       {open && (
         <div
           role="menu"
-          className="absolute right-0 top-full mt-1 w-44 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1"
+          className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1"
         >
+          {isWorkshop && (
+            <>
+              <button
+                type="button"
+                role="menuitem"
+                onClick={() => openExport('workshop')}
+                className="w-full text-left text-xs px-3 py-2 hover:bg-indigo-50 font-semibold text-indigo-700"
+              >
+                🎬 워크숍 리포트
+              </button>
+              <div className="my-1 border-t border-gray-100" />
+            </>
+          )}
           <button
             type="button"
             role="menuitem"
