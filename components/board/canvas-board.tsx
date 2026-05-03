@@ -119,15 +119,19 @@ export function CanvasBoard({
 
   return (
     <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-      <div className="relative w-full h-full overflow-auto bg-gray-100">
+      <div className="relative w-full h-full overflow-auto bg-gray-50">
         <div
           className="relative"
           style={{
             width: CANVAS_WIDTH,
             height: CANVAS_HEIGHT,
-            backgroundImage:
-              'radial-gradient(circle, rgba(0,0,0,0.08) 1px, transparent 1px)',
-            backgroundSize: '24px 24px',
+            backgroundColor: '#FAFAFB',
+            backgroundImage: [
+              'radial-gradient(circle, rgba(99,102,241,0.18) 2px, transparent 2px)',
+              'radial-gradient(circle, rgba(15,23,42,0.10) 1px, transparent 1px)',
+            ].join(', '),
+            backgroundSize: '120px 120px, 24px 24px',
+            backgroundPosition: '0 0, 0 0',
           }}
         >
           {positioned.map(({ post, x, y }) => (
