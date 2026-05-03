@@ -173,6 +173,18 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     }
   }
 
+  async function handleCustomBackgroundColorChange(color: string) {
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        background: 'custom',
+        customBackgroundColor: color,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      toast.error('배경 색상 변경에 실패했습니다.');
+    }
+  }
+
   async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string) {
     if (!uid || !nickname) return;
     if (checkBanned(content)) throw new Error('banned');
@@ -340,7 +352,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const isCanvas = template.id === 'canvas';
   const isProscons = template.id === 'proscons';
   const skin = board?.skin ?? 'standard';
-  const backgroundDef = getBackground(board?.background);
+  const backgroundDef = getBackground(board?.background, board?.customBackgroundColor);
   const showWorkshopEmptyHint = isWorkshopMode && !hasActiveActivity;
   const visiblePosts = isWorkshopMode && currentStage
     ? posts.filter((p) => p.stageId === currentStage.id)
@@ -811,7 +823,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           currentSkin={board.skin ?? 'standard'}
           onSkinChange={handleSkinChange}
           currentBackground={board.background ?? 'plain'}
+          customBackgroundColor={board.customBackgroundColor}
           onBackgroundChange={handleBackgroundChange}
+          onCustomBackgroundColorChange={handleCustomBackgroundColorChange}
           isHostUser={isHostUser}
         />
       )}

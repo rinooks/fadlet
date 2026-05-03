@@ -26,6 +26,8 @@ const PAPER_PATTERN: React.CSSProperties = {
     'radial-gradient(circle at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 40%), radial-gradient(circle at 80% 70%, rgba(0,0,0,0.04) 0%, transparent 50%)',
 };
 
+export const DEFAULT_CUSTOM_COLOR = '#FDE68A';
+
 export const BACKGROUNDS: BackgroundDefinition[] = [
   {
     id: 'plain',
@@ -69,8 +71,22 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
     style: { backgroundColor: '#FFF8EC' },
     preview: { backgroundColor: '#FFF8EC' },
   },
+  {
+    id: 'custom',
+    label: '커스텀',
+    style: { backgroundColor: DEFAULT_CUSTOM_COLOR },
+    preview: { backgroundColor: DEFAULT_CUSTOM_COLOR },
+  },
 ];
 
-export function getBackground(id: BoardBackground | undefined): BackgroundDefinition {
-  return BACKGROUNDS.find((b) => b.id === id) ?? BACKGROUNDS[0];
+export function getBackground(id: BoardBackground | undefined, customColor?: string): BackgroundDefinition {
+  const def = BACKGROUNDS.find((b) => b.id === id) ?? BACKGROUNDS[0];
+  if (def.id === 'custom' && customColor) {
+    return {
+      ...def,
+      style: { backgroundColor: customColor },
+      preview: { backgroundColor: customColor },
+    };
+  }
+  return def;
 }

@@ -191,7 +191,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                 <Link
                   key={board.id}
                   href={`/boards/${board.id}`}
-                  style={getBackground(board.background).style}
+                  style={getBackground(board.background, board.customBackgroundColor).style}
                   className="rounded-xl border border-gray-200 p-4 hover:border-indigo-400 hover:shadow-md transition-all group"
                 >
                   <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 line-clamp-2 mb-2">

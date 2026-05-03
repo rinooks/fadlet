@@ -27,7 +27,9 @@ interface FacilitatorPanelProps {
   currentSkin: BoardSkin;
   onSkinChange: (skin: BoardSkin) => Promise<void>;
   currentBackground: BoardBackground;
+  customBackgroundColor?: string;
   onBackgroundChange: (bg: BoardBackground) => Promise<void>;
+  onCustomBackgroundColorChange: (color: string) => Promise<void>;
   isHostUser: boolean;
 }
 
@@ -44,7 +46,9 @@ export function FacilitatorPanel({
   currentSkin,
   onSkinChange,
   currentBackground,
+  customBackgroundColor,
   onBackgroundChange,
+  onCustomBackgroundColorChange,
   isHostUser,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
@@ -194,7 +198,9 @@ export function FacilitatorPanel({
             <h3 className="text-sm font-semibold text-gray-900 mb-2">🖼️ 보드 배경</h3>
             <BackgroundSelector
               value={currentBackground}
+              customColor={customBackgroundColor}
               onChange={async (bg) => { await onBackgroundChange(bg); }}
+              onCustomColorChange={async (color) => { await onCustomBackgroundColorChange(color); }}
             />
           </section>
 
