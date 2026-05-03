@@ -4,7 +4,8 @@ export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray'
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
 export type BoardTemplate = 'free' | 'canvas' | 'brainstorming' | 'proscons' | 'kanban' | 'kpt' | '4f' | 'qna' | 'nineWindow';
-export type ActivityType = BoardTemplate;
+export type LiveActivity = 'poll' | 'wordcloud';
+export type ActivityType = BoardTemplate | LiveActivity;
 export type BoardMode = 'single' | 'workshop';
 export type EmojiType = 'thumbsup' | 'heart' | 'party' | 'bulb' | 'thinking';
 export type ReportTarget = 'message' | 'post';
@@ -18,12 +19,52 @@ export interface BoardSettings {
   lockedAt: Timestamp | null;
 }
 
+export interface PollConfig {
+  question: string;
+  options: string[];
+  allowMultiple?: boolean;
+}
+
+export interface WordcloudConfig {
+  prompt: string;
+  maxLength?: number;
+}
+
+export interface ActivityConfig {
+  poll?: PollConfig;
+  wordcloud?: WordcloudConfig;
+}
+
 export interface Stage {
   id: string;
   title: string;
   durationSec: number;
   order: number;
   activityType?: ActivityType;
+  activityConfig?: ActivityConfig;
+}
+
+export interface ActivityState {
+  resultsVisible: boolean;
+  closed: boolean;
+  updatedAt?: Timestamp;
+}
+
+export interface PollResponse {
+  id: string;
+  stageId: string;
+  userId: string;
+  optionIndexes: number[];
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
+export interface WordcloudEntry {
+  id: string;
+  stageId: string;
+  userId: string;
+  text: string;
+  createdAt: Timestamp;
 }
 
 export type TimerStatus = 'idle' | 'running' | 'paused';

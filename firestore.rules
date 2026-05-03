@@ -136,6 +136,30 @@ service cloud.firestore {
           allow update: if isAuthenticated() && isOwner(wsId, boardId);
           allow delete: if isAuthenticated() && isOwner(wsId, boardId);
         }
+
+        // 라이브 폴 응답 — 1인 1응답 (userId == auth.uid)
+        match /pollResponses/{responseId} {
+          allow read: if true;
+          allow create, update: if isAuthenticated()
+            && request.resource.data.userId == request.auth.uid;
+          allow delete: if isAuthenticated()
+            && (resource.data.userId == request.auth.uid || isOwner(wsId, boardId));
+        }
+
+        // 워드클라우드 입력 — 본인 작성/삭제, 운영자 삭제
+        match /wordcloudEntries/{entryId} {
+          allow read: if true;
+          allow create: if isAuthenticated()
+            && request.resource.data.userId == request.auth.uid;
+          allow delete: if isAuthenticated()
+            && (resource.data.userId == request.auth.uid || isOwner(wsId, boardId));
+        }
+
+        // 액티비티 런타임 상태(공개/마감) — 운영자만 쓰기
+        match /activityStates/{stageId} {
+          allow read: if true;
+          allow write: if isAuthenticated() && isOwner(wsId, boardId);
+        }
       }
     }
   }

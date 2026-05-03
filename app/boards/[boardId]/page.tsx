@@ -29,6 +29,7 @@ import { ChatPanel } from '@/components/chat/chat-panel';
 import { ExportMenu } from '@/components/shared/export-menu';
 import { ShareDialog } from '@/components/shared/share-dialog';
 import { getTemplate } from '@/lib/templates';
+import { getActivity, isLiveActivity } from '@/lib/activities';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useBoard } from '@/lib/hooks/use-board';
 import { useLockBoard } from '@/lib/hooks/use-lock-board';
@@ -43,7 +44,7 @@ import { db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
-import type { BoardSkin, EmojiType, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import type { BoardSkin, BoardTemplate, EmojiType, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 
 interface PageProps {
@@ -256,8 +257,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       const stages = [...(board?.stages ?? [])].sort((a, b) => a.order - b.order);
       const stage = stages.find((s) => s.id === newId);
       if (stage) {
-        const tmpl = stage.activityType ? getTemplate(stage.activityType) : null;
-        toast(`📍 ${stage.title}${tmpl ? ` (${tmpl.emoji} ${tmpl.label})` : ''} 시작`);
+        const def = stage.activityType ? getActivity(stage.activityType) : null;
+        toast(`📍 ${stage.title}${def ? ` (${def.emoji} ${def.label})` : ''} 시작`);
       }
     }
   }, [board?.mode, board?.timer?.stageId, board?.stages]);
@@ -314,7 +315,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const activeActivity = isWorkshopMode
     ? (currentStage?.activityType ?? null)
     : (board?.template ?? 'free');
-  const template = activeActivity ? getTemplate(activeActivity) : getTemplate('free');
+  const isLive = isLiveActivity(activeActivity);
+  const boardTemplateId: BoardTemplate = (activeActivity && !isLive)
+    ? (activeActivity as BoardTemplate)
+    : 'free';
+  const template = getTemplate(boardTemplateId);
   const hasActiveActivity = !!activeActivity;
   const isFreeLayout = template.columns === null;
   const isCanvas = template.id === 'canvas';

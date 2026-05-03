@@ -9,6 +9,9 @@ export const COLLECTIONS = {
   REPORTS: 'reports',
   MEMBERS: 'members',
   OPERATORS: 'operators',
+  POLL_RESPONSES: 'pollResponses',
+  WORDCLOUD_ENTRIES: 'wordcloudEntries',
+  ACTIVITY_STATES: 'activityStates',
 } as const;
 
 export function boardsPath(wsId = WORKSPACE_ID) {
@@ -29,6 +32,22 @@ export function participantsPath(boardId: string, wsId = WORKSPACE_ID) {
 
 export function reportsPath(boardId: string, wsId = WORKSPACE_ID) {
   return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.REPORTS}`;
+}
+
+export function pollResponsesPath(boardId: string, wsId = WORKSPACE_ID) {
+  return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.POLL_RESPONSES}`;
+}
+
+export function wordcloudEntriesPath(boardId: string, wsId = WORKSPACE_ID) {
+  return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.WORDCLOUD_ENTRIES}`;
+}
+
+export function activityStatesPath(boardId: string, wsId = WORKSPACE_ID) {
+  return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.ACTIVITY_STATES}`;
+}
+
+export function activityStateDocPath(boardId: string, stageId: string, wsId = WORKSPACE_ID) {
+  return `${activityStatesPath(boardId, wsId)}/${stageId}`;
 }
 
 export function workspacesCollectionPath() {

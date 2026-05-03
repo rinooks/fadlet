@@ -1,0 +1,68 @@
+'use client';
+
+import {
+  collection,
+  doc,
+  onSnapshot,
+  query,
+  serverTimestamp,
+  setDoc,
+  where,
+} from 'firebase/firestore';
+import { useCallback, useEffect, useState } from 'react';
+import { db } from '@/lib/firebase/client';
+import { pollResponsesPath } from '@/lib/firebase/collections';
+import type { PollResponse } from '@/lib/types';
+
+export function usePoll(boardId: string, stageId: string | null) {
+  const [responses, setResponses] = useState<PollResponse[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!boardId || !stageId) {
+      setResponses([]);
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    const q = query(
+      collection(db, pollResponsesPath(boardId)),
+      where('stageId', '==', stageId),
+    );
+    const unsub = onSnapshot(
+      q,
+      (snap) => {
+        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as PollResponse);
+        setResponses(list);
+        setLoading(false);
+      },
+      (err) => {
+        console.error('[usePoll] snapshot error', err);
+        setLoading(false);
+      },
+    );
+    return unsub;
+  }, [boardId, stageId]);
+
+  const submitResponse = useCallback(
+    async (userId: string, optionIndexes: number[]) => {
+      if (!boardId || !stageId) return;
+      const docId = `${stageId}_${userId}`;
+      const ref = doc(db, pollResponsesPath(boardId), docId);
+      await setDoc(
+        ref,
+        {
+          stageId,
+          userId,
+          optionIndexes,
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        },
+        { merge: true },
+      );
+    },
+    [boardId, stageId],
+  );
+
+  return { responses, loading, submitResponse };
+}
