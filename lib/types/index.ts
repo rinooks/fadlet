@@ -12,6 +12,7 @@ export type ReportTarget = 'message' | 'post';
 export type ReportStatus = 'open' | 'resolved';
 export type WorkspaceRole = 'admin' | 'member';
 export type BoardSkin = 'standard' | 'dense' | 'glass' | 'brutal';
+export type BoardBackground = 'plain' | 'dots' | 'grid' | 'paper' | 'mint' | 'lavender' | 'cream';
 
 export interface BoardSettings {
   allowChat: boolean;
@@ -110,6 +111,7 @@ export interface Board {
   template: BoardTemplate;
   mode?: BoardMode;
   skin?: BoardSkin;
+  background?: BoardBackground;
   ownerId: string;
   workspaceId: string;
   isDemo?: boolean;

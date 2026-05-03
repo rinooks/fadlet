@@ -10,8 +10,9 @@ import { useStages } from '@/lib/hooks/use-stages';
 import { useAnnouncement } from '@/lib/hooks/use-announcement';
 import { useBannedWords } from '@/lib/hooks/use-banned-words';
 import { SkinSelector } from '@/components/board/skin-selector';
+import { BackgroundSelector } from '@/components/board/background-selector';
 import { TEMPLATES } from '@/lib/templates';
-import type { ActivityType, BoardMode, BoardSkin, PinnedAnnouncement, Stage } from '@/lib/types';
+import type { ActivityType, BoardBackground, BoardMode, BoardSkin, PinnedAnnouncement, Stage } from '@/lib/types';
 
 interface FacilitatorPanelProps {
   open: boolean;
@@ -25,6 +26,8 @@ interface FacilitatorPanelProps {
   currentName: string;
   currentSkin: BoardSkin;
   onSkinChange: (skin: BoardSkin) => Promise<void>;
+  currentBackground: BoardBackground;
+  onBackgroundChange: (bg: BoardBackground) => Promise<void>;
   isHostUser: boolean;
 }
 
@@ -40,6 +43,8 @@ export function FacilitatorPanel({
   currentName,
   currentSkin,
   onSkinChange,
+  currentBackground,
+  onBackgroundChange,
   isHostUser,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
@@ -182,6 +187,14 @@ export function FacilitatorPanel({
             <SkinSelector
               value={currentSkin}
               onChange={async (skin) => { await onSkinChange(skin); }}
+            />
+          </section>
+
+          <section>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">🖼️ 보드 배경</h3>
+            <BackgroundSelector
+              value={currentBackground}
+              onChange={async (bg) => { await onBackgroundChange(bg); }}
             />
           </section>
 

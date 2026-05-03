@@ -47,7 +47,8 @@ import { db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
-import type { BoardSkin, BoardTemplate, EmojiType, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import { getBackground } from '@/lib/backgrounds';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 
 interface PageProps {
@@ -158,6 +159,17 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       });
     } catch {
       toast.error('스킨 변경에 실패했습니다.');
+    }
+  }
+
+  async function handleBackgroundChange(background: BoardBackground) {
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        background,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      toast.error('배경 변경에 실패했습니다.');
     }
   }
 
@@ -328,13 +340,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const isCanvas = template.id === 'canvas';
   const isProscons = template.id === 'proscons';
   const skin = board?.skin ?? 'standard';
+  const backgroundDef = getBackground(board?.background);
   const showWorkshopEmptyHint = isWorkshopMode && !hasActiveActivity;
   const visiblePosts = isWorkshopMode && currentStage
     ? posts.filter((p) => p.stageId === currentStage.id)
     : posts;
 
   return (
-    <div data-skin={skin} className="skin-root flex flex-col h-screen h-dvh bg-gray-50">
+    <div data-skin={skin} className="skin-root flex flex-col h-screen h-dvh" style={backgroundDef.style}>
       {/* 헤더 */}
       <header className="flex items-center justify-between gap-2 px-3 sm:px-4 py-3 bg-white border-b border-gray-100 shadow-sm flex-shrink-0">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
@@ -797,6 +810,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           currentName={nickname}
           currentSkin={board.skin ?? 'standard'}
           onSkinChange={handleSkinChange}
+          currentBackground={board.background ?? 'plain'}
+          onBackgroundChange={handleBackgroundChange}
           isHostUser={isHostUser}
         />
       )}
