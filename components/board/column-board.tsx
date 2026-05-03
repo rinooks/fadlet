@@ -28,6 +28,20 @@ interface DroppableColumnProps {
   children: React.ReactNode;
 }
 
+function FlowFragment({ showFlow, isFirst, children }: { showFlow: boolean; isFirst: boolean; children: React.ReactNode }) {
+  if (!showFlow) return <>{children}</>;
+  return (
+    <>
+      {!isFirst && (
+        <div className="flex items-center text-indigo-300 px-1 flex-shrink-0" aria-hidden>
+          <span className="text-xl font-bold">→</span>
+        </div>
+      )}
+      {children}
+    </>
+  );
+}
+
 function DroppableColumn({ columnId, isGrid, postIds, children }: DroppableColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${columnId}`, data: { columnId, type: 'column' } });
 
@@ -61,10 +75,13 @@ export function ColumnBoard({
 
   const columns = template.columns ?? [];
   const isGrid = !!template.gridCols;
+  const showFlow = !!template.showFlow && !isGrid;
 
   const containerClass = isGrid
     ? `grid gap-2`
-    : 'flex gap-3 overflow-x-auto pb-2';
+    : showFlow
+      ? 'flex items-stretch overflow-x-auto pb-2'
+      : 'flex gap-3 overflow-x-auto pb-2';
 
   const containerStyle = isGrid
     ? { gridTemplateColumns: `repeat(${template.gridCols}, minmax(0, 1fr))` }
@@ -79,15 +96,15 @@ export function ColumnBoard({
       )}
 
       <div className={containerClass} style={containerStyle}>
-        {columns.map((col) => {
+        {columns.map((col, idx) => {
           const colPosts = posts.filter((p) => p.columnId === col.id);
           const postIds = colPosts.map((p) => p.id);
           return (
+            <FlowFragment key={col.id} showFlow={showFlow} isFirst={idx === 0}>
             <div
-              key={col.id}
               className={`flex flex-col rounded-md border border-gray-200 bg-white/70 ${
                 isGrid ? 'min-h-[200px]' : 'min-w-[240px] flex-shrink-0 w-64'
-              }`}
+              } ${showFlow ? 'mx-1' : ''}`}
             >
               <div className={`flex items-center justify-between px-3 py-2 rounded-t-md font-semibold text-sm ${col.headerClass}`}>
                 <span>{col.label}</span>
@@ -123,6 +140,7 @@ export function ColumnBoard({
                 </div>
               )}
             </div>
+            </FlowFragment>
           );
         })}
       </div>

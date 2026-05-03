@@ -14,14 +14,15 @@ export interface TemplateDefinition {
   emoji: string;
   columns: TemplateColumn[] | null;
   gridCols?: number;
+  showFlow?: boolean;
 }
 
 export const TEMPLATES: TemplateDefinition[] = [
   {
-    id: 'free',
-    label: '자유형',
-    description: '제약 없이 자유롭게 포스트를 추가합니다.',
-    emoji: '✏️',
+    id: 'brainstorming',
+    label: '브레인스토밍',
+    description: '제약 없이 아이디어를 자유롭게 쏟아냅니다.',
+    emoji: '💡',
     columns: null,
   },
   {
@@ -29,13 +30,6 @@ export const TEMPLATES: TemplateDefinition[] = [
     label: '캔버스',
     description: '포스트를 원하는 위치에 자유롭게 배치합니다.',
     emoji: '🗺️',
-    columns: null,
-  },
-  {
-    id: 'brainstorming',
-    label: '브레인스토밍',
-    description: '아이디어를 자유롭게 쏟아냅니다.',
-    emoji: '💡',
     columns: null,
   },
   {
@@ -73,13 +67,14 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     id: '4f',
     label: '4F 회고',
-    description: 'Fact · Feeling · Finding · Future 네 가지로 경험을 회고합니다.',
+    description: '관찰 → 감정 → 발견 → 액션의 시간 흐름으로 경험을 회고합니다.',
     emoji: '📋',
+    showFlow: true,
     columns: [
-      { id: 'fact', label: '📌 Fact', headerClass: 'bg-gray-500 text-white', defaultColor: 'gray' },
-      { id: 'feeling', label: '💛 Feeling', headerClass: 'bg-yellow-500 text-white', defaultColor: 'yellow' },
-      { id: 'finding', label: '💡 Finding', headerClass: 'bg-purple-500 text-white', defaultColor: 'purple' },
-      { id: 'future', label: '🚀 Future', headerClass: 'bg-indigo-500 text-white', defaultColor: 'blue' },
+      { id: 'fact', label: '📌 Fact (사실)', headerClass: 'bg-slate-500 text-white', defaultColor: 'gray' },
+      { id: 'feeling', label: '💛 Feeling (감정)', headerClass: 'bg-amber-500 text-white', defaultColor: 'yellow' },
+      { id: 'finding', label: '💡 Finding (발견)', headerClass: 'bg-orange-500 text-white', defaultColor: 'purple' },
+      { id: 'future', label: '🚀 Future (액션)', headerClass: 'bg-indigo-600 text-white', defaultColor: 'blue' },
     ],
   },
   {
@@ -94,19 +89,19 @@ export const TEMPLATES: TemplateDefinition[] = [
   },
   {
     id: 'nineWindow',
-    label: '9칸 윈도우',
-    description: '핵심 주제를 중심으로 9개 영역을 탐색합니다.',
+    label: '9칸 윈도우 (TRIZ)',
+    description: '시간(과거·현재·미래) × 레벨(상위·시스템·하위)로 9개 영역을 탐색합니다.',
     emoji: '🔲',
     columns: [
-      { id: 'cell-1', label: '영역 1', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'cell-2', label: '영역 2', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'cell-3', label: '영역 3', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'cell-4', label: '영역 4', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'center', label: '🎯 핵심', headerClass: 'bg-indigo-600 text-white', defaultColor: 'blue' },
-      { id: 'cell-6', label: '영역 6', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'cell-7', label: '영역 7', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'cell-8', label: '영역 8', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
-      { id: 'cell-9', label: '영역 9', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-1', label: '과거 · 상위', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-2', label: '현재 · 상위', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-3', label: '미래 · 상위', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-4', label: '과거 · 시스템', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'center', label: '🎯 현재 · 시스템', headerClass: 'bg-indigo-600 text-white', defaultColor: 'blue' },
+      { id: 'cell-6', label: '미래 · 시스템', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-7', label: '과거 · 하위', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-8', label: '현재 · 하위', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
+      { id: 'cell-9', label: '미래 · 하위', headerClass: 'bg-indigo-50 text-indigo-700 border border-indigo-200', defaultColor: 'blue' },
     ],
     gridCols: 3,
   },

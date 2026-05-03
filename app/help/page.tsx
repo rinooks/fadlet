@@ -52,14 +52,16 @@ export default function HelpPage() {
         </Section>
 
         <Section emoji="📋" title="템플릿 — 워크숍 흐름에 맞춰 선택">
-          <p>현재 7가지 템플릿이 준비되어 있습니다.</p>
+          <p>현재 8가지 템플릿이 준비되어 있습니다.</p>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside">
-            <li><strong>자유형 / 브레인스토밍</strong> — 제약 없는 그리드</li>
+            <li><strong>브레인스토밍</strong> — 제약 없는 그리드</li>
+            <li><strong>캔버스</strong> — 자유 위치 배치</li>
             <li><strong>찬성 / 반대</strong> — 의견 양분 토론</li>
+            <li><strong>칸반</strong> — 할 일 · 진행 중 · 완료</li>
             <li><strong>KPT 회고</strong> — Keep · Problem · Try</li>
-            <li><strong>4F 회고</strong> — Fact · Feeling · Finding · Future</li>
+            <li><strong>4F 회고</strong> — 관찰 → 감정 → 발견 → 액션 흐름</li>
             <li><strong>Q&amp;A</strong> — 질문·답변 묶음</li>
-            <li><strong>9칸 윈도우</strong> — 핵심 + 8개 영역 (TRIZ)</li>
+            <li><strong>9칸 윈도우 (TRIZ)</strong> — 시간 × 레벨 매트릭스</li>
           </ul>
           <p className="text-gray-500 text-xs">팁: 템플릿은 보드 생성 후 변경할 수 없으므로 선택 시 신중히 결정하세요.</p>
         </Section>
