@@ -91,7 +91,7 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-sm">
+      <DialogContent className="max-w-xs">
         <DialogHeader>
           <DialogTitle>
             {columnLabel ? `${columnLabel} — 포스트 작성` : '새 포스트 작성'}
@@ -103,9 +103,9 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
             value={content}
             onChange={(e) => setContent(e.target.value)}
             maxLength={500}
-            rows={3}
+            rows={10}
             autoFocus
-            className="resize-none"
+            className="resize-none min-h-[280px]"
           />
 
           {/* 이미지 미리보기 */}
