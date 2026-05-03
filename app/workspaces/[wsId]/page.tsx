@@ -13,6 +13,7 @@ import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { leaveWorkspace, useWorkspace, useWorkspaceMembers } from '@/lib/hooks/use-workspaces';
+import { getBackground } from '@/lib/backgrounds';
 import type { Board } from '@/lib/types';
 
 interface PageProps {
@@ -190,16 +191,17 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                 <Link
                   key={board.id}
                   href={`/boards/${board.id}`}
-                  className="bg-white rounded-xl border border-gray-200 p-4 hover:border-indigo-300 hover:shadow-sm transition-all group"
+                  style={getBackground(board.background).style}
+                  className="rounded-xl border border-gray-200 p-4 hover:border-indigo-400 hover:shadow-md transition-all group"
                 >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-600 line-clamp-2 mb-2">
+                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 line-clamp-2 mb-2">
                     {board.title}
                   </h3>
                   <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">
+                    <span className="font-mono text-xs font-bold text-indigo-700 bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded border border-white">
                       {board.boardCode}
                     </span>
-                    <span className="text-[10px] text-gray-400">
+                    <span className="text-[10px] text-gray-500">
                       {board.createdAt?.toDate?.().toLocaleDateString('ko-KR') ?? ''}
                     </span>
                   </div>

@@ -48,6 +48,7 @@
 ### ✏️ UI 후속 정비
 - [x] **새 포스트 다이얼로그 사이즈** — [`new-post-dialog.tsx`](components/board/new-post-dialog.tsx) 폭 좁게(`max-w-xs`), 본문 textarea 위아래 크게(rows 10 + min-h 280px)
 - [x] **보드 배경 선택** — [`backgrounds.ts`](lib/backgrounds.ts) 7가지 옵션, [`BackgroundSelector`](components/board/background-selector.tsx), 운영자 패널 🖼️ 섹션
+- [x] **워크스페이스 보드 카드에도 배경 반영** — [`workspaces/[wsId]/page.tsx`](app/workspaces/[wsId]/page.tsx) 카드 자체에 `getBackground(board.background).style` 적용
 
 ---
 
