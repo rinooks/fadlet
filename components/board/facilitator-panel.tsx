@@ -52,6 +52,8 @@ export function FacilitatorPanel({
   const [newActivity, setNewActivity] = useState<ActivityType>('brainstorming');
   const [newPollQuestion, setNewPollQuestion] = useState('');
   const [newPollOptionsText, setNewPollOptionsText] = useState('');
+  const [newWcPrompt, setNewWcPrompt] = useState('');
+  const [newWcMaxLen, setNewWcMaxLen] = useState('20');
   const [announcementDraft, setAnnouncementDraft] = useState(pinnedAnnouncement?.content ?? '');
   const [newWord, setNewWord] = useState('');
   const [busy, setBusy] = useState(false);
@@ -71,6 +73,15 @@ export function FacilitatorPanel({
         .filter(Boolean);
       if (!newPollQuestion.trim() || opts.length < 2) return;
       activityConfig = { poll: { question: newPollQuestion.trim(), options: opts } };
+    } else if (isWorkshop && newActivity === 'wordcloud') {
+      if (!newWcPrompt.trim()) return;
+      const maxLen = Number(newWcMaxLen);
+      activityConfig = {
+        wordcloud: {
+          prompt: newWcPrompt.trim(),
+          maxLength: Number.isFinite(maxLen) && maxLen > 0 ? Math.floor(maxLen) : 20,
+        },
+      };
     }
     setBusy(true);
     try {
@@ -85,6 +96,8 @@ export function FacilitatorPanel({
       setNewMinutes('5');
       setNewPollQuestion('');
       setNewPollOptionsText('');
+      setNewWcPrompt('');
+      setNewWcMaxLen('20');
     } finally {
       setBusy(false);
     }
@@ -280,6 +293,30 @@ export function FacilitatorPanel({
                       rows={4}
                       placeholder={'A안\nB안\nC안'}
                       className="text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+              {isWorkshop && newActivity === 'wordcloud' && (
+                <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-1">프롬프트</label>
+                    <Input
+                      value={newWcPrompt}
+                      onChange={(e) => setNewWcPrompt(e.target.value)}
+                      placeholder="예: 오늘 워크숍을 한 단어로"
+                      className="text-sm h-8"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-1">입력 최대 길이 (자)</label>
+                    <Input
+                      type="number"
+                      min={5}
+                      max={50}
+                      value={newWcMaxLen}
+                      onChange={(e) => setNewWcMaxLen(e.target.value)}
+                      className="text-sm h-8 w-24"
                     />
                   </div>
                 </div>

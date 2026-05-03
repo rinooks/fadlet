@@ -27,6 +27,7 @@ import { PostDetailModal } from '@/components/board/post-detail-modal';
 import { StageBanner } from '@/components/board/stage-banner';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { PollBoard } from '@/components/activities/poll-board';
+import { WordcloudBoard } from '@/components/activities/wordcloud-board';
 import { ExportMenu } from '@/components/shared/export-menu';
 import { ShareDialog } from '@/components/shared/share-dialog';
 import { getTemplate } from '@/lib/templates';
@@ -518,9 +519,18 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             currentUid={uid ?? ''}
             isHost={role === 'host'}
           />
+        ) : isLive && currentStage && activeActivity === 'wordcloud' && currentStage.activityConfig?.wordcloud ? (
+          <WordcloudBoard
+            boardId={boardId}
+            stageId={currentStage.id}
+            stageTitle={currentStage.title}
+            config={currentStage.activityConfig.wordcloud}
+            currentUid={uid ?? ''}
+            isHost={role === 'host'}
+          />
         ) : isLive ? (
           <div className="flex-1 flex items-center justify-center p-8">
-            <p className="text-sm text-gray-500">이 활동은 아직 준비 중입니다.</p>
+            <p className="text-sm text-gray-500">이 활동은 설정이 누락되었습니다.</p>
           </div>
         ) : isCanvas ? (
           <div className="flex-1 flex flex-col min-w-0">
