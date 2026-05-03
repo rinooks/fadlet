@@ -155,6 +155,24 @@ service cloud.firestore {
             && (resource.data.userId == request.auth.uid || isOwner(wsId, boardId));
         }
 
+        // 라이브 Q&A 질문 — 본인 작성, 모두 좋아요, 운영자 답변/완료
+        match /qnaQuestions/{questionId} {
+          allow read: if true;
+          allow create: if isAuthenticated()
+            && request.resource.data.authorId == request.auth.uid
+            && request.resource.data.upvotes is list
+            && request.resource.data.upvotes.size() == 0
+            && request.resource.data.answered == false;
+          // 좋아요만 변경(upvotes) 또는 운영자가 답변/완료 처리
+          allow update: if isAuthenticated()
+            && (
+              request.resource.data.diff(resource.data).affectedKeys().hasOnly(['upvotes'])
+              || isOwner(wsId, boardId)
+            );
+          allow delete: if isAuthenticated()
+            && (resource.data.authorId == request.auth.uid || isOwner(wsId, boardId));
+        }
+
         // 액티비티 런타임 상태(공개/마감) — 운영자만 쓰기
         match /activityStates/{stageId} {
           allow read: if true;

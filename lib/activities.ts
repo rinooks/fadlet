@@ -26,6 +26,13 @@ const LIVE_ACTIVITIES: ActivityDefinition[] = [
     label: '워드클라우드',
     description: '한 단어/구문 응답을 모아 빈도수로 시각화합니다.',
   },
+  {
+    id: 'qna',
+    kind: 'live',
+    emoji: '❓',
+    label: '라이브 Q&A',
+    description: '질문을 모으고 좋아요로 정렬, 운영자가 답변/완료 처리합니다.',
+  },
 ];
 
 const BOARD_ACTIVITIES: ActivityDefinition[] = TEMPLATES.map((t) => ({

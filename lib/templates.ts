@@ -78,16 +78,6 @@ export const TEMPLATES: TemplateDefinition[] = [
     ],
   },
   {
-    id: 'qna',
-    label: 'Q&A',
-    description: '질문과 답변을 나란히 모읍니다.',
-    emoji: '❓',
-    columns: [
-      { id: 'question', label: '❓ 질문', headerClass: 'bg-purple-500 text-white', defaultColor: 'purple' },
-      { id: 'answer', label: '✅ 답변', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
-    ],
-  },
-  {
     id: 'nineWindow',
     label: '9칸 윈도우 (TRIZ)',
     description: '시간(과거·현재·미래) × 레벨(상위·시스템·하위)로 9개 영역을 탐색합니다.',

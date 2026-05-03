@@ -11,6 +11,7 @@ export const COLLECTIONS = {
   OPERATORS: 'operators',
   POLL_RESPONSES: 'pollResponses',
   WORDCLOUD_ENTRIES: 'wordcloudEntries',
+  QNA_QUESTIONS: 'qnaQuestions',
   ACTIVITY_STATES: 'activityStates',
 } as const;
 
@@ -40,6 +41,10 @@ export function pollResponsesPath(boardId: string, wsId = WORKSPACE_ID) {
 
 export function wordcloudEntriesPath(boardId: string, wsId = WORKSPACE_ID) {
   return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.WORDCLOUD_ENTRIES}`;
+}
+
+export function qnaQuestionsPath(boardId: string, wsId = WORKSPACE_ID) {
+  return `${boardsPath(wsId)}/${boardId}/${COLLECTIONS.QNA_QUESTIONS}`;
 }
 
 export function activityStatesPath(boardId: string, wsId = WORKSPACE_ID) {

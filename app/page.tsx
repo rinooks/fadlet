@@ -10,8 +10,8 @@ const FEATURES = [
   },
   {
     icon: '🗺️',
-    title: '8가지 템플릿',
-    desc: '브레인스토밍·캔버스·찬반·칸반·KPT·4F·Q&A·9칸 윈도우.',
+    title: '7가지 템플릿 + 라이브 3종',
+    desc: '브레인스토밍·캔버스·찬반·칸반·KPT·4F·9칸 + 폴/워드클라우드/Q&A.',
   },
   {
     icon: '🎨',
@@ -42,8 +42,10 @@ const TEMPLATES = [
   { emoji: '🗂️', label: '칸반', desc: '할 일·진행 중·완료로 작업 흐름을 시각화합니다.' },
   { emoji: '🔄', label: 'KPT', desc: 'Keep · Problem · Try 세 가지로 팀을 돌아봅니다.' },
   { emoji: '📋', label: '4F', desc: '관찰 → 감정 → 발견 → 액션의 시간 흐름.' },
-  { emoji: '❓', label: 'Q&A', desc: '질문과 답변을 나란히 모읍니다.' },
   { emoji: '🔲', label: '9칸 (TRIZ)', desc: '시간 × 레벨로 9개 영역을 탐색합니다.' },
+  { emoji: '📊', label: '라이브 폴', desc: '객관식 투표 + 실시간 막대 차트.' },
+  { emoji: '☁️', label: '워드클라우드', desc: '한 단어 응답을 빈도수로 시각화.' },
+  { emoji: '❓', label: '라이브 Q&A', desc: '질문 모으고 좋아요 정렬, 운영자 답변.' },
 ];
 
 // 결정론적 의사 난수 (hydration mismatch 방지: 인덱스 기반 일관된 값)

@@ -54,6 +54,7 @@ export function FacilitatorPanel({
   const [newPollOptionsText, setNewPollOptionsText] = useState('');
   const [newWcPrompt, setNewWcPrompt] = useState('');
   const [newWcMaxLen, setNewWcMaxLen] = useState('20');
+  const [newQnaPrompt, setNewQnaPrompt] = useState('');
   const [announcementDraft, setAnnouncementDraft] = useState(pinnedAnnouncement?.content ?? '');
   const [newWord, setNewWord] = useState('');
   const [busy, setBusy] = useState(false);
@@ -82,6 +83,9 @@ export function FacilitatorPanel({
           maxLength: Number.isFinite(maxLen) && maxLen > 0 ? Math.floor(maxLen) : 20,
         },
       };
+    } else if (isWorkshop && newActivity === 'qna') {
+      if (!newQnaPrompt.trim()) return;
+      activityConfig = { qna: { prompt: newQnaPrompt.trim() } };
     }
     setBusy(true);
     try {
@@ -98,6 +102,7 @@ export function FacilitatorPanel({
       setNewPollOptionsText('');
       setNewWcPrompt('');
       setNewWcMaxLen('20');
+      setNewQnaPrompt('');
     } finally {
       setBusy(false);
     }
@@ -270,6 +275,7 @@ export function FacilitatorPanel({
                     <optgroup label="라이브">
                       <option value="poll">📊 라이브 폴</option>
                       <option value="wordcloud">☁️ 워드클라우드</option>
+                      <option value="qna">❓ 라이브 Q&amp;A</option>
                     </optgroup>
                   </select>
                 </div>
@@ -317,6 +323,19 @@ export function FacilitatorPanel({
                       value={newWcMaxLen}
                       onChange={(e) => setNewWcMaxLen(e.target.value)}
                       className="text-sm h-8 w-24"
+                    />
+                  </div>
+                </div>
+              )}
+              {isWorkshop && newActivity === 'qna' && (
+                <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
+                  <div>
+                    <label className="block text-[11px] font-medium text-gray-500 mb-1">Q&amp;A 안내</label>
+                    <Input
+                      value={newQnaPrompt}
+                      onChange={(e) => setNewQnaPrompt(e.target.value)}
+                      placeholder="예: 오늘 발표에 대해 궁금한 점을 자유롭게 질문해 주세요"
+                      className="text-sm h-8"
                     />
                   </div>
                 </div>

@@ -30,9 +30,14 @@ export interface WordcloudConfig {
   maxLength?: number;
 }
 
+export interface QnaConfig {
+  prompt: string;
+}
+
 export interface ActivityConfig {
   poll?: PollConfig;
   wordcloud?: WordcloudConfig;
+  qna?: QnaConfig;
 }
 
 export interface Stage {
@@ -64,6 +69,20 @@ export interface WordcloudEntry {
   stageId: string;
   userId: string;
   text: string;
+  createdAt: Timestamp;
+}
+
+export interface QnaQuestion {
+  id: string;
+  stageId: string;
+  authorId: string;
+  authorName: string;
+  text: string;
+  upvotes: string[];
+  answered: boolean;
+  answer?: string;
+  answeredAt?: Timestamp;
+  answeredBy?: string;
   createdAt: Timestamp;
 }
 

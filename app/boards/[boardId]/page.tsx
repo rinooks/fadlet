@@ -28,6 +28,7 @@ import { StageBanner } from '@/components/board/stage-banner';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { PollBoard } from '@/components/activities/poll-board';
 import { WordcloudBoard } from '@/components/activities/wordcloud-board';
+import { QnaBoard } from '@/components/activities/qna-board';
 import { ExportMenu } from '@/components/shared/export-menu';
 import { ShareDialog } from '@/components/shared/share-dialog';
 import { getTemplate } from '@/lib/templates';
@@ -526,6 +527,16 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             stageTitle={currentStage.title}
             config={currentStage.activityConfig.wordcloud}
             currentUid={uid ?? ''}
+            isHost={role === 'host'}
+          />
+        ) : isLive && currentStage && activeActivity === 'qna' && currentStage.activityConfig?.qna ? (
+          <QnaBoard
+            boardId={boardId}
+            stageId={currentStage.id}
+            stageTitle={currentStage.title}
+            config={currentStage.activityConfig.qna}
+            currentUid={uid ?? ''}
+            currentName={nickname}
             isHost={role === 'host'}
           />
         ) : isLive ? (
