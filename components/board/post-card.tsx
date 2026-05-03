@@ -61,7 +61,7 @@ export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenD
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="flex-1 bg-white/70 text-sm resize-none border-0 focus-visible:ring-1"
+              className="flex-1 bg-white text-sm resize-none border-0 focus-visible:ring-1"
               autoFocus
               maxLength={500}
             />

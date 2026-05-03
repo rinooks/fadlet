@@ -50,6 +50,7 @@
 - [x] **보드 배경 선택** — [`backgrounds.ts`](lib/backgrounds.ts) 7가지 옵션, [`BackgroundSelector`](components/board/background-selector.tsx), 운영자 패널 🖼️ 섹션
 - [x] **워크스페이스 보드 카드에도 배경 반영** — [`workspaces/[wsId]/page.tsx`](app/workspaces/[wsId]/page.tsx) 카드 자체에 `getBackground(board.background).style` 적용
 - [x] **커스텀 배경색** — [`backgrounds.ts`](lib/backgrounds.ts) 8번째 옵션 🎨 커스텀, [`BackgroundSelector`](components/board/background-selector.tsx)에 `input[type=color]` + HEX 입력. `Board.customBackgroundColor` 필드 추가
+- [x] **포스트 투명도 제거** — [`post-card.tsx`](components/board/post-card.tsx) 편집 textarea, [`sortable-post-card.tsx`](components/board/sortable-post-card.tsx) 드래그 핸들, [`skins.css`](app/skins.css) glass 스킨 포스트 배경 — 모두 `bg-white/rgba(...)` → 불투명
 
 ---
 

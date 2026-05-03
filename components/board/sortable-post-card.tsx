@@ -37,7 +37,7 @@ export function SortablePostCard({ post, canDrag, ...rest }: SortablePostCardPro
           {...attributes}
           {...listeners}
           aria-label="포스트 드래그하여 순서 변경"
-          className="absolute top-1 right-1 z-10 p-1 rounded text-gray-400 opacity-0 group-hover:opacity-100 hover:text-indigo-600 hover:bg-white/70 cursor-grab active:cursor-grabbing focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 transition-opacity"
+          className="absolute top-1 right-1 z-10 p-1 rounded text-gray-400 opacity-0 group-hover:opacity-100 hover:text-indigo-600 hover:bg-white cursor-grab active:cursor-grabbing focus-visible:opacity-100 focus-visible:outline focus-visible:outline-2 transition-opacity"
         >
           <GripVertical size={14} />
         </button>
