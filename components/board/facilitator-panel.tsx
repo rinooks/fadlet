@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
+import { useDemoGuard } from '@/lib/hooks/use-demo-guard';
 import { ArrowDown, ArrowUp, BarChart3, Plus, Trash2, X, Pin, PinOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -35,6 +36,7 @@ interface FacilitatorPanelProps {
   kanbanColumns?: KanbanColumn[];
   onKanbanColumnsChange: (columns: KanbanColumn[]) => Promise<void>;
   isHostUser: boolean;
+  isDemo?: boolean;
 }
 
 export function FacilitatorPanel({
@@ -57,8 +59,10 @@ export function FacilitatorPanel({
   kanbanColumns,
   onKanbanColumnsChange,
   isHostUser,
+  isDemo = false,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
+  const { guard: demoGuard } = useDemoGuard(isDemo);
   const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
   const { addWord, removeWord } = useBannedWords(boardId, bannedWords);
 
@@ -288,7 +292,7 @@ export function FacilitatorPanel({
                   />
                 </div>
                 <Button
-                  onClick={handleAddStage}
+                  onClick={demoGuard(handleAddStage, '단계 추가')}
                   disabled={busy}
                   size="sm"
                   className="bg-indigo-600 hover:bg-indigo-700 text-white h-8"

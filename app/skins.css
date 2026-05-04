@@ -89,9 +89,7 @@
 .skin-root[data-skin="glass"] header,
 .skin-root[data-skin="glass"] aside,
 .skin-root[data-skin="glass"] [class*="bg-white"] {
-  background-color: rgba(255,255,255,0.72) !important;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background-color: #FFFFFF !important;
   border-color: rgba(82,82,91,0.12) !important;
 }
 .skin-root[data-skin="glass"] .bg-indigo-600 {

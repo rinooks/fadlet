@@ -30,7 +30,7 @@ export const SKINS: SkinMeta[] = [
     id: 'brutal',
     label: 'Brutal',
     description: '굵은 보더와 하드 그림자, 비비드 컬러.',
-    swatch: ['#F5F1E6', '#FACC15', '#F472B6', '#0A0A0A'],
+    swatch: ['#FACC15', '#F472B6', '#0A0A0A'],
   },
 ];
 

@@ -43,6 +43,7 @@ import { usePosts } from '@/lib/hooks/use-posts';
 import { useReports } from '@/lib/hooks/use-reports';
 import { useTimer } from '@/lib/hooks/use-timer';
 import { findBannedHit } from '@/lib/hooks/use-banned-words';
+import { useDemoGuard } from '@/lib/hooks/use-demo-guard';
 import { db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -93,6 +94,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const isHostUser = role === 'host';
   const { reports } = useReports(boardId, isHostUser);
   const openReportCount = reports.filter((r) => r.status === 'open').length;
+  const isDemo = board?.isDemo ?? false;
+  const { guard: demoGuard } = useDemoGuard(isDemo);
 
   async function deleteMessage(messageId: string) {
     await deleteDoc(doc(db, messagesPath(boardId), messageId));
@@ -460,7 +463,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             </button>
           )}
           <div className="hidden md:flex items-center gap-2">
-            <ExportMenu boardId={boardId} isWorkshop={isWorkshopMode} />
+            <ExportMenu boardId={boardId} isWorkshop={isWorkshopMode} isDemo={isDemo} />
             {isHostUser && (
               <>
                 <Button
@@ -865,6 +868,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           kanbanColumns={board.kanbanColumns}
           onKanbanColumnsChange={handleKanbanColumnsChange}
           isHostUser={isHostUser}
+          isDemo={isDemo}
         />
       )}
 

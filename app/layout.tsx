@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import './skins.css';
 import { Toaster } from '@/components/ui/sonner';
+import { PageTransition } from '@/components/shared/page-transition';
 
 export const metadata: Metadata = {
   title: 'Fadlet — 워크숍 운영자를 위한 협업 보드',
@@ -52,7 +53,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         className="min-h-full flex flex-col antialiased"
         style={{ fontFamily: "'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, sans-serif" }}
       >
-        {children}
+        <PageTransition>{children}</PageTransition>
         <Toaster richColors position="top-center" />
       </body>
     </html>
