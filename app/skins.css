@@ -394,6 +394,12 @@
   background-image: linear-gradient(180deg, #FFFDF7, #F4ECD6) !important;
   background-color: var(--skin-elev) !important;
   border-color: var(--skin-border) !important;
+  color: var(--skin-fg) !important;
+  text-shadow: none !important;
+}
+/* 크림 종이 위 자식 텍스트가 밝은색이면 가독성이 떨어지므로 어둡게 */
+.skin-root[data-skin="skeuomorphism"] [class*="bg-white"] .text-white {
+  color: var(--skin-fg) !important;
 }
 
 /* 보더 — 따뜻한 톤 + 안쪽 하이라이트 */
@@ -469,13 +475,19 @@
   transform: translateY(-1px);
 }
 
-/* 채팅 버블 — 유광 입체 */
+/* 채팅 버블 — 유광 입체 (크림 종이 톤이라 어두운 본문색 강제) */
 .skin-root[data-skin="skeuomorphism"] .rounded-2xl {
   background-image: linear-gradient(180deg, #FFFDF7, #F4ECD6) !important;
   border: 1px solid var(--skin-border) !important;
+  color: var(--skin-fg) !important;
+  text-shadow: none !important;
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.7),
     0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+.skin-root[data-skin="skeuomorphism"] .rounded-2xl .text-white,
+.skin-root[data-skin="skeuomorphism"] .rounded-2xl.text-white {
+  color: var(--skin-fg) !important;
 }
 
 /* ============ TERMINAL: 레트로 CRT 터미널 ============ */
