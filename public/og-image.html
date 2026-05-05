@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<title>Fadlet OG Image (1200×630)</title>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet" />
+<style>
+  html, body { margin: 0; padding: 0; background: #0F1226; }
+  body {
+    width: 1200px; height: 630px;
+    font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: #fff;
+    overflow: hidden;
+    position: relative;
+  }
+  .bg {
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(900px 500px at 110% -10%, rgba(168,85,247,.55), transparent 60%),
+      radial-gradient(800px 500px at -10% 30%, rgba(99,102,241,.55), transparent 60%),
+      radial-gradient(700px 500px at 50% 110%, rgba(96,165,250,.45), transparent 60%),
+      linear-gradient(135deg, #0F1226 0%, #1A1F3A 100%);
+  }
+  .grid {
+    position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(255,255,255,0.08) 1px, transparent 1px);
+    background-size: 28px 28px;
+    opacity: 0.6;
+  }
+  .content {
+    position: relative; z-index: 2;
+    display: flex; flex-direction: column;
+    justify-content: space-between;
+    height: 100%; padding: 72px 80px;
+    box-sizing: border-box;
+  }
+  .top { display: flex; align-items: center; gap: 14px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 16px; border-radius: 999px;
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+    font-size: 16px; font-weight: 600;
+    color: #C7D2FE;
+  }
+  .badge .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #818CF8; box-shadow: 0 0 12px #818CF8;
+  }
+  .brand {
+    font-size: 28px; font-weight: 800;
+    color: #fff; letter-spacing: -0.02em;
+  }
+  h1 {
+    font-size: 86px; font-weight: 800;
+    line-height: 1.05; letter-spacing: -0.025em;
+    margin: 0;
+  }
+  h1 .grad {
+    background: linear-gradient(135deg, #818CF8 0%, #A78BFA 50%, #F472B6 100%);
+    -webkit-background-clip: text; background-clip: text;
+    color: transparent;
+  }
+  .sub {
+    margin-top: 28px;
+    font-size: 26px; font-weight: 500;
+    color: rgba(255,255,255,0.78);
+    line-height: 1.45;
+    max-width: 980px;
+  }
+  .sub strong { color: #fff; font-weight: 700; }
+  .footer {
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 18px; color: rgba(255,255,255,0.55);
+  }
+  .chips { display: flex; gap: 10px; flex-wrap: wrap; }
+  .chip {
+    padding: 8px 14px; border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.14);
+    font-size: 16px; font-weight: 600;
+    color: rgba(255,255,255,0.85);
+  }
+  .url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 18px; color: rgba(255,255,255,0.5);
+  }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <div class="grid"></div>
+  <div class="content">
+    <div class="top">
+      <span class="brand">Fadlet</span>
+      <span class="badge"><span class="dot"></span>워크숍 OS · Beta</span>
+    </div>
+    <div>
+      <h1>워크숍의 처음부터 끝까지,<br /><span class="grad">Fadlet 하나로.</span></h1>
+      <p class="sub">
+        보드형 <strong>7종</strong> · 라이브 <strong>3종</strong> · 단계 시퀀스 · 통합 리포트.<br />
+        기획부터 운영, 결과 정리까지 한 화면에서.
+      </p>
+    </div>
+    <div class="footer">
+      <div class="chips">
+        <span class="chip">💡 브레인스토밍</span>
+        <span class="chip">🗂️ 칸반</span>
+        <span class="chip">📊 라이브 폴</span>
+        <span class="chip">☁️ 워드클라우드</span>
+        <span class="chip">❓ Q&amp;A</span>
+        <span class="chip">📊 PDF 리포트</span>
+      </div>
+      <span class="url">fadlet.vercel.app</span>
+    </div>
+  </div>
+</body>
+</html>

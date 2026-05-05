@@ -79,7 +79,7 @@ export function HostActionsMenu({
             onClick={pick(onOpenFacilitator)}
             className="w-full text-left text-sm px-3 py-2.5 hover:bg-gray-50"
           >
-            🎛 운영 패널
+            🎛 환경설정
           </button>
           <button
             type="button"

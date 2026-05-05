@@ -34,6 +34,8 @@ interface PostDetailModalProps {
   currentUid: string;
   currentNickname: string;
   isHost: boolean;
+  /** 운영자가 토글하는 반응 수 노출 여부. 호스트에게는 항상 표시. */
+  showReactionCounts: boolean;
   onClose: () => void;
   onDelete: (postId: string) => Promise<void>;
 }
@@ -44,6 +46,7 @@ export function PostDetailModal({
   currentUid,
   currentNickname,
   isHost,
+  showReactionCounts,
   onClose,
   onDelete,
 }: PostDetailModalProps) {
@@ -141,7 +144,9 @@ export function PostDetailModal({
                 }`}
               >
                 {label}
-                {count > 0 && <span className="text-xs font-semibold">{count}</span>}
+                {count > 0 && (showReactionCounts || isHost) && (
+                  <span className="text-xs font-semibold">{count}</span>
+                )}
               </button>
             );
           })}

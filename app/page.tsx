@@ -10,18 +10,18 @@ const FEATURES = [
   },
   {
     icon: '🗺️',
-    title: '7가지 템플릿 + 라이브 3종',
+    title: '보드형 7종 + 라이브 3종',
     desc: '브레인스토밍·캔버스·찬반·칸반·KPT·4F·9칸 + 폴/워드클라우드/Q&A.',
   },
   {
-    icon: '🎨',
-    title: '4가지 스킨',
-    desc: 'Standard·Compact·Glass·Brutal 중에서 워크숍 분위기에 맞춰 선택.',
+    icon: '🎬',
+    title: '단계 시퀀스',
+    desc: '단계별로 활동을 자동 전환. 타이머와 함께 워크숍 흐름을 통제.',
   },
   {
-    icon: '⏱',
-    title: '단계·타이머',
-    desc: '단계별 일정과 카운트다운으로 워크숍 진행을 한눈에.',
+    icon: '📊',
+    title: '통합 PDF 리포트',
+    desc: '보드형 결과 + 라이브 응답까지 한 PDF로. 단계당 한 페이지.',
   },
   {
     icon: '💬',
@@ -31,7 +31,7 @@ const FEATURES = [
   {
     icon: '🛡',
     title: '운영자 도구',
-    desc: '보드 잠금, 신고 관리, 금칙어, 분석 대시보드, PDF 내보내기.',
+    desc: '보드 잠금, 신고 관리, 금칙어, 8가지 스킨, 분석 대시보드.',
   },
 ];
 
@@ -125,15 +125,15 @@ export default function HomePage() {
       <main className="flex-1 flex flex-col items-center px-4 pt-20 pb-16 text-center">
         <div className="inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-sm border border-indigo-100 text-indigo-700 text-xs font-semibold px-3 py-1 rounded-full mb-6 shadow-sm">
           <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
-          Facilitator-friendly Padlet · Beta
+          워크숍 OS · Beta
         </div>
         <h1 className="text-5xl sm:text-7xl font-bold text-gray-900 mb-5 leading-[1.05] tracking-tight">
-          포스트잇은<br className="sm:hidden" />
-          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent"> 끝났다.</span>
+          워크숍의 처음부터 끝까지,<br />
+          <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Fadlet 하나로.</span>
         </h1>
         <p className="text-gray-600 text-base sm:text-xl mb-10 max-w-2xl leading-relaxed">
-          라이브 보드, 실시간 채팅, 운영자 도구까지.<br className="hidden sm:inline" />
-          가입 없이 <strong className="text-gray-900 font-semibold">30초</strong>면 워크숍이 시작됩니다.
+          보드형 <strong className="text-gray-900 font-semibold">7종</strong> · 라이브 <strong className="text-gray-900 font-semibold">3종</strong> · 단계 시퀀스 · 통합 리포트.<br className="hidden sm:inline" />
+          기획부터 운영, 결과 정리까지 한 화면에서.
         </p>
 
         {/* 데모 CTA */}
@@ -170,13 +170,13 @@ export default function HomePage() {
               <span
                 key={t.label}
                 tabIndex={0}
-                className="group relative inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-sm border border-gray-300 hover:border-indigo-400 hover:bg-white text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full cursor-help transition-colors focus:outline-none focus:border-indigo-500"
+                className="group relative z-10 hover:z-50 focus-within:z-50 inline-flex items-center gap-1.5 bg-white/80 backdrop-blur-sm border border-gray-300 hover:border-indigo-400 hover:bg-white text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full cursor-help transition-colors focus:outline-none focus:border-indigo-500"
               >
                 <span>{t.emoji}</span>
                 {t.label}
                 <span
                   role="tooltip"
-                  className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 z-20 whitespace-nowrap bg-gray-900 text-white text-[11px] font-normal px-2.5 py-1.5 rounded-md shadow-lg opacity-0 translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:translate-y-0 group-focus:opacity-100 group-focus:translate-y-0"
+                  className="pointer-events-none absolute left-1/2 -translate-x-1/2 top-full mt-2 z-50 whitespace-nowrap bg-gray-900 text-white text-[11px] font-normal px-2.5 py-1.5 rounded-md shadow-lg opacity-0 translate-y-1 transition-all duration-150 group-hover:opacity-100 group-hover:translate-y-0 group-focus:opacity-100 group-focus:translate-y-0"
                 >
                   {t.desc}
                   <span className="absolute -top-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-900 rotate-45" aria-hidden />

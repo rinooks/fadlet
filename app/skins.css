@@ -200,3 +200,432 @@
   border: 2.5px solid #0A0A0A !important;
   box-shadow: 3px 3px 0 0 #0A0A0A !important;
 }
+
+/* ============ SWISS: 그리드 + 강한 활자 + 레드 액센트 ============ */
+.skin-root[data-skin="swiss"] {
+  --skin-bg: #FFFFFF;
+  --skin-elev: #FFFFFF;
+  --skin-elev-2: #F5F5F5;
+  --skin-border: #0A0A0A;
+  --skin-fg: #0A0A0A;
+  --skin-muted: #5C5C5C;
+  --skin-brand: #DA291C;
+  --skin-brand-dk: #B21F14;
+  --skin-accent-bg: #FFEDEB;
+  --skin-accent-fg: #DA291C;
+  background: var(--skin-bg);
+  font-family: 'Inter', 'Pretendard Variable', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  letter-spacing: -0.005em;
+}
+
+/* 모서리 직각 — 모든 라운드 무효화 (상태 배지 제외) */
+.skin-root[data-skin="swiss"] [class*="rounded"]:not(.bg-green-400):not(.bg-red-600):not(.rounded-full) {
+  border-radius: 0 !important;
+}
+.skin-root[data-skin="swiss"] .shadow-sm,
+.skin-root[data-skin="swiss"] .shadow-md,
+.skin-root[data-skin="swiss"] .shadow-lg {
+  box-shadow: none !important;
+}
+
+/* 헤더 — 하단 굵은 라인 */
+.skin-root[data-skin="swiss"] header {
+  background: var(--skin-elev);
+  border-bottom: 2px solid var(--skin-border) !important;
+}
+
+/* 보더 통일 */
+.skin-root[data-skin="swiss"] .border-gray-100,
+.skin-root[data-skin="swiss"] .border-gray-200 {
+  border-color: var(--skin-border) !important;
+}
+.skin-root[data-skin="swiss"] .border-b {
+  border-bottom-color: var(--skin-border) !important;
+}
+
+/* 액센트 — 인디고를 스위스 레드로 치환 */
+.skin-root[data-skin="swiss"] .text-indigo-600 {
+  color: var(--skin-brand) !important;
+  font-weight: 600 !important;
+}
+.skin-root[data-skin="swiss"] .bg-indigo-600 {
+  background-color: var(--skin-brand) !important;
+}
+.skin-root[data-skin="swiss"] .hover\:bg-indigo-700:hover {
+  background-color: var(--skin-brand-dk) !important;
+}
+.skin-root[data-skin="swiss"] .bg-indigo-50 {
+  background-color: var(--skin-accent-bg) !important;
+}
+.skin-root[data-skin="swiss"] .hover\:bg-indigo-100:hover {
+  background-color: #FFD9D4 !important;
+}
+
+/* 버튼 — 직각 + 강한 활자 */
+.skin-root[data-skin="swiss"] button.bg-indigo-600,
+.skin-root[data-skin="swiss"] a.bg-indigo-600 {
+  border-radius: 0 !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+  text-transform: none;
+}
+
+/* 포스트 카드 — 1px 검정 라인, 그림자 없음 */
+.skin-root[data-skin="swiss"] .skin-post-card {
+  border: 1px solid var(--skin-border) !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+.skin-root[data-skin="swiss"] .skin-post-card:hover {
+  background-color: var(--skin-elev-2) !important;
+}
+
+/* 채팅 버블 */
+.skin-root[data-skin="swiss"] .rounded-2xl {
+  border-radius: 0 !important;
+  border: 1px solid var(--skin-border) !important;
+}
+
+/* 본문 활자 — 살짝 더 굵게 */
+.skin-root[data-skin="swiss"] {
+  font-weight: 450;
+}
+.skin-root[data-skin="swiss"] h1,
+.skin-root[data-skin="swiss"] h2,
+.skin-root[data-skin="swiss"] h3 {
+  letter-spacing: -0.02em;
+  font-weight: 700;
+}
+
+/* ============ GLASSMORPHISM: 진한 블러 + 비비드 그라데이션 ============ */
+.skin-root[data-skin="glassmorphism"] {
+  --skin-bg: #F0E6FF;
+  --skin-elev: rgba(255, 255, 255, 0.55);
+  --skin-elev-2: rgba(255, 255, 255, 0.35);
+  --skin-border: rgba(255, 255, 255, 0.55);
+  --skin-fg: #1E1B4B;
+  --skin-muted: #4C4A6E;
+  --skin-brand: #A855F7;
+  --skin-brand-dk: #7C3AED;
+  --skin-accent-bg: rgba(168, 85, 247, 0.18);
+  --skin-accent-fg: #6D28D9;
+  background:
+    radial-gradient(900px 600px at 0% 0%, rgba(244, 114, 182, 0.55), transparent 60%),
+    radial-gradient(900px 600px at 100% 0%, rgba(34, 211, 238, 0.5), transparent 60%),
+    radial-gradient(1100px 700px at 50% 100%, rgba(168, 85, 247, 0.55), transparent 65%),
+    linear-gradient(180deg, #FCE7F3, #DBEAFE);
+  background-attachment: fixed;
+  color: var(--skin-fg);
+}
+.skin-root[data-skin="glassmorphism"] header,
+.skin-root[data-skin="glassmorphism"] aside,
+.skin-root[data-skin="glassmorphism"] [class*="bg-white"] {
+  background-color: var(--skin-elev) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(160%);
+  backdrop-filter: blur(18px) saturate(160%);
+  border-color: var(--skin-border) !important;
+  box-shadow: 0 8px 32px rgba(31, 38, 135, 0.18) !important;
+}
+.skin-root[data-skin="glassmorphism"] .border-gray-100,
+.skin-root[data-skin="glassmorphism"] .border-gray-200 {
+  border-color: rgba(255, 255, 255, 0.5) !important;
+}
+.skin-root[data-skin="glassmorphism"] .text-indigo-600 {
+  color: var(--skin-accent-fg) !important;
+}
+.skin-root[data-skin="glassmorphism"] .bg-indigo-600 {
+  background: linear-gradient(135deg, #A855F7, #6366F1) !important;
+  box-shadow: 0 8px 24px -8px rgba(168, 85, 247, 0.6) !important;
+}
+.skin-root[data-skin="glassmorphism"] .hover\:bg-indigo-700:hover {
+  background: linear-gradient(135deg, #7C3AED, #4F46E5) !important;
+}
+.skin-root[data-skin="glassmorphism"] .bg-indigo-50 {
+  background: var(--skin-accent-bg) !important;
+}
+.skin-root[data-skin="glassmorphism"] [class*="rounded-2xl"] { border-radius: 18px !important; }
+.skin-root[data-skin="glassmorphism"] [class*="rounded-xl"]  { border-radius: 14px !important; }
+.skin-root[data-skin="glassmorphism"] [class*="rounded-lg"]  { border-radius: 12px !important; }
+
+/* 포스트 카드 — 진한 블러 글래스 */
+.skin-root[data-skin="glassmorphism"] .skin-post-card {
+  background-color: rgba(255, 255, 255, 0.55) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.6) inset,
+    0 8px 24px -8px rgba(31, 38, 135, 0.25) !important;
+  border-radius: 16px !important;
+}
+
+/* ============ SKEUOMORPHISM: 사실적 텍스처 + 광택 버튼 ============ */
+.skin-root[data-skin="skeuomorphism"] {
+  --skin-bg: #D7D2C8;
+  --skin-elev: #FFF8E8;
+  --skin-elev-2: #F2EAD3;
+  --skin-border: #B8A98C;
+  --skin-fg: #2A2520;
+  --skin-muted: #6B5F4E;
+  --skin-brand: #5B95E5;
+  --skin-brand-dk: #2E5BAA;
+  --skin-accent-bg: #E8EFFA;
+  --skin-accent-fg: #2E5BAA;
+  background-color: var(--skin-bg);
+  background-image:
+    repeating-linear-gradient(45deg,
+      rgba(255, 255, 255, 0.04) 0 2px,
+      rgba(0, 0, 0, 0.04) 2px 4px),
+    radial-gradient(ellipse at top, rgba(255, 255, 255, 0.4), transparent 60%);
+  color: var(--skin-fg);
+  font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+.skin-root[data-skin="skeuomorphism"] header {
+  background-image: linear-gradient(180deg, #FFFDF7 0%, #EDE3CC 100%) !important;
+  background-color: var(--skin-elev) !important;
+  border-bottom: 1px solid var(--skin-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.06),
+    0 2px 4px rgba(0, 0, 0, 0.08) !important;
+}
+.skin-root[data-skin="skeuomorphism"] aside,
+.skin-root[data-skin="skeuomorphism"] [class*="bg-white"] {
+  background-image: linear-gradient(180deg, #FFFDF7, #F4ECD6) !important;
+  background-color: var(--skin-elev) !important;
+  border-color: var(--skin-border) !important;
+}
+
+/* 보더 — 따뜻한 톤 + 안쪽 하이라이트 */
+.skin-root[data-skin="skeuomorphism"] .border-gray-100,
+.skin-root[data-skin="skeuomorphism"] .border-gray-200 {
+  border-color: var(--skin-border) !important;
+}
+
+/* 라운드 — 부드럽고 사실적 */
+.skin-root[data-skin="skeuomorphism"] [class*="rounded-2xl"] { border-radius: 12px !important; }
+.skin-root[data-skin="skeuomorphism"] [class*="rounded-xl"]  { border-radius: 10px !important; }
+.skin-root[data-skin="skeuomorphism"] [class*="rounded-lg"]  { border-radius: 8px !important; }
+
+/* 액센트 텍스트 */
+.skin-root[data-skin="skeuomorphism"] .text-indigo-600 {
+  color: var(--skin-brand-dk) !important;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* 메인 버튼 — 광택 + 베벨 + 하이라이트 */
+.skin-root[data-skin="skeuomorphism"] .bg-indigo-600 {
+  background-image: linear-gradient(180deg, #7AAEEE 0%, #5B95E5 50%, #3D77CC 100%) !important;
+  background-color: var(--skin-brand) !important;
+  border: 1px solid #1F4A95 !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 2px rgba(0, 0, 0, 0.18),
+    0 2px 3px rgba(0, 0, 0, 0.25) !important;
+  color: #FFFFFF !important;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.3);
+  font-weight: 600 !important;
+}
+.skin-root[data-skin="skeuomorphism"] .hover\:bg-indigo-700:hover {
+  background-image: linear-gradient(180deg, #6BA0E8 0%, #4983D8 50%, #2E5BAA 100%) !important;
+  background-color: var(--skin-brand-dk) !important;
+}
+.skin-root[data-skin="skeuomorphism"] .bg-indigo-600:active {
+  background-image: linear-gradient(180deg, #3D77CC 0%, #5B95E5 100%) !important;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.25),
+    0 1px 0 rgba(255, 255, 255, 0.3) !important;
+}
+
+/* 보조 강조 — 안쪽 그림자로 들어간 느낌 */
+.skin-root[data-skin="skeuomorphism"] .bg-indigo-50 {
+  background-image: linear-gradient(180deg, #DCE6F8, #E8EFFA) !important;
+  background-color: var(--skin-accent-bg) !important;
+  border: 1px solid #A6BCDF !important;
+  box-shadow:
+    inset 0 1px 2px rgba(46, 91, 170, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6) !important;
+}
+.skin-root[data-skin="skeuomorphism"] .hover\:bg-indigo-100:hover {
+  background-image: linear-gradient(180deg, #C9D8F0, #DCE6F8) !important;
+}
+
+/* 포스트 카드 — 종이 + 입체 베벨 */
+.skin-root[data-skin="skeuomorphism"] .skin-post-card {
+  background-image: linear-gradient(180deg, #FFFDF7 0%, #F4ECD6 100%) !important;
+  border: 1px solid var(--skin-border) !important;
+  border-radius: 10px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.05),
+    0 1px 1px rgba(0, 0, 0, 0.08),
+    0 4px 8px rgba(0, 0, 0, 0.12) !important;
+}
+.skin-root[data-skin="skeuomorphism"] .skin-post-card:hover {
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.85),
+    0 2px 2px rgba(0, 0, 0, 0.1),
+    0 8px 16px rgba(0, 0, 0, 0.18) !important;
+  transform: translateY(-1px);
+}
+
+/* 채팅 버블 — 유광 입체 */
+.skin-root[data-skin="skeuomorphism"] .rounded-2xl {
+  background-image: linear-gradient(180deg, #FFFDF7, #F4ECD6) !important;
+  border: 1px solid var(--skin-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.7),
+    0 1px 2px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* ============ TERMINAL: 레트로 CRT 터미널 ============ */
+.skin-root[data-skin="terminal"] {
+  --skin-bg: #0A0E0A;
+  --skin-elev: #0F1A0F;
+  --skin-elev-2: #142214;
+  --skin-border: #1F4A1F;
+  --skin-fg: #4AFF4A;
+  --skin-muted: #2D8C2D;
+  --skin-brand: #4AFF4A;
+  --skin-brand-dk: #2BE02B;
+  --skin-accent-bg: #0F2A0F;
+  --skin-accent-fg: #FFB000;
+  background-color: var(--skin-bg);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(74, 255, 74, 0.04) 0px,
+      rgba(74, 255, 74, 0.04) 1px,
+      transparent 1px,
+      transparent 3px
+    ),
+    radial-gradient(ellipse at center, transparent 60%, rgba(0, 0, 0, 0.55) 100%);
+  background-attachment: fixed;
+  color: var(--skin-fg);
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+  font-size: 13.5px;
+  text-shadow: 0 0 4px rgba(74, 255, 74, 0.45);
+  letter-spacing: 0.01em;
+}
+.skin-root[data-skin="terminal"] header {
+  background: var(--skin-elev) !important;
+  border-bottom: 1px solid var(--skin-border) !important;
+  box-shadow: 0 0 12px rgba(74, 255, 74, 0.15);
+  color: var(--skin-fg) !important;
+}
+.skin-root[data-skin="terminal"] aside,
+.skin-root[data-skin="terminal"] [class*="bg-white"] {
+  background-color: var(--skin-elev) !important;
+  border-color: var(--skin-border) !important;
+  color: var(--skin-fg) !important;
+}
+
+/* 일반 텍스트 — 인광 그린 */
+.skin-root[data-skin="terminal"] .text-gray-900,
+.skin-root[data-skin="terminal"] .text-gray-800,
+.skin-root[data-skin="terminal"] .text-gray-700 {
+  color: var(--skin-fg) !important;
+}
+.skin-root[data-skin="terminal"] .text-gray-500,
+.skin-root[data-skin="terminal"] .text-gray-400 {
+  color: var(--skin-muted) !important;
+}
+
+/* 보더 통일 */
+.skin-root[data-skin="terminal"] .border-gray-100,
+.skin-root[data-skin="terminal"] .border-gray-200 {
+  border-color: var(--skin-border) !important;
+}
+
+/* 모서리 직각 (CRT 터미널 박스 느낌) */
+.skin-root[data-skin="terminal"] [class*="rounded"]:not(.bg-green-400):not(.bg-red-600):not(.rounded-full) {
+  border-radius: 2px !important;
+}
+
+/* 액센트 — 앰버 강조색 */
+.skin-root[data-skin="terminal"] .text-indigo-600 {
+  color: var(--skin-accent-fg) !important;
+  text-shadow: 0 0 6px rgba(255, 176, 0, 0.55);
+}
+
+/* 메인 버튼 — 인광 그린 박스 */
+.skin-root[data-skin="terminal"] .bg-indigo-600 {
+  background-color: var(--skin-bg) !important;
+  border: 1px solid var(--skin-fg) !important;
+  color: var(--skin-fg) !important;
+  font-weight: 600 !important;
+  box-shadow:
+    inset 0 0 8px rgba(74, 255, 74, 0.25),
+    0 0 8px rgba(74, 255, 74, 0.3) !important;
+  text-shadow: 0 0 4px rgba(74, 255, 74, 0.6);
+}
+.skin-root[data-skin="terminal"] .hover\:bg-indigo-700:hover {
+  background-color: rgba(74, 255, 74, 0.12) !important;
+  box-shadow:
+    inset 0 0 10px rgba(74, 255, 74, 0.4),
+    0 0 14px rgba(74, 255, 74, 0.5) !important;
+}
+.skin-root[data-skin="terminal"] .bg-indigo-50 {
+  background-color: var(--skin-accent-bg) !important;
+  border: 1px solid var(--skin-border) !important;
+  color: var(--skin-fg) !important;
+}
+.skin-root[data-skin="terminal"] .hover\:bg-indigo-100:hover {
+  background-color: rgba(74, 255, 74, 0.08) !important;
+}
+
+/* 포스트 카드 — 터미널 박스 */
+.skin-root[data-skin="terminal"] .skin-post-card {
+  background-color: var(--skin-elev) !important;
+  border: 1px solid var(--skin-border) !important;
+  border-radius: 2px !important;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.5),
+    0 0 6px rgba(74, 255, 74, 0.12) !important;
+  color: var(--skin-fg) !important;
+}
+.skin-root[data-skin="terminal"] .skin-post-card:hover {
+  border-color: var(--skin-fg) !important;
+  box-shadow:
+    inset 0 0 18px rgba(0, 0, 0, 0.5),
+    0 0 12px rgba(74, 255, 74, 0.4) !important;
+}
+
+/* 포스트 카드 내부 컬러 박스(노랑/핑크 등)도 터미널 톤으로 */
+.skin-root[data-skin="terminal"] .skin-post-card[class*="bg-yellow"],
+.skin-root[data-skin="terminal"] .skin-post-card[class*="bg-pink"],
+.skin-root[data-skin="terminal"] .skin-post-card[class*="bg-blue"],
+.skin-root[data-skin="terminal"] .skin-post-card[class*="bg-green"],
+.skin-root[data-skin="terminal"] .skin-post-card[class*="bg-purple"] {
+  background-color: var(--skin-elev) !important;
+}
+
+/* 채팅 버블 */
+.skin-root[data-skin="terminal"] .rounded-2xl {
+  background-color: var(--skin-elev-2) !important;
+  border: 1px solid var(--skin-border) !important;
+  border-radius: 2px !important;
+  color: var(--skin-fg) !important;
+  box-shadow: 0 0 6px rgba(74, 255, 74, 0.1) !important;
+}
+
+/* 인풋 — 입력 필드도 터미널 톤 */
+.skin-root[data-skin="terminal"] input,
+.skin-root[data-skin="terminal"] textarea {
+  background-color: var(--skin-bg) !important;
+  border: 1px solid var(--skin-border) !important;
+  color: var(--skin-fg) !important;
+  font-family: inherit !important;
+  caret-color: var(--skin-fg);
+}
+.skin-root[data-skin="terminal"] input::placeholder,
+.skin-root[data-skin="terminal"] textarea::placeholder {
+  color: var(--skin-muted) !important;
+  opacity: 0.7;
+}
+.skin-root[data-skin="terminal"] input:focus,
+.skin-root[data-skin="terminal"] textarea:focus {
+  border-color: var(--skin-fg) !important;
+  box-shadow: 0 0 8px rgba(74, 255, 74, 0.4) !important;
+  outline: none !important;
+}

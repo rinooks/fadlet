@@ -200,6 +200,17 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     }
   }
 
+  async function handleToggleReactionCounts(visible: boolean) {
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        'settings.showPostReactionCounts': visible,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      toast.error('반응 수 표시 설정 변경에 실패했습니다.');
+    }
+  }
+
   async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string) {
     if (!uid || !nickname) return;
     if (checkBanned(content)) throw new Error('banned');
@@ -504,7 +515,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 onClick={() => setShowFacilitator(true)}
                 className="text-xs h-7 px-3"
               >
-                🎛 운영
+                🎛 환경설정
               </Button>
             )}
           </div>
@@ -531,9 +542,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           </p>
           <Link
             href="/dashboard"
-            className="text-xs text-amber-700 hover:text-amber-900 font-semibold underline underline-offset-2 flex-shrink-0"
+            className="text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md flex-shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-500"
           >
-            정식 운영자로 시작 →
+            정식 서비스로 시작
           </Link>
         </div>
       )}
@@ -833,6 +844,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           currentUid={uid ?? ''}
           currentNickname={nickname}
           isHost={role === 'host'}
+          showReactionCounts={board?.settings?.showPostReactionCounts !== false}
           onClose={() => setDetailPost(null)}
           onDelete={deletePost}
         />
@@ -867,6 +879,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           boardTemplate={board.template}
           kanbanColumns={board.kanbanColumns}
           onKanbanColumnsChange={handleKanbanColumnsChange}
+          showReactionCounts={board.settings?.showPostReactionCounts !== false}
+          onToggleReactionCounts={handleToggleReactionCounts}
           isHostUser={isHostUser}
           isDemo={isDemo}
         />

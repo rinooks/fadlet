@@ -11,13 +11,15 @@ export type EmojiType = 'thumbsup' | 'heart' | 'party' | 'bulb' | 'thinking';
 export type ReportTarget = 'message' | 'post';
 export type ReportStatus = 'open' | 'resolved';
 export type WorkspaceRole = 'admin' | 'member';
-export type BoardSkin = 'standard' | 'dense' | 'glass' | 'brutal';
+export type BoardSkin = 'standard' | 'dense' | 'glass' | 'brutal' | 'swiss' | 'glassmorphism' | 'skeuomorphism' | 'terminal';
 export type BoardBackground = 'plain' | 'dots' | 'grid' | 'paper' | 'mint' | 'lavender' | 'cream' | 'custom';
 
 export interface BoardSettings {
   allowChat: boolean;
   retainChatLog: boolean;
   lockedAt: Timestamp | null;
+  /** 포스트 이모지 반응 수 노출 여부. 미설정 시 true(기본 노출). 운영자에게는 항상 노출. */
+  showPostReactionCounts?: boolean;
 }
 
 export interface PollConfig {

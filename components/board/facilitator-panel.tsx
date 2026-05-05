@@ -35,6 +35,8 @@ interface FacilitatorPanelProps {
   boardTemplate: BoardTemplate;
   kanbanColumns?: KanbanColumn[];
   onKanbanColumnsChange: (columns: KanbanColumn[]) => Promise<void>;
+  showReactionCounts: boolean;
+  onToggleReactionCounts: (visible: boolean) => Promise<void>;
   isHostUser: boolean;
   isDemo?: boolean;
 }
@@ -58,6 +60,8 @@ export function FacilitatorPanel({
   boardTemplate,
   kanbanColumns,
   onKanbanColumnsChange,
+  showReactionCounts,
+  onToggleReactionCounts,
   isHostUser,
   isDemo = false,
 }: FacilitatorPanelProps) {
@@ -227,6 +231,27 @@ export function FacilitatorPanel({
               />
             </section>
           )}
+
+          <section>
+            <h3 className="text-sm font-semibold text-gray-900 mb-2">👍 포스트 표시 옵션</h3>
+            <label className="flex items-start gap-3 p-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showReactionCounts}
+                onChange={async (e) => {
+                  if (demoGuard()) return;
+                  await onToggleReactionCounts(e.target.checked);
+                }}
+                className="mt-0.5 h-4 w-4 accent-indigo-600"
+              />
+              <span className="flex-1">
+                <span className="block text-sm font-medium text-gray-900">참여자에게 반응 수 표시</span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  꺼두면 참여자에게 좋아요·이모지 카운트가 숨겨집니다. 운영자에게는 항상 표시됩니다.
+                </span>
+              </span>
+            </label>
+          </section>
 
           {/* 단계 관리·공지·키워드 — 호스트(보드 소유자)만 */}
           {isHostUser && (<><section>
