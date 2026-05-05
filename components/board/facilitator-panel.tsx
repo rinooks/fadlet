@@ -238,10 +238,10 @@ export function FacilitatorPanel({
               <input
                 type="checkbox"
                 checked={showReactionCounts}
-                onChange={async (e) => {
-                  if (demoGuard()) return;
-                  await onToggleReactionCounts(e.target.checked);
-                }}
+                onChange={demoGuard(
+                  (e: React.ChangeEvent<HTMLInputElement>) => { void onToggleReactionCounts(e.target.checked); },
+                  '반응 수 표시 옵션'
+                )}
                 className="mt-0.5 h-4 w-4 accent-indigo-600"
               />
               <span className="flex-1">
