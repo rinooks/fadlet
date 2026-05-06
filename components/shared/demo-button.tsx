@@ -59,7 +59,7 @@ export function DemoButton() {
     try {
       const boardCode = await generateBoardCode();
       const docRef = await addDoc(collection(db, boardsPath()), {
-        title: '데모 보드',
+        title: '체험 보드',
         boardCode,
         template,
         mode: 'single',
@@ -67,10 +67,9 @@ export function DemoButton() {
         ownerId: user.uid,
         workspaceId: 'demo',
         isDemo: true,
-        maxParticipants: 50,
         settings: {
           allowChat: true,
-          retainChatLog: false,
+          retainChatLog: true,
           lockedAt: null,
         },
         createdAt: serverTimestamp(),
@@ -83,7 +82,7 @@ export function DemoButton() {
       router.push(`/boards/${docRef.id}?code=${boardCode}`);
     } catch (err) {
       console.error('[demo]', err);
-      toast.error('데모 보드 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
+      toast.error('보드 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       setCreating(false);
     }
   }
@@ -101,18 +100,18 @@ export function DemoButton() {
       <Dialog open={open} onOpenChange={(v) => { if (!creating && !signingIn) setOpen(v); }}>
         <DialogContent className="w-[95vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8 sm:max-w-5xl">
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-2xl font-bold">데모 보드 설정</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">새 보드 만들기</DialogTitle>
             <DialogDescription className="text-sm text-gray-500">
               {user
-                ? '템플릿과 스킨을 선택하면 바로 시작할 수 있습니다. 최대 50명 참여.'
-                : '구글 계정으로 간편 로그인 후 바로 체험하세요. 가입 불필요.'}
+                ? '템플릿과 스킨을 선택하면 바로 시작할 수 있습니다.'
+                : '구글 계정으로 로그인하면 바로 시작할 수 있어요.'}
             </DialogDescription>
           </DialogHeader>
 
           {!user ? (
             <div className="flex flex-col items-center justify-center py-12 gap-5">
               <div className="text-center text-sm text-gray-500 leading-relaxed">
-                별도 가입 없이 구글 계정으로만 로그인하면<br />바로 무료 체험을 시작할 수 있어요.
+                구글 계정으로 로그인하면 바로 보드를 만들 수 있어요.
               </div>
               <button
                 onClick={handleGoogleSignIn}
@@ -170,7 +169,7 @@ export function DemoButton() {
                       보드 생성 중…
                     </>
                   ) : (
-                    '데모 시작하기 →'
+                    '시작하기 →'
                   )}
                 </button>
               </div>

@@ -6,11 +6,19 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
-import { Copy, LogOut, Trash2 } from 'lucide-react';
+import { Copy, LogOut, Share2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
+import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { leaveWorkspace, useWorkspace, useWorkspaceMembers } from '@/lib/hooks/use-workspaces';
 import { getBackground } from '@/lib/backgrounds';
@@ -23,11 +31,17 @@ interface PageProps {
 export default function WorkspaceDetailPage({ params }: PageProps) {
   const { wsId } = use(params);
   const router = useRouter();
-  const { user, isOperator, loading } = useOperatorAuth();
+  const { user, isOperator, isSuperAdmin, loading } = useOperatorAuth();
   const { workspace } = useWorkspace(wsId);
   const { members } = useWorkspaceMembers(wsId);
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
+  const [inviteOpen, setInviteOpen] = useState(false);
+
+  const inviteUrl =
+    workspace && typeof window !== 'undefined'
+      ? `${window.location.origin}/dashboard?join=${workspace.workspaceCode}`
+      : '';
 
   const isOwner = !!user && !!workspace && workspace.ownerUid === user.uid;
   const isMember = !!user && members.some((m) => m.uid === user.uid);
@@ -65,6 +79,30 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     if (!workspace) return;
     navigator.clipboard.writeText(workspace.workspaceCode);
     toast.success('코드를 복사했습니다.');
+  }
+
+  function copyInviteLink() {
+    if (!inviteUrl) return;
+    navigator.clipboard.writeText(inviteUrl);
+    toast.success('초대 링크를 복사했습니다.');
+  }
+
+  async function shareInvite() {
+    if (!workspace || !inviteUrl) return;
+    const shareData = {
+      title: `${workspace.name} 워크스페이스 초대`,
+      text: `${workspace.name} 워크스페이스에 초대합니다. 코드: ${workspace.workspaceCode}`,
+      url: inviteUrl,
+    };
+    if (typeof navigator !== 'undefined' && 'share' in navigator) {
+      try {
+        await navigator.share(shareData);
+        return;
+      } catch {
+        /* 공유 취소 시 무시 */
+      }
+    }
+    copyInviteLink();
   }
 
   async function handleLeave() {
@@ -153,6 +191,13 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           </button>
         </nav>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            onClick={() => setInviteOpen(true)}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-7"
+          >
+            <Share2 size={12} className="mr-1" /> 초대
+          </Button>
           {!isOwner && (
             <Button
               size="sm"
@@ -173,7 +218,13 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
             <h2 className="text-base font-bold text-gray-900">📋 보드 ({boards.length})</h2>
             <Button
               size="sm"
-              onClick={() => router.push(`/boards/new?workspaceId=${wsId}`)}
+              onClick={() => {
+                if (!isSuperAdmin && boards.length >= FREE_TIER_BOARDS_PER_WORKSPACE) {
+                  showUpgradeMessage('board');
+                  return;
+                }
+                router.push(`/boards/new?workspaceId=${wsId}`);
+              }}
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs h-7 px-3"
             >
               + 새 보드
@@ -247,6 +298,56 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           </ul>
         </section>
       </main>
+
+      <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{workspace.name}에 초대</DialogTitle>
+            <DialogDescription>
+              아래 링크나 코드를 공유하면 다른 사람이 이 워크스페이스에 가입할 수 있습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-3 mt-2">
+            <div>
+              <label className="text-xs font-semibold text-gray-700 mb-1 block">초대 링크</label>
+              <div className="flex gap-2">
+                <input
+                  readOnly
+                  value={inviteUrl}
+                  className="flex-1 min-w-0 text-xs bg-gray-50 border border-gray-200 rounded px-2 py-2 font-mono"
+                  onFocus={(e) => e.currentTarget.select()}
+                />
+                <Button size="sm" variant="outline" onClick={copyInviteLink} className="flex-shrink-0">
+                  <Copy size={12} className="mr-1" /> 복사
+                </Button>
+              </div>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 mb-1 block">가입 코드</label>
+              <div className="flex gap-2">
+                <div className="flex-1 font-mono text-base font-bold text-indigo-700 bg-indigo-50 border border-indigo-100 rounded px-3 py-2 text-center tracking-widest">
+                  {workspace.workspaceCode}
+                </div>
+                <Button size="sm" variant="outline" onClick={copyCode} className="flex-shrink-0">
+                  <Copy size={12} className="mr-1" /> 복사
+                </Button>
+              </div>
+              <p className="text-[11px] text-gray-500 mt-1">
+                상대방이 대시보드에서 &lsquo;코드로 가입&rsquo;을 눌러 입력해도 됩니다.
+              </p>
+            </div>
+            <div className="flex justify-end gap-2 pt-1">
+              <Button variant="outline" onClick={() => setInviteOpen(false)}>닫기</Button>
+              <Button
+                onClick={shareInvite}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              >
+                <Share2 size={14} className="mr-1" /> 공유
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

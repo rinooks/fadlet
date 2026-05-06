@@ -43,7 +43,6 @@ import { usePosts } from '@/lib/hooks/use-posts';
 import { useReports } from '@/lib/hooks/use-reports';
 import { useTimer } from '@/lib/hooks/use-timer';
 import { findBannedHit } from '@/lib/hooks/use-banned-words';
-import { useDemoGuard } from '@/lib/hooks/use-demo-guard';
 import { db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
@@ -94,9 +93,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const isHostUser = role === 'host';
   const { reports } = useReports(boardId, isHostUser);
   const openReportCount = reports.filter((r) => r.status === 'open').length;
-  const isDemo = board?.isDemo ?? false;
-  const { guard: demoGuard } = useDemoGuard(isDemo);
-
   async function deleteMessage(messageId: string) {
     await deleteDoc(doc(db, messagesPath(boardId), messageId));
   }
@@ -474,7 +470,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             </button>
           )}
           <div className="hidden md:flex items-center gap-2">
-            <ExportMenu boardId={boardId} isWorkshop={isWorkshopMode} isDemo={isDemo} />
+            <ExportMenu boardId={boardId} isWorkshop={isWorkshopMode} />
             {isHostUser && (
               <>
                 <Button
@@ -533,21 +529,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           )}
         </div>
       </header>
-
-      {/* 데모 배너 */}
-      {board?.isDemo && (
-        <div className="flex items-center justify-between px-4 py-2 bg-amber-50 border-b border-amber-200 flex-shrink-0">
-          <p className="text-xs text-amber-800 font-medium">
-            🎯 데모 모드 — 최대 50명 참여 가능 · 채팅 로그 미보관
-          </p>
-          <Link
-            href="/dashboard"
-            className="text-xs font-semibold bg-amber-600 hover:bg-amber-700 text-white px-3 py-1.5 rounded-md flex-shrink-0 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-amber-500"
-          >
-            정식 서비스로 시작
-          </Link>
-        </div>
-      )}
 
       {/* 단계 배너 */}
       {board?.stages && board.stages.length > 0 && (
@@ -637,9 +618,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               ) : (
                 <CanvasBoard
                   posts={visiblePosts}
+                  boardId={boardId}
                   canDrag={!isLocked || role === 'host'}
                   currentUid={uid ?? ''}
                   isHost={role === 'host'}
+                  showReactionCounts={board?.settings?.showPostReactionCounts !== false}
                   onUpdate={updatePost}
                   onDelete={deletePost}
                   onUpdatePosition={updatePosition}
@@ -661,9 +644,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 ) : (
                   <ProsConsBoard
                     posts={visiblePosts}
+                    boardId={boardId}
                     canPost={canPost}
                     currentUid={uid ?? ''}
                     isHost={role === 'host'}
+                    showReactionCounts={board?.settings?.showPostReactionCounts !== false}
                     isLocked={isLocked}
                     onAddPost={handleAddPost}
                     onUpdatePost={updatePost}
@@ -714,8 +699,10 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                             <SortablePostCard
                               key={post.id}
                               post={post}
+                              boardId={boardId}
                               currentUid={uid ?? ''}
                               isHost={role === 'host'}
+                              showReactionCounts={board?.settings?.showPostReactionCounts !== false}
                               canDrag={!isLocked || role === 'host'}
                               onUpdate={updatePost}
                               onDelete={deletePost}
@@ -738,9 +725,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                       <ColumnBoard
                         template={template}
                         posts={visiblePosts}
+                        boardId={boardId}
                         canPost={canPost}
                         currentUid={uid ?? ''}
                         isHost={role === 'host'}
+                        showReactionCounts={board?.settings?.showPostReactionCounts !== false}
                         isLocked={isLocked}
                         onAddPost={handleAddPost}
                         onUpdatePost={updatePost}
@@ -882,7 +871,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           showReactionCounts={board.settings?.showPostReactionCounts !== false}
           onToggleReactionCounts={handleToggleReactionCounts}
           isHostUser={isHostUser}
-          isDemo={isDemo}
         />
       )}
 

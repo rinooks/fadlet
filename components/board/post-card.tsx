@@ -1,9 +1,11 @@
 'use client';
 
+import { MessageCircle } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import type { Post, PostColor } from '@/lib/types';
+import { usePostStats } from '@/lib/hooks/use-post-stats';
+import type { EmojiType, Post, PostColor } from '@/lib/types';
 
 const COLOR_MAP: Record<PostColor, string> = {
   yellow: 'bg-yellow-100 border-yellow-300',
@@ -14,16 +16,28 @@ const COLOR_MAP: Record<PostColor, string> = {
   gray: 'bg-gray-100 border-gray-300',
 };
 
+const EMOJI_LABEL: Record<EmojiType, string> = {
+  thumbsup: '👍',
+  heart: '❤️',
+  party: '🎉',
+  bulb: '💡',
+  thinking: '🤔',
+};
+
 interface PostCardProps {
   post: Post;
+  boardId: string;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   onUpdate: (postId: string, content: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }
 
-export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenDetail }: PostCardProps) {
+export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts, onUpdate, onDelete, onOpenDetail }: PostCardProps) {
+  const { commentCount, reactionTotal, topReactions } = usePostStats(boardId, post.id);
+  const canShowReactions = showReactionCounts || isHost;
   const [editing, setEditing] = useState(false);
   const [editContent, setEditContent] = useState(post.content);
   const canEdit = post.authorId === currentUid || isHost;
@@ -76,6 +90,30 @@ export function PostCard({ post, currentUid, isHost, onUpdate, onDelete, onOpenD
               <p className="text-sm text-gray-800 flex-1 whitespace-pre-wrap break-words line-clamp-4">
                 {post.content}
               </p>
+            )}
+            {(commentCount > 0 || (canShowReactions && reactionTotal > 0)) && (
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+                {canShowReactions &&
+                  topReactions.map(({ emoji, count }) => (
+                    <span
+                      key={emoji}
+                      className="inline-flex items-center gap-0.5 bg-white/80 border border-gray-200 rounded-full px-1.5 py-0.5 text-[11px]"
+                      aria-label={`반응 ${count}개`}
+                    >
+                      <span>{EMOJI_LABEL[emoji]}</span>
+                      <span className="font-semibold text-gray-700">{count}</span>
+                    </span>
+                  ))}
+                {commentCount > 0 && (
+                  <span
+                    className="inline-flex items-center gap-0.5 bg-white/80 border border-gray-200 rounded-full px-1.5 py-0.5 text-[11px] text-gray-700"
+                    aria-label={`댓글 ${commentCount}개`}
+                  >
+                    <MessageCircle size={10} />
+                    <span className="font-semibold">{commentCount}</span>
+                  </span>
+                )}
+              </div>
             )}
             <div className="flex items-center justify-between mt-2" onClick={(e) => e.stopPropagation()}>
               <span className="text-xs text-gray-500 font-medium">{post.authorName}</span>

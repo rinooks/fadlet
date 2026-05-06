@@ -2,18 +2,15 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { Download, ChevronDown } from 'lucide-react';
-import { useDemoGuard } from '@/lib/hooks/use-demo-guard';
 
 interface ExportMenuProps {
   boardId: string;
   isWorkshop?: boolean;
-  isDemo?: boolean;
 }
 
-export function ExportMenu({ boardId, isWorkshop = false, isDemo = false }: ExportMenuProps) {
+export function ExportMenu({ boardId, isWorkshop = false }: ExportMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
-  const { guard } = useDemoGuard(isDemo);
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -32,7 +29,7 @@ export function ExportMenu({ boardId, isWorkshop = false, isDemo = false }: Expo
     <div ref={ref} className="relative">
       <button
         type="button"
-        onClick={guard(() => setOpen((v) => !v), '내보내기')}
+        onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1 text-xs text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 px-3 h-7 rounded-md transition-colors focus-visible:outline focus-visible:outline-2"
         aria-label="PDF 내보내기"
         aria-haspopup="menu"

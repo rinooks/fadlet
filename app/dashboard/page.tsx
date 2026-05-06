@@ -4,8 +4,8 @@ export const dynamic = 'force-dynamic';
 
 import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense, useEffect, useMemo, useState } from 'react';
 import { KeyRound, Plus, Users } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -19,6 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
+import { FREE_TIER_WORKSPACE_LIMIT, showUpgradeMessage } from '@/lib/free-tier';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import {
   createWorkspace,
@@ -30,7 +31,16 @@ import type { Board } from '@/lib/types';
 const PREVIEW_BOARDS_PER_WORKSPACE = 3;
 
 export default function DashboardPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center min-h-screen"><p className="text-gray-400">로딩 중...</p></div>}>
+      <DashboardContent />
+    </Suspense>
+  );
+}
+
+function DashboardContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, isOperator, isPending, isSuperAdmin, loading, logout } = useOperatorAuth();
   const { workspaces, loading: wsLoading } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const [boards, setBoards] = useState<Board[]>([]);
@@ -44,9 +54,23 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (loading) return;
-    if (!user || user.isAnonymous) router.replace('/login?redirect=/dashboard');
-    else if (isPending) router.replace('/pending');
-  }, [user, isPending, loading, router]);
+    if (!user || user.isAnonymous) {
+      const joinParam = searchParams.get('join');
+      const redirect = joinParam ? `/dashboard?join=${joinParam}` : '/dashboard';
+      router.replace(`/login?redirect=${encodeURIComponent(redirect)}`);
+    } else if (isPending) router.replace('/pending');
+  }, [user, isPending, loading, router, searchParams]);
+
+  useEffect(() => {
+    if (!isOperator) return;
+    const joinParam = searchParams.get('join');
+    if (!joinParam) return;
+    setJoinCode(joinParam.toUpperCase().slice(0, 6));
+    setJoinOpen(true);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('join');
+    window.history.replaceState({}, '', url.toString());
+  }, [isOperator, searchParams]);
 
   useEffect(() => {
     if (!user || !isOperator) return;
@@ -71,6 +95,13 @@ export default function DashboardPage() {
     return unsub;
   }, [user, isOperator]);
 
+  const ownedWorkspaceCount = useMemo(
+    () => workspaces.filter((w) => w.ownerUid === user?.uid).length,
+    [workspaces, user?.uid],
+  );
+  const reachedWorkspaceLimit =
+    !isSuperAdmin && ownedWorkspaceCount >= FREE_TIER_WORKSPACE_LIMIT;
+
   const boardsByWorkspace = useMemo(() => {
     const map = new Map<string, Board[]>();
     for (const b of boards) {
@@ -85,6 +116,11 @@ export default function DashboardPage() {
   async function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     if (!user || !newName.trim() || busy) return;
+    if (reachedWorkspaceLimit) {
+      showUpgradeMessage('workspace');
+      setCreateOpen(false);
+      return;
+    }
     setBusy(true);
     try {
       const wsId = await createWorkspace({
@@ -176,7 +212,13 @@ export default function DashboardPage() {
               <span className="sm:hidden">가입</span>
             </Button>
             <Button
-              onClick={() => setCreateOpen(true)}
+              onClick={() => {
+                if (reachedWorkspaceLimit) {
+                  showUpgradeMessage('workspace');
+                  return;
+                }
+                setCreateOpen(true);
+              }}
               size="sm"
               className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
             >
@@ -197,7 +239,16 @@ export default function DashboardPage() {
               팀 워크스페이스를 만들거나 초대 코드로 참여해 보세요.
             </p>
             <div className="flex items-center justify-center gap-2">
-              <Button onClick={() => setCreateOpen(true)} className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold">
+              <Button
+                onClick={() => {
+                  if (reachedWorkspaceLimit) {
+                    showUpgradeMessage('workspace');
+                    return;
+                  }
+                  setCreateOpen(true);
+                }}
+                className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
+              >
                 <Plus size={14} className="mr-1" />
                 새 워크스페이스
               </Button>

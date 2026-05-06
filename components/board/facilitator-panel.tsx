@@ -2,7 +2,6 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useDemoGuard } from '@/lib/hooks/use-demo-guard';
 import { ArrowDown, ArrowUp, BarChart3, Plus, Trash2, X, Pin, PinOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -38,7 +37,6 @@ interface FacilitatorPanelProps {
   showReactionCounts: boolean;
   onToggleReactionCounts: (visible: boolean) => Promise<void>;
   isHostUser: boolean;
-  isDemo?: boolean;
 }
 
 export function FacilitatorPanel({
@@ -63,10 +61,8 @@ export function FacilitatorPanel({
   showReactionCounts,
   onToggleReactionCounts,
   isHostUser,
-  isDemo = false,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
-  const { guard: demoGuard } = useDemoGuard(isDemo);
   const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
   const { addWord, removeWord } = useBannedWords(boardId, bannedWords);
 
@@ -238,10 +234,7 @@ export function FacilitatorPanel({
               <input
                 type="checkbox"
                 checked={showReactionCounts}
-                onChange={demoGuard(
-                  (e: React.ChangeEvent<HTMLInputElement>) => { void onToggleReactionCounts(e.target.checked); },
-                  '반응 수 표시 옵션'
-                )}
+                onChange={(e) => { void onToggleReactionCounts(e.target.checked); }}
                 className="mt-0.5 h-4 w-4 accent-indigo-600"
               />
               <span className="flex-1">
@@ -317,7 +310,7 @@ export function FacilitatorPanel({
                   />
                 </div>
                 <Button
-                  onClick={demoGuard(handleAddStage, '단계 추가')}
+                  onClick={handleAddStage}
                   disabled={busy}
                   size="sm"
                   className="bg-indigo-600 hover:bg-indigo-700 text-white h-8"

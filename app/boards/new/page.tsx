@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useState } from 'react';
@@ -13,6 +13,7 @@ import { TemplateSelector } from '@/components/board/template-selector';
 import { SkinSelector } from '@/components/board/skin-selector';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
+import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
@@ -23,7 +24,7 @@ import type { BoardMode, BoardSkin, BoardTemplate } from '@/lib/types';
 function NewBoardForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { user, isOperator, loading, signInWithGoogle } = useOperatorAuth();
+  const { user, isOperator, isSuperAdmin, loading, signInWithGoogle } = useOperatorAuth();
   const { workspaces, loading: wsLoading } = useMyWorkspaces(isOperator ? user?.uid ?? null : null);
   const queryWsId = searchParams.get('workspaceId');
   const [title, setTitle] = useState('');
@@ -56,6 +57,16 @@ function NewBoardForm() {
 
     setCreating(true);
     try {
+      if (!isSuperAdmin) {
+        const boardCountSnap = await getDocs(
+          query(collection(db, boardsPath()), where('workspaceId', '==', workspaceId)),
+        );
+        if (boardCountSnap.size >= FREE_TIER_BOARDS_PER_WORKSPACE) {
+          showUpgradeMessage('board');
+          setCreating(false);
+          return;
+        }
+      }
       const boardCode = await generateBoardCode();
       const docRef = await addDoc(collection(db, boardsPath()), {
         title: title.trim(),

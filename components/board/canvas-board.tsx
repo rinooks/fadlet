@@ -13,9 +13,11 @@ const POST_HEIGHT_ESTIMATE = 140;
 
 interface CanvasBoardProps {
   posts: Post[];
+  boardId: string;
   canDrag: boolean;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   onUpdate: (postId: string, content: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onUpdatePosition: (postId: string, pos: { x: number; y: number }) => Promise<void>;
@@ -24,10 +26,12 @@ interface CanvasBoardProps {
 
 interface DraggablePostProps {
   post: Post;
+  boardId: string;
   position: { x: number; y: number };
   canDrag: boolean;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   onUpdate: (postId: string, content: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
@@ -60,9 +64,11 @@ function DraggablePost({ post, position, canDrag, ...rest }: DraggablePostProps)
 
 export function CanvasBoard({
   posts,
+  boardId,
   canDrag,
   currentUid,
   isHost,
+  showReactionCounts,
   onUpdate,
   onDelete,
   onUpdatePosition,
@@ -138,10 +144,12 @@ export function CanvasBoard({
             <DraggablePost
               key={post.id}
               post={post}
+              boardId={boardId}
               position={{ x, y }}
               canDrag={canDrag}
               currentUid={currentUid}
               isHost={isHost}
+              showReactionCounts={showReactionCounts}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onOpenDetail={onOpenDetail}

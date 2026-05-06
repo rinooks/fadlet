@@ -8,8 +8,10 @@ import type { Post } from '@/lib/types';
 
 interface SortablePostCardProps {
   post: Post;
+  boardId: string;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   canDrag: boolean;
   onUpdate: (postId: string, content: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;

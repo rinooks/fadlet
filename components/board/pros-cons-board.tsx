@@ -9,9 +9,11 @@ import type { Post, PostColor } from '@/lib/types';
 
 interface ProsConsBoardProps {
   posts: Post[];
+  boardId: string;
   canPost: boolean;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   isLocked: boolean;
   onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string) => Promise<void>;
   onUpdatePost: (postId: string, content: string) => Promise<void>;
@@ -45,9 +47,11 @@ const PANELS = [
 function Panel({
   panel,
   posts,
+  boardId,
   canPost,
   currentUid,
   isHost,
+  showReactionCounts,
   isLocked,
   onUpdatePost,
   onDeletePost,
@@ -56,9 +60,11 @@ function Panel({
 }: {
   panel: (typeof PANELS)[number];
   posts: Post[];
+  boardId: string;
   canPost: boolean;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   isLocked: boolean;
   onUpdatePost: (id: string, content: string) => Promise<void>;
   onDeletePost: (id: string) => Promise<void>;
@@ -88,8 +94,10 @@ function Panel({
             <SortablePostCard
               key={post.id}
               post={post}
+              boardId={boardId}
               currentUid={currentUid}
               isHost={isHost}
+              showReactionCounts={showReactionCounts}
               canDrag={!isLocked || isHost}
               onUpdate={onUpdatePost}
               onDelete={onDeletePost}
@@ -121,9 +129,11 @@ function Panel({
 
 export function ProsConsBoard({
   posts,
+  boardId,
   canPost,
   currentUid,
   isHost,
+  showReactionCounts,
   isLocked,
   onAddPost,
   onUpdatePost,
@@ -153,9 +163,11 @@ export function ProsConsBoard({
             key={panel.id}
             panel={panel}
             posts={postsByPanel[panel.id]}
+            boardId={boardId}
             canPost={canPost}
             currentUid={currentUid}
             isHost={isHost}
+            showReactionCounts={showReactionCounts}
             isLocked={isLocked}
             onUpdatePost={onUpdatePost}
             onDeletePost={onDeletePost}

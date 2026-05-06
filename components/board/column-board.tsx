@@ -11,9 +11,11 @@ import type { Post, PostColor } from '@/lib/types';
 interface ColumnBoardProps {
   template: TemplateDefinition;
   posts: Post[];
+  boardId: string;
   canPost: boolean;
   currentUid: string;
   isHost: boolean;
+  showReactionCounts: boolean;
   isLocked: boolean;
   onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string) => Promise<void>;
   onUpdatePost: (postId: string, content: string) => Promise<void>;
@@ -62,9 +64,11 @@ function DroppableColumn({ columnId, isGrid, postIds, children }: DroppableColum
 export function ColumnBoard({
   template,
   posts,
+  boardId,
   canPost,
   currentUid,
   isHost,
+  showReactionCounts,
   isLocked,
   onAddPost,
   onUpdatePost,
@@ -119,8 +123,10 @@ export function ColumnBoard({
                   <SortablePostCard
                     key={post.id}
                     post={post}
+                    boardId={boardId}
                     currentUid={currentUid}
                     isHost={isHost}
+                    showReactionCounts={showReactionCounts}
                     canDrag={!isLocked || isHost}
                     onUpdate={onUpdatePost}
                     onDelete={onDeletePost}

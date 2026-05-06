@@ -136,11 +136,11 @@ export default function HomePage() {
           기획부터 운영, 결과 정리까지 한 화면에서.
         </p>
 
-        {/* 데모 CTA */}
+        {/* 무료 체험 CTA */}
         <div className="flex flex-col items-center gap-2 mb-4">
           <DemoButton />
           <p className="text-xs text-gray-400">
-            가입 불필요 · 보드 1개 · 최대 50명 참여
+            구글 로그인만으로 바로 시작
           </p>
         </div>
 
