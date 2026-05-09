@@ -24,6 +24,7 @@ import { NewPostDialog } from '@/components/board/new-post-dialog';
 import { ReportsPanel } from '@/components/board/reports-panel';
 import { SortablePostCard } from '@/components/board/sortable-post-card';
 import { PostDetailModal } from '@/components/board/post-detail-modal';
+import { MoveBoardDialog } from '@/components/board/move-board-dialog';
 import { StageBanner } from '@/components/board/stage-banner';
 import { ChatPanel } from '@/components/chat/chat-panel';
 import { PollBoard } from '@/components/activities/poll-board';
@@ -80,6 +81,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [showShare, setShowShare] = useState(false);
   const [showFacilitator, setShowFacilitator] = useState(false);
   const [showReports, setShowReports] = useState(false);
+  const [showMoveBoard, setShowMoveBoard] = useState(false);
   const [detailPost, setDetailPost] = useState<Post | null>(null);
   const [joined, setJoined] = useState(false);
 
@@ -839,6 +841,17 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         />
       )}
 
+      {board && uid && (
+        <MoveBoardDialog
+          open={showMoveBoard}
+          boardId={boardId}
+          boardTitle={board.title}
+          currentWorkspaceId={board.workspaceId}
+          currentUid={uid}
+          onClose={() => setShowMoveBoard(false)}
+        />
+      )}
+
       {board && (
         <ShareDialog
           open={showShare}
@@ -871,6 +884,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           showReactionCounts={board.settings?.showPostReactionCounts !== false}
           onToggleReactionCounts={handleToggleReactionCounts}
           isHostUser={isHostUser}
+          onOpenMoveWorkspace={
+            (board.ownerId === uid || isWsAdmin) && board.workspaceId !== 'default' && board.workspaceId !== 'demo'
+              ? () => { setShowFacilitator(false); setShowMoveBoard(true); }
+              : undefined
+          }
         />
       )}
 

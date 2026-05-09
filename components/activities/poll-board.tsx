@@ -1,11 +1,36 @@
 'use client';
 
-import { Check } from 'lucide-react';
-import { useMemo } from 'react';
+import { Check, Crown } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { LiveActivityShell } from './live-activity-shell';
 import { useActivityState } from '@/lib/hooks/use-activity-state';
 import { usePoll } from '@/lib/hooks/use-poll';
 import type { PollConfig } from '@/lib/types';
+
+function AnimatedNumber({ value, className }: { value: number; className?: string }) {
+  const [displayed, setDisplayed] = useState(value);
+  const prevRef = useRef(value);
+
+  useEffect(() => {
+    const start = prevRef.current;
+    const target = value;
+    if (start === target) return;
+    const startTime = performance.now();
+    const duration = 600;
+    let raf = 0;
+    const tick = (t: number) => {
+      const p = Math.min(1, (t - startTime) / duration);
+      const eased = 1 - Math.pow(1 - p, 3);
+      setDisplayed(Math.round(start + (target - start) * eased));
+      if (p < 1) raf = requestAnimationFrame(tick);
+      else prevRef.current = target;
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, [value]);
+
+  return <span className={className}>{displayed}</span>;
+}
 
 interface PollBoardProps {
   boardId: string;
@@ -45,6 +70,7 @@ export function PollBoard({
   }, [responses, config.options]);
 
   const maxCount = Math.max(1, ...tally.counts);
+  const topCount = Math.max(0, ...tally.counts);
 
   async function handleClick(idx: number) {
     if (state.closed && !isHost) return;
@@ -77,11 +103,12 @@ export function PollBoard({
         <div className="flex flex-col gap-2">
           {config.options.map((option, idx) => {
             const count = tally.counts[idx] ?? 0;
-            const pct = showResults ? Math.round((count / maxCount) * 100) : 0;
+            const pct = showResults ? (count / maxCount) * 100 : 0;
             const sharePct = showResults && tally.totalRespondents > 0
               ? Math.round((count / tally.totalRespondents) * 100)
               : 0;
             const isChosen = myChosen.has(idx);
+            const isLeader = showResults && topCount > 0 && count === topCount;
             const disabled = state.closed && !isHost;
             return (
               <button
@@ -90,20 +117,33 @@ export function PollBoard({
                 onClick={() => handleClick(idx)}
                 disabled={disabled}
                 aria-pressed={isChosen}
-                className={`relative overflow-hidden text-left rounded-md border-2 transition-all px-4 py-3 ${
+                className={`relative overflow-hidden text-left rounded-lg border-2 transition-all px-4 ${
+                  showResults ? 'py-4' : 'py-3'
+                } ${
                   isChosen
-                    ? 'border-indigo-600 bg-indigo-50'
-                    : 'border-gray-200 bg-white hover:border-indigo-300'
-                } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                    ? 'border-indigo-600 shadow-sm'
+                    : isLeader
+                      ? 'border-amber-300'
+                      : 'border-gray-200 hover:border-indigo-300'
+                } ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'} bg-white`}
               >
                 {showResults && (
                   <div
-                    className={`absolute inset-y-0 left-0 ${isChosen ? 'bg-indigo-100/70' : 'bg-gray-100/70'} transition-all`}
-                    style={{ width: `${pct}%` }}
+                    className={`absolute inset-y-0 left-0 ${
+                      isChosen
+                        ? 'bg-gradient-to-r from-indigo-300 via-indigo-400 to-indigo-500'
+                        : isLeader
+                          ? 'bg-gradient-to-r from-amber-100 via-amber-200 to-amber-300'
+                          : 'bg-gradient-to-r from-indigo-50 via-indigo-100 to-indigo-200'
+                    }`}
+                    style={{
+                      width: `${pct}%`,
+                      transition: 'width 700ms cubic-bezier(0.22, 1, 0.36, 1)',
+                    }}
                     aria-hidden
                   />
                 )}
-                <div className="relative flex items-center gap-2">
+                <div className="relative flex items-center gap-3">
                   <span
                     className={`flex-shrink-0 w-5 h-5 rounded-full border-2 flex items-center justify-center ${
                       isChosen ? 'bg-indigo-600 border-indigo-600 text-white' : 'border-gray-300 bg-white'
@@ -112,11 +152,27 @@ export function PollBoard({
                   >
                     {isChosen && <Check size={12} strokeWidth={3} />}
                   </span>
-                  <span className="flex-1 text-sm font-semibold text-gray-900">{option}</span>
+                  <span className="flex-1 text-sm font-semibold text-gray-900 flex items-center gap-1.5">
+                    {option}
+                    {isLeader && (
+                      <Crown size={14} className="text-amber-500 fill-amber-400" aria-label="1위" />
+                    )}
+                  </span>
                   {showResults && (
-                    <span className="text-xs font-mono font-bold text-indigo-700 tabular-nums flex-shrink-0">
-                      {count}명 · {sharePct}%
-                    </span>
+                    <div className="flex items-baseline gap-1.5 flex-shrink-0">
+                      <AnimatedNumber
+                        value={count}
+                        className={`text-xl font-extrabold tabular-nums ${
+                          isLeader ? 'text-amber-700' : 'text-indigo-700'
+                        }`}
+                      />
+                      <span className="text-[10px] font-semibold text-gray-500">명</span>
+                      <span className={`ml-1 text-xs font-mono font-bold tabular-nums ${
+                        isLeader ? 'text-amber-600' : 'text-indigo-600'
+                      }`}>
+                        {sharePct}%
+                      </span>
+                    </div>
                   )}
                 </div>
               </button>
@@ -132,9 +188,14 @@ export function PollBoard({
               )}
             </p>
             {showResults && (
-              <p className="text-xs font-semibold text-gray-700">
-                응답 {tally.totalRespondents}명
-              </p>
+              <div className="flex items-baseline gap-1">
+                <span className="text-xs text-gray-500">총 응답</span>
+                <AnimatedNumber
+                  value={tally.totalRespondents}
+                  className="text-base font-extrabold text-indigo-700 tabular-nums"
+                />
+                <span className="text-xs text-gray-500">명</span>
+              </div>
             )}
           </div>
         </div>

@@ -94,9 +94,24 @@ service cloud.firestore {
             && request.resource.data.ownerId == request.auth.uid
             && request.resource.data.workspaceId == 'demo'
             && request.resource.data.isDemo == true);
+        // 업데이트 권한: 슈퍼관리자, 소유자, 또는 현재 워크스페이스 admin.
+        // workspaceId가 변경되는 경우 새 워크스페이스의 멤버여야 하고 'default'/'demo'는 금지.
         allow update: if isSuperAdmin()
-          || (isAllowedOperator() && resource.data.ownerId == request.auth.uid)
-          || isWorkspaceMemberAdmin(resource.data.workspaceId);
+          || (
+            (
+              (isAllowedOperator() && resource.data.ownerId == request.auth.uid)
+              || isWorkspaceMemberAdmin(resource.data.workspaceId)
+            )
+            && (
+              request.resource.data.workspaceId == resource.data.workspaceId
+              || (
+                request.resource.data.workspaceId is string
+                && request.resource.data.workspaceId != 'default'
+                && request.resource.data.workspaceId != 'demo'
+                && isWorkspaceMember(request.resource.data.workspaceId)
+              )
+            )
+          );
         allow delete: if isSuperAdmin()
           || (isAllowedOperator() && resource.data.ownerId == request.auth.uid);
 

@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { ArrowDown, ArrowUp, BarChart3, Plus, Trash2, X, Pin, PinOff } from 'lucide-react';
+import { ArrowDown, ArrowRightLeft, ArrowUp, BarChart3, Plus, Trash2, X, Pin, PinOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -37,6 +37,8 @@ interface FacilitatorPanelProps {
   showReactionCounts: boolean;
   onToggleReactionCounts: (visible: boolean) => Promise<void>;
   isHostUser: boolean;
+  /** 보드 소유자 또는 워크스페이스 admin인 경우에만 부모가 전달. 미전달 시 워크스페이스 이동 버튼 숨김. */
+  onOpenMoveWorkspace?: () => void;
 }
 
 export function FacilitatorPanel({
@@ -61,6 +63,7 @@ export function FacilitatorPanel({
   showReactionCounts,
   onToggleReactionCounts,
   isHostUser,
+  onOpenMoveWorkspace,
 }: FacilitatorPanelProps) {
   const { addStage, updateStage, removeStage, moveStage } = useStages(boardId);
   const { pinAnnouncement, unpinAnnouncement } = useAnnouncement(boardId);
@@ -498,6 +501,25 @@ export function FacilitatorPanel({
             </div>
           </section>
           </>)}
+
+          {onOpenMoveWorkspace && (
+            <section className="pt-2 border-t border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">🚚 워크스페이스 이동</h3>
+              <p className="text-xs text-gray-500 mb-3">
+                이 보드를 다른 워크스페이스로 옮깁니다. 포스트·댓글·반응은 모두 그대로 유지되며,
+                새 워크스페이스의 멤버에게 보드가 보이게 됩니다.
+              </p>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={onOpenMoveWorkspace}
+                className="text-xs h-8 gap-1.5"
+              >
+                <ArrowRightLeft size={13} /> 워크스페이스 이동...
+              </Button>
+            </section>
+          )}
         </div>
       </aside>
     </div>

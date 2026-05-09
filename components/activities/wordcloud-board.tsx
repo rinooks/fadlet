@@ -18,8 +18,16 @@ interface WordcloudBoardProps {
   isHost: boolean;
 }
 
-const MIN_FONT_REM = 0.875;
-const MAX_FONT_REM = 2.5;
+const MIN_FONT_REM = 0.85;
+const MAX_FONT_REM = 3.6;
+
+function hashString(s: string): number {
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h = Math.imul(h ^ s.charCodeAt(i), 16777619);
+  }
+  return h >>> 0;
+}
 
 export function WordcloudBoard({
   boardId,
@@ -56,6 +64,44 @@ export function WordcloudBoard({
 
   const myEntries = entries.filter((e) => e.userId === currentUid);
   const maxCount = Math.max(1, ...aggregated.map((a) => a.count));
+
+  const positionedWords = useMemo(() => {
+    if (aggregated.length === 0) return [];
+
+    const ringSlotCount = (r: number) => 6 + r * 4;
+    const ringRadius = (r: number) => 22 + r * 13;
+
+    let ringIdx = 0;
+    let slotInRing = 0;
+
+    return aggregated.map((a, idx) => {
+      if (idx === 0) {
+        return { ...a, x: 50, y: 50, rotation: 0 };
+      }
+
+      if (slotInRing >= ringSlotCount(ringIdx)) {
+        ringIdx += 1;
+        slotInRing = 0;
+      }
+
+      const slots = ringSlotCount(ringIdx);
+      const baseAngle = (slotInRing / slots) * Math.PI * 2;
+      const h = hashString(a.text);
+      const angleJitter = ((h & 0x3ff) / 0x3ff - 0.5) * (Math.PI / slots) * 1.2;
+      const radiusJitter = (((h >> 10) & 0x3ff) / 0x3ff - 0.5) * 8;
+      const rotationDeg = (((h >> 20) & 0x3ff) / 0x3ff - 0.5) * 22;
+
+      const angle = baseAngle + angleJitter + (ringIdx % 2 === 0 ? 0 : Math.PI / slots);
+      const radius = ringRadius(ringIdx) + radiusJitter;
+
+      const x = 50 + radius * Math.cos(angle) * 0.95;
+      const y = 50 + radius * Math.sin(angle) * 0.78;
+
+      slotInRing += 1;
+
+      return { ...a, x, y, rotation: rotationDeg };
+    });
+  }, [aggregated]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -151,24 +197,38 @@ export function WordcloudBoard({
                 아직 응답이 없습니다.
               </p>
             ) : (
-              <div className="flex flex-wrap gap-x-4 gap-y-2 justify-center items-baseline py-4 leading-tight">
-                {aggregated.map((a) => (
+              <div
+                className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/30"
+                style={{ aspectRatio: '5 / 3', minHeight: 320 }}
+              >
+                {positionedWords.map((a) => (
                   <span
                     key={a.text}
-                    className={`group relative inline-flex items-baseline gap-1 font-bold ${colorClass(a.count)}`}
-                    style={{ fontSize: fontSize(a.count) }}
+                    className={`group absolute whitespace-nowrap font-bold select-none ${colorClass(a.count)}`}
+                    style={{
+                      left: `${a.x}%`,
+                      top: `${a.y}%`,
+                      transform: `translate(-50%, -50%) rotate(${a.rotation}deg)`,
+                      fontSize: fontSize(a.count),
+                      zIndex: Math.round(a.count * 10),
+                      transition: 'transform 200ms ease',
+                    }}
                     title={`${a.count}회`}
                   >
-                    {a.text}
-                    <span className="text-[10px] font-mono text-gray-400 align-baseline">
-                      {a.count > 1 ? `×${a.count}` : ''}
+                    <span className="inline-flex items-baseline gap-1">
+                      {a.text}
+                      {a.count > 1 && (
+                        <span className="text-[10px] font-mono text-gray-400 align-baseline">
+                          ×{a.count}
+                        </span>
+                      )}
                     </span>
                     {isHost && (
                       <button
                         type="button"
                         onClick={() => a.ids.forEach((entry) => removeEntry(entry.id))}
                         aria-label={`${a.text} 모두 제거`}
-                        className="absolute -top-1 -right-2 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity"
+                        className="absolute -top-2 -right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity bg-white rounded-full p-0.5 shadow-sm"
                       >
                         <X size={12} />
                       </button>
