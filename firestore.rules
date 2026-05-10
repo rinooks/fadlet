@@ -38,6 +38,20 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.allowed == true;
     }
 
+    // 앱 전역 설정 (Gemini API 키 등) — super-admin이 쓰고, 승인된 퍼실리테이터가 읽음.
+    match /settings/{docId} {
+      allow read: if isAllowedOperator() || isSuperAdmin();
+      allow write: if isSuperAdmin();
+    }
+
+    // 인앱 피드백 — 인증된 누구나 작성, 슈퍼 관리자만 읽기/관리.
+    match /feedback/{feedbackId} {
+      allow read, list, delete: if isSuperAdmin();
+      allow create: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid;
+      allow update: if isSuperAdmin();
+    }
+
     // operators 컬렉션: 본인은 문서 read 가능, super가 전체 read/write
     match /operators/{uid} {
       allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());

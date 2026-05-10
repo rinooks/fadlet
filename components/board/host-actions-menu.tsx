@@ -10,6 +10,8 @@ interface HostActionsMenuProps {
   onOpenFacilitator: () => void;
   onToggleLock: () => void;
   onOpenShare: () => void;
+  onOpenAiInsights?: () => void;
+  onCloneBoard?: () => void;
 }
 
 export function HostActionsMenu({
@@ -19,6 +21,8 @@ export function HostActionsMenu({
   onOpenFacilitator,
   onToggleLock,
   onOpenShare,
+  onOpenAiInsights,
+  onCloneBoard,
 }: HostActionsMenuProps) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -89,6 +93,26 @@ export function HostActionsMenu({
           >
             {isLocked ? '🔓 잠금 해제' : '🔒 보드 잠금'}
           </button>
+          {onOpenAiInsights && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={pick(onOpenAiInsights)}
+              className="w-full text-left text-sm px-3 py-2.5 hover:bg-indigo-50 text-indigo-700"
+            >
+              ✨ AI 인사이트
+            </button>
+          )}
+          {onCloneBoard && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={pick(onCloneBoard)}
+              className="w-full text-left text-sm px-3 py-2.5 hover:bg-gray-50"
+            >
+              📋 보드 복제
+            </button>
+          )}
           <div className="my-1 h-px bg-gray-100" aria-hidden />
           <button
             type="button"

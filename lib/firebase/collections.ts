@@ -13,7 +13,11 @@ export const COLLECTIONS = {
   WORDCLOUD_ENTRIES: 'wordcloudEntries',
   QNA_QUESTIONS: 'qnaQuestions',
   ACTIVITY_STATES: 'activityStates',
+  SETTINGS: 'settings',
+  FEEDBACK: 'feedback',
 } as const;
+
+export const SETTINGS_DOC_ID = 'global';
 
 export function boardsPath(wsId = WORKSPACE_ID) {
   return `${COLLECTIONS.WORKSPACES}/${wsId}/${COLLECTIONS.BOARDS}`;
@@ -73,4 +77,12 @@ export function operatorsPath() {
 
 export function operatorDocPath(uid: string) {
   return `${COLLECTIONS.OPERATORS}/${uid}`;
+}
+
+export function settingsDocPath() {
+  return `${COLLECTIONS.SETTINGS}/${SETTINGS_DOC_ID}`;
+}
+
+export function feedbackPath() {
+  return COLLECTIONS.FEEDBACK;
 }

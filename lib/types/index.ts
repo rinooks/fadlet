@@ -134,6 +134,7 @@ export interface Board {
   timer?: TimerState;
   pinnedAnnouncement?: PinnedAnnouncement | null;
   bannedWords?: string[];
+  aiInsights?: BoardAiInsights | null;
   createdAt: Timestamp;
   updatedAt: Timestamp;
 }
@@ -233,6 +234,34 @@ export interface Operator {
   lastLoginAt: Timestamp;
   reviewedAt?: Timestamp;
   reviewedBy?: string;
+}
+
+export interface AppSettings {
+  geminiApiKey?: string;
+  geminiModel?: string;
+  updatedAt?: Timestamp;
+  updatedBy?: string;
+}
+
+export interface BoardAiInsights {
+  insights: string[];
+  nextSteps: string[];
+  summary?: string;
+  model: string;
+  generatedAt: Timestamp;
+  generatedBy: string;
+}
+
+export interface Feedback {
+  id: string;
+  uid: string;
+  email?: string;
+  displayName?: string;
+  message: string;
+  url?: string;
+  boardId?: string;
+  userAgent?: string;
+  createdAt: Timestamp;
 }
 
 export interface Report {

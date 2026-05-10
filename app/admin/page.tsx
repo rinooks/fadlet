@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { AiSettingsCard } from '@/components/admin/ai-settings-card';
 import { db } from '@/lib/firebase/client';
 import {
   boardsPath,
@@ -276,6 +277,8 @@ export default function AdminPage() {
           <SummaryCard label="승인됨" value={allowedCount} accent="green" />
           <SummaryCard label="승인 대기" value={pendingCount} accent="amber" />
         </div>
+
+        {user && <AiSettingsCard uid={user.uid} />}
 
         <h2 className="text-base font-bold text-gray-900 mb-3">퍼실리테이터 목록</h2>
 

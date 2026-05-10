@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Settings } from 'lucide-react';
 import { DemoButton } from '@/components/shared/demo-button';
+import { FeedbackButton } from '@/components/shared/feedback-button';
 
 const FEATURES = [
   {
@@ -138,14 +139,17 @@ export default function HomePage() {
       {/* 헤더 */}
       <header className="relative flex items-center justify-between px-6 py-4 border-b border-gray-100/80 backdrop-blur-sm bg-white/40">
         <span className="text-indigo-600 font-bold text-xl tracking-tight">Fadlet</span>
-        <Link
-          href="/login"
-          aria-label="퍼실리테이터 로그인"
-          title="퍼실리테이터 로그인"
-          className="group inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-white hover:border-gray-300 border border-transparent transition-all"
-        >
-          <Settings size={18} className="transition-transform group-hover:rotate-90" />
-        </Link>
+        <div className="flex items-center gap-2">
+          <FeedbackButton showLabel className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors px-2.5 h-9 border border-transparent hover:border-gray-200 rounded-full" />
+          <Link
+            href="/login"
+            aria-label="퍼실리테이터 로그인"
+            title="퍼실리테이터 로그인"
+            className="group inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-white hover:border-gray-300 border border-transparent transition-all"
+          >
+            <Settings size={18} className="transition-transform group-hover:rotate-90" />
+          </Link>
+        </div>
       </header>
 
       {/* 히어로 */}

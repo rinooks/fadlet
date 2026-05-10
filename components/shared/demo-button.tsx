@@ -18,10 +18,51 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
-import type { BoardSkin, BoardTemplate } from '@/lib/types';
+import type { BoardMode, BoardSkin, BoardTemplate, Stage } from '@/lib/types';
+
+type DemoMode = 'single' | 'workshop';
+
+function genStageId() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+function buildDemoWorkshopStages(): Stage[] {
+  return [
+    {
+      id: genStageId(),
+      title: '오늘 기분을 한 단어로',
+      durationSec: 180,
+      order: 0,
+      activityType: 'wordcloud',
+      activityConfig: { wordcloud: { prompt: '오늘 기분을 한 단어로 표현해 보세요', maxLength: 20 } },
+    },
+    {
+      id: genStageId(),
+      title: '잘하고 있는 것 / 바꾸고 싶은 것',
+      durationSec: 600,
+      order: 1,
+      activityType: 'kpt',
+    },
+    {
+      id: genStageId(),
+      title: '다음 분기 우선순위 투표',
+      durationSec: 240,
+      order: 2,
+      activityType: 'poll',
+      activityConfig: {
+        poll: {
+          question: '다음 분기 가장 집중해야 할 영역은?',
+          options: ['프로덕트 품질', '신규 고객 확보', '기존 고객 retention', '내부 프로세스 개선'],
+          allowMultiple: false,
+        },
+      },
+    },
+  ];
+}
 
 export function DemoButton() {
   const [open, setOpen] = useState(false);
+  const [mode, setMode] = useState<DemoMode>('single');
   const [template, setTemplate] = useState<BoardTemplate>('brainstorming');
   const [skin, setSkin] = useState<BoardSkin>('standard');
   const [creating, setCreating] = useState(false);
@@ -57,11 +98,13 @@ export function DemoButton() {
     setCreating(true);
     try {
       const boardCode = await generateBoardCode();
+      const isWorkshop = mode === 'workshop';
+      const stages = isWorkshop ? buildDemoWorkshopStages() : [];
       const docRef = await addDoc(collection(db, boardsPath()), {
-        title: '체험 보드',
+        title: isWorkshop ? '체험 워크숍' : '체험 보드',
         boardCode,
-        template,
-        mode: 'single',
+        template: isWorkshop ? 'free' : template,
+        mode: (isWorkshop ? 'workshop' : 'single') as BoardMode,
         skin,
         ownerId: user.uid,
         workspaceId: 'demo',
@@ -71,6 +114,7 @@ export function DemoButton() {
           retainChatLog: true,
           lockedAt: null,
         },
+        ...(stages.length ? { stages } : {}),
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
       });
@@ -144,8 +188,69 @@ export function DemoButton() {
                     {user.displayName ?? user.email} 님으로 로그인됨
                   </span>
                 </div>
-                <p className="text-sm font-semibold text-gray-700 mb-3">템플릿</p>
-                <TemplateSelector value={template} onChange={setTemplate} />
+                <p className="text-sm font-semibold text-gray-700 mb-3">유형</p>
+                <div className="grid grid-cols-2 gap-2 mb-5">
+                  <button
+                    type="button"
+                    onClick={() => setMode('single')}
+                    className={`flex flex-col items-start gap-2 rounded-md border-2 p-3 text-left transition-colors ${
+                      mode === 'single'
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/40'
+                    }`}
+                  >
+                    <span className="text-2xl">🎯</span>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">단일 보드</p>
+                      <p className="text-[11px] text-gray-500">한 가지 템플릿 빠른 시작</p>
+                    </div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setMode('workshop')}
+                    className={`flex flex-col items-start gap-2 rounded-md border-2 p-3 text-left transition-colors ${
+                      mode === 'workshop'
+                        ? 'border-indigo-500 bg-indigo-50'
+                        : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50/40'
+                    }`}
+                  >
+                    <span className="text-2xl">🎬</span>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">워크숍</p>
+                      <p className="text-[11px] text-gray-500">3단계 시퀀스 자동 구성</p>
+                    </div>
+                  </button>
+                </div>
+
+                {mode === 'single' ? (
+                  <>
+                    <p className="text-sm font-semibold text-gray-700 mb-3">템플릿</p>
+                    <TemplateSelector value={template} onChange={setTemplate} />
+                  </>
+                ) : (
+                  <div className="rounded-lg bg-indigo-50/60 border border-indigo-100 p-4">
+                    <p className="text-xs font-semibold text-indigo-700 uppercase tracking-wider mb-3">
+                      포함된 단계
+                    </p>
+                    <ol className="space-y-2 text-sm text-gray-700">
+                      <li className="flex items-baseline gap-2">
+                        <span className="text-xs font-mono text-indigo-500 flex-shrink-0">1.</span>
+                        <span>☁️ 워드클라우드 — 오늘 기분을 한 단어로 (3분)</span>
+                      </li>
+                      <li className="flex items-baseline gap-2">
+                        <span className="text-xs font-mono text-indigo-500 flex-shrink-0">2.</span>
+                        <span>🔄 KPT 회고 — 잘하고 있는 것 / 바꾸고 싶은 것 (10분)</span>
+                      </li>
+                      <li className="flex items-baseline gap-2">
+                        <span className="text-xs font-mono text-indigo-500 flex-shrink-0">3.</span>
+                        <span>📊 라이브 폴 — 다음 분기 우선순위 투표 (4분)</span>
+                      </li>
+                    </ol>
+                    <p className="text-[11px] text-gray-500 mt-3">
+                      만든 후 보드 안에서 단계·시간·내용 모두 자유롭게 수정할 수 있습니다.
+                    </p>
+                  </div>
+                )}
               </div>
 
               <div className="lg:w-64 flex flex-col gap-4 flex-shrink-0">

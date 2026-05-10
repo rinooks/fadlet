@@ -17,6 +17,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { FeedbackButton } from '@/components/shared/feedback-button';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_WORKSPACE_LIMIT, showUpgradeMessage } from '@/lib/free-tier';
@@ -179,6 +180,7 @@ function DashboardContent() {
           <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 워크스페이스</span>
         </div>
         <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <FeedbackButton showLabel className="hidden sm:inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors" />
           <Link href="/help" className="text-xs text-indigo-600 hover:underline font-semibold" aria-label="가이드">
             <span className="sm:hidden">📖</span>
             <span className="hidden sm:inline">📖 가이드</span>

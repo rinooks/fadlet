@@ -13,7 +13,8 @@ import { SkinSelector } from '@/components/board/skin-selector';
 import { BackgroundSelector } from '@/components/board/background-selector';
 import { KanbanColumnEditor } from '@/components/board/kanban-column-editor';
 import { TEMPLATES } from '@/lib/templates';
-import type { ActivityType, BoardBackground, BoardMode, BoardSkin, BoardTemplate, KanbanColumn, PinnedAnnouncement, Stage } from '@/lib/types';
+import { ACTIVITIES, getActivity } from '@/lib/activities';
+import type { ActivityConfig, ActivityType, BoardBackground, BoardMode, BoardSkin, BoardTemplate, KanbanColumn, PinnedAnnouncement, Stage } from '@/lib/types';
 
 interface FacilitatorPanelProps {
   open: boolean;
@@ -532,7 +533,7 @@ interface StageRowProps {
   total: number;
   busy: boolean;
   isWorkshop: boolean;
-  onUpdate: (patch: Partial<Pick<Stage, 'title' | 'durationSec' | 'activityType'>>) => Promise<void>;
+  onUpdate: (patch: Partial<Pick<Stage, 'title' | 'durationSec' | 'activityType' | 'activityConfig'>>) => Promise<void>;
   onMove: (direction: -1 | 1) => Promise<void>;
   onRemove: () => Promise<void>;
 }
@@ -543,16 +544,61 @@ function StageRow({ stage, index, total, busy, isWorkshop, onUpdate, onMove, onR
   const [minutes, setMinutes] = useState(String(Math.round(stage.durationSec / 60)));
   const [activity, setActivity] = useState<ActivityType>(stage.activityType ?? 'brainstorming');
 
-  const stageTemplate = stage.activityType ? TEMPLATES.find((t) => t.id === stage.activityType) : null;
+  // 활동별 config 입력
+  const [pollQuestion, setPollQuestion] = useState(stage.activityConfig?.poll?.question ?? '');
+  const [pollOptions, setPollOptions] = useState(stage.activityConfig?.poll?.options?.join('\n') ?? '');
+  const [pollAllowMultiple, setPollAllowMultiple] = useState(stage.activityConfig?.poll?.allowMultiple ?? false);
+  const [wcPrompt, setWcPrompt] = useState(stage.activityConfig?.wordcloud?.prompt ?? '');
+  const [wcMaxLen, setWcMaxLen] = useState(String(stage.activityConfig?.wordcloud?.maxLength ?? 20));
+  const [qnaPrompt, setQnaPrompt] = useState(stage.activityConfig?.qna?.prompt ?? '');
+
+  const stageActivity = stage.activityType ? getActivity(stage.activityType) : null;
+
+  function buildConfig(type: ActivityType): ActivityConfig | undefined {
+    if (type === 'poll') {
+      const opts = pollOptions.split('\n').map((s) => s.trim()).filter(Boolean);
+      if (!pollQuestion.trim() || opts.length < 2) return undefined;
+      return { poll: { question: pollQuestion.trim(), options: opts, allowMultiple: pollAllowMultiple } };
+    }
+    if (type === 'wordcloud') {
+      if (!wcPrompt.trim()) return undefined;
+      const max = Math.max(1, Math.min(200, Number(wcMaxLen) || 20));
+      return { wordcloud: { prompt: wcPrompt.trim(), maxLength: max } };
+    }
+    if (type === 'qna') {
+      if (!qnaPrompt.trim()) return undefined;
+      return { qna: { prompt: qnaPrompt.trim() } };
+    }
+    return undefined;
+  }
+
+  function resetState() {
+    setTitle(stage.title);
+    setMinutes(String(Math.round(stage.durationSec / 60)));
+    setActivity(stage.activityType ?? 'brainstorming');
+    setPollQuestion(stage.activityConfig?.poll?.question ?? '');
+    setPollOptions(stage.activityConfig?.poll?.options?.join('\n') ?? '');
+    setPollAllowMultiple(stage.activityConfig?.poll?.allowMultiple ?? false);
+    setWcPrompt(stage.activityConfig?.wordcloud?.prompt ?? '');
+    setWcMaxLen(String(stage.activityConfig?.wordcloud?.maxLength ?? 20));
+    setQnaPrompt(stage.activityConfig?.qna?.prompt ?? '');
+  }
 
   async function save() {
     const m = Number(minutes);
     if (Number.isNaN(m) || m < 0) return;
-    await onUpdate({
+    const patch: Partial<Pick<Stage, 'title' | 'durationSec' | 'activityType' | 'activityConfig'>> = {
       title: title.trim() || stage.title,
       durationSec: Math.floor(m * 60),
-      ...(isWorkshop ? { activityType: activity } : {}),
-    });
+    };
+    if (isWorkshop) {
+      patch.activityType = activity;
+      const cfg = buildConfig(activity);
+      if (cfg) patch.activityConfig = cfg;
+      // 다른 활동으로 바뀌면 기존 config 정리
+      else if (activity !== stage.activityType) patch.activityConfig = {};
+    }
+    await onUpdate(patch);
     setEditing(false);
   }
 
@@ -560,34 +606,102 @@ function StageRow({ stage, index, total, busy, isWorkshop, onUpdate, onMove, onR
     return (
       <li className="flex flex-col gap-2 p-2 bg-indigo-50 rounded-md border border-indigo-200">
         <div className="flex gap-2 items-center">
-          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-sm h-8 flex-1" />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} className="text-sm h-8 flex-1" placeholder="단계 제목" />
           <Input
             type="number"
             min={0}
             value={minutes}
             onChange={(e) => setMinutes(e.target.value)}
             className="text-sm h-8 w-16"
+            aria-label="분"
           />
           <Button onClick={save} disabled={busy} size="sm" className="h-7 bg-indigo-600 hover:bg-indigo-700 text-white text-xs">저장</Button>
           <button
-            onClick={() => { setTitle(stage.title); setMinutes(String(Math.round(stage.durationSec / 60))); setActivity(stage.activityType ?? 'brainstorming'); setEditing(false); }}
+            onClick={() => { resetState(); setEditing(false); }}
             className="text-xs text-gray-500 hover:text-gray-800 px-1"
           >
             취소
           </button>
         </div>
         {isWorkshop && (
-          <select
-            value={activity}
-            onChange={(e) => setActivity(e.target.value as ActivityType)}
-            className="w-full h-8 px-2 rounded-md border border-indigo-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
-          >
-            {TEMPLATES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.emoji} {t.label}
-              </option>
-            ))}
-          </select>
+          <>
+            <select
+              value={activity}
+              onChange={(e) => setActivity(e.target.value as ActivityType)}
+              className="w-full h-8 px-2 rounded-md border border-indigo-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
+            >
+              <optgroup label="보드형">
+                {ACTIVITIES.filter((a) => a.kind === 'board').map((a) => (
+                  <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                ))}
+              </optgroup>
+              <optgroup label="라이브">
+                {ACTIVITIES.filter((a) => a.kind === 'live').map((a) => (
+                  <option key={a.id} value={a.id}>{a.emoji} {a.label}</option>
+                ))}
+              </optgroup>
+            </select>
+
+            {activity === 'poll' && (
+              <div className="flex flex-col gap-1.5 p-2 bg-white border border-indigo-100 rounded">
+                <Input
+                  value={pollQuestion}
+                  onChange={(e) => setPollQuestion(e.target.value)}
+                  placeholder="📊 폴 질문"
+                  className="text-sm h-8"
+                />
+                <textarea
+                  value={pollOptions}
+                  onChange={(e) => setPollOptions(e.target.value)}
+                  placeholder="선택지 (줄바꿈으로 구분 · 최소 2개)"
+                  className="text-sm w-full px-2 py-1.5 rounded border border-gray-200 focus:outline-none focus:border-indigo-400 min-h-[64px] resize-y"
+                  rows={3}
+                />
+                <label className="flex items-center gap-1.5 text-xs text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={pollAllowMultiple}
+                    onChange={(e) => setPollAllowMultiple(e.target.checked)}
+                    className="rounded"
+                  />
+                  다중 선택 허용
+                </label>
+              </div>
+            )}
+
+            {activity === 'wordcloud' && (
+              <div className="flex flex-col gap-1.5 p-2 bg-white border border-indigo-100 rounded">
+                <Input
+                  value={wcPrompt}
+                  onChange={(e) => setWcPrompt(e.target.value)}
+                  placeholder="☁️ 워드클라우드 프롬프트"
+                  className="text-sm h-8"
+                />
+                <div className="flex items-center gap-2">
+                  <label className="text-xs text-gray-600 flex-shrink-0">최대 글자수</label>
+                  <Input
+                    type="number"
+                    min={1}
+                    max={200}
+                    value={wcMaxLen}
+                    onChange={(e) => setWcMaxLen(e.target.value)}
+                    className="text-sm h-8 w-20"
+                  />
+                </div>
+              </div>
+            )}
+
+            {activity === 'qna' && (
+              <div className="flex flex-col gap-1.5 p-2 bg-white border border-indigo-100 rounded">
+                <Input
+                  value={qnaPrompt}
+                  onChange={(e) => setQnaPrompt(e.target.value)}
+                  placeholder="❓ Q&A 안내 (예: '강연 후 질문을 받습니다')"
+                  className="text-sm h-8"
+                />
+              </div>
+            )}
+          </>
         )}
       </li>
     );
@@ -600,7 +714,7 @@ function StageRow({ stage, index, total, busy, isWorkshop, onUpdate, onMove, onR
         onClick={() => setEditing(true)}
         className="flex-1 text-left text-sm text-gray-900 truncate hover:underline focus-visible:outline focus-visible:outline-2 rounded"
       >
-        {stageTemplate && <span className="mr-1">{stageTemplate.emoji}</span>}
+        {stageActivity && <span className="mr-1">{stageActivity.emoji}</span>}
         {stage.title}
       </button>
       <span className="text-xs text-gray-500 flex-shrink-0">{Math.round(stage.durationSec / 60)}분</span>

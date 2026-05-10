@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ArrowLeft, ChevronLeft } from 'lucide-react';
 import { use, useEffect, useRef, useState } from 'react';
 import {
@@ -18,7 +19,9 @@ import { CanvasBoard } from '@/components/board/canvas-board';
 import { ColumnBoard } from '@/components/board/column-board';
 import { ProsConsBoard } from '@/components/board/pros-cons-board';
 import { FacilitatorPanel } from '@/components/board/facilitator-panel';
+import { AiInsightsCard } from '@/components/board/ai-insights-card';
 import { HostActionsMenu } from '@/components/board/host-actions-menu';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { HostOnboarding } from '@/components/board/host-onboarding';
 import { NewPostDialog } from '@/components/board/new-post-dialog';
 import { ReportsPanel } from '@/components/board/reports-panel';
@@ -31,6 +34,7 @@ import { PollBoard } from '@/components/activities/poll-board';
 import { WordcloudBoard } from '@/components/activities/wordcloud-board';
 import { QnaBoard } from '@/components/activities/qna-board';
 import { ExportMenu } from '@/components/shared/export-menu';
+import { FeedbackButton } from '@/components/shared/feedback-button';
 import { ShareDialog } from '@/components/shared/share-dialog';
 import { getTemplate } from '@/lib/templates';
 import { getActivity, isLiveActivity } from '@/lib/activities';
@@ -52,6 +56,7 @@ import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, KanbanColumn
 import { getBackground } from '@/lib/backgrounds';
 import { DEFAULT_KANBAN_COLUMNS } from '@/lib/kanban-colors';
 import { uploadPostImage } from '@/lib/utils/upload-file';
+import { cloneBoard } from '@/lib/utils/clone-board';
 
 interface PageProps {
   params: Promise<{ boardId: string }>;
@@ -69,6 +74,7 @@ const IDLE_TIMER: TimerState = {
 export default function BoardPage({ params, searchParams }: PageProps) {
   const { boardId } = use(params);
   const { code } = use(searchParams);
+  const router = useRouter();
   const { uid, loading: authLoading } = useAuth();
 
   const [role, setRole] = useState<UserRole>('member');
@@ -82,6 +88,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [showFacilitator, setShowFacilitator] = useState(false);
   const [showReports, setShowReports] = useState(false);
   const [showMoveBoard, setShowMoveBoard] = useState(false);
+  const [showAiInsights, setShowAiInsights] = useState(false);
   const [detailPost, setDetailPost] = useState<Post | null>(null);
   const [joined, setJoined] = useState(false);
 
@@ -472,6 +479,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             </button>
           )}
           <div className="hidden md:flex items-center gap-2">
+            <FeedbackButton boardId={boardId} className="inline-flex items-center justify-center w-7 h-7 text-gray-500 hover:text-indigo-600 transition-colors" />
             <ExportMenu boardId={boardId} isWorkshop={isWorkshopMode} />
             {isHostUser && (
               <>
@@ -526,6 +534,22 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                 onOpenFacilitator={() => setShowFacilitator(true)}
                 onToggleLock={() => (isLocked ? unlockBoard() : lockBoard())}
                 onOpenShare={() => setShowShare(true)}
+                onOpenAiInsights={() => setShowAiInsights(true)}
+                onCloneBoard={
+                  board && uid && board.workspaceId !== 'demo'
+                    ? async () => {
+                        if (!board || !uid) return;
+                        try {
+                          const { id } = await cloneBoard({ source: board, ownerUid: uid });
+                          toast.success('보드를 복제했습니다.');
+                          router.push(`/boards/${id}`);
+                        } catch (err) {
+                          console.error('[clone]', err);
+                          toast.error('복제에 실패했습니다.');
+                        }
+                      }
+                    : undefined
+                }
               />
             </div>
           )}
@@ -551,20 +575,53 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         {showWorkshopEmptyHint ? (
           <div className="flex-1 flex items-center justify-center p-8">
             <div className="max-w-md text-center">
-              <div className="text-5xl mb-4">🎬</div>
-              <h2 className="text-lg font-bold text-gray-900 mb-2">워크숍 단계가 시작되지 않았습니다</h2>
-              {sortedStages.length === 0 ? (
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  {role === 'host'
-                    ? '퍼실리테이터 패널을 열어 단계를 추가해 보세요. 단계를 시작하면 모든 참여자 화면이 그 활동으로 자동 전환됩니다.'
-                    : '퍼실리테이터가 곧 단계를 시작합니다. 잠시만 기다려주세요.'}
-                </p>
+              {role === 'host' ? (
+                <>
+                  <div className="text-5xl mb-4">🎬</div>
+                  <h2 className="text-lg font-bold text-gray-900 mb-2">워크숍 단계가 시작되지 않았습니다</h2>
+                  <p className="text-sm text-gray-500 leading-relaxed">
+                    {sortedStages.length === 0
+                      ? '퍼실리테이터 패널을 열어 단계를 추가해 보세요. 단계를 시작하면 모든 참여자 화면이 그 활동으로 자동 전환됩니다.'
+                      : '하단 단계 배너에서 ▶ 시작 버튼을 누르면 첫 단계가 시작됩니다.'}
+                  </p>
+                </>
               ) : (
-                <p className="text-sm text-gray-500 leading-relaxed">
-                  {role === 'host'
-                    ? '하단 단계 배너에서 ▶ 시작 버튼을 누르면 첫 단계가 시작됩니다.'
-                    : '퍼실리테이터가 단계를 시작하면 화면이 자동으로 전환됩니다.'}
-                </p>
+                <>
+                  <div className="relative inline-flex items-center justify-center mb-5">
+                    <span className="absolute inline-flex h-20 w-20 rounded-full bg-indigo-200/60 opacity-60 animate-ping" aria-hidden />
+                    <span className="relative inline-flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-3xl">
+                      🎬
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-bold text-gray-900 mb-2">곧 시작합니다</h2>
+                  <p className="text-sm text-gray-500 leading-relaxed mb-5">
+                    퍼실리테이터가 첫 단계를 시작하면 화면이 자동으로 전환됩니다.<br />
+                    편하게 계세요.
+                  </p>
+                  {nickname && (
+                    <p className="inline-flex items-center gap-1.5 text-xs text-indigo-700 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-full">
+                      <span className="w-1.5 h-1.5 rounded-full bg-indigo-500 animate-pulse" />
+                      <span className="font-mono">{nickname}</span> 님으로 참여 중
+                    </p>
+                  )}
+                  {sortedStages.length > 0 && (
+                    <div className="mt-6 max-w-xs mx-auto">
+                      <p className="text-[11px] uppercase tracking-widest font-bold text-gray-400 mb-2">
+                        예정된 단계 {sortedStages.length}개
+                      </p>
+                      <ol className="space-y-1 text-left">
+                        {sortedStages.slice(0, 4).map((s, i) => (
+                          <li key={s.id} className="text-xs text-gray-600 truncate">
+                            <span className="font-mono text-gray-400">{i + 1}.</span> {s.title}
+                          </li>
+                        ))}
+                        {sortedStages.length > 4 && (
+                          <li className="text-xs text-gray-400">…외 {sortedStages.length - 4}개</li>
+                        )}
+                      </ol>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -901,6 +958,24 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           onDeleteMessage={deleteMessage}
           onDeletePost={deletePost}
         />
+      )}
+
+      {board && (
+        <Dialog open={showAiInsights} onOpenChange={(v) => setShowAiInsights(v)}>
+          <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto p-6">
+            <DialogHeader>
+              <DialogTitle className="text-lg">AI 인사이트 · {board.title}</DialogTitle>
+            </DialogHeader>
+            <div className="mt-3">
+              <AiInsightsCard
+                board={board}
+                posts={posts}
+                messages={messages}
+                isHost={isHostUser}
+              />
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       <HostOnboarding enabled={joined && role === 'host'} />
