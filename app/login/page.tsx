@@ -5,7 +5,9 @@ export const dynamic = 'force-dynamic';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
+import { GoogleSignInError } from '@/lib/auth/google-sign-in';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 
 function LoginForm() {
@@ -24,8 +26,13 @@ function LoginForm() {
     try {
       await signInWithGoogle();
       // 이후 위 useEffect가 isOperator/isPending 보고 라우팅
-    } catch {
-      // 팝업 취소 등 무시
+    } catch (err) {
+      if (err instanceof GoogleSignInError) {
+        if (!err.silent) toast.error(err.message);
+      } else {
+        console.error('[login] google sign in', err);
+        toast.error('구글 로그인에 실패했습니다. 다시 시도해 주세요.');
+      }
     }
   }
 

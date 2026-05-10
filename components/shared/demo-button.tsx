@@ -2,15 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  GoogleAuthProvider,
-  signInWithPopup,
-  onAuthStateChanged,
-  type User,
-} from 'firebase/auth';
+import { onAuthStateChanged, type User } from 'firebase/auth';
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { toast } from 'sonner';
 import { auth, db } from '@/lib/firebase/client';
+import { GoogleSignInError, signInWithGooglePopup } from '@/lib/auth/google-sign-in';
 import { boardsPath } from '@/lib/firebase/collections';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import { SkinSelector } from '@/components/board/skin-selector';
@@ -43,11 +39,14 @@ export function DemoButton() {
   async function handleGoogleSignIn() {
     setSigningIn(true);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      await signInWithGooglePopup(auth);
     } catch (err) {
-      console.error('[demo] google sign in', err);
-      toast.error('구글 로그인에 실패했습니다. 다시 시도해 주세요.');
+      if (err instanceof GoogleSignInError) {
+        if (!err.silent) toast.error(err.message);
+      } else {
+        console.error('[demo] google sign in', err);
+        toast.error('구글 로그인에 실패했습니다. 다시 시도해 주세요.');
+      }
     } finally {
       setSigningIn(false);
     }

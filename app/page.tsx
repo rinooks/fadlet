@@ -289,7 +289,8 @@ export default function HomePage() {
               지금은 워크숍 도구,<br className="sm:hidden" /> 다음은 <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">워크숍 OS</span>
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-2xl mx-auto leading-relaxed">
-              워크숍에서 쌓인 채팅과 결과 데이터를 AI가 정리하고, 다음 단계의 방향성과 워크숍 설계까지 제안하는 플랫폼.
+              워크숍에서 쌓인 채팅과 결과 데이터를 AI가 정리하고,<br />
+              다음 단계의 방향성과 워크숍 설계까지 제안하는 플랫폼.
             </p>
           </div>
 
@@ -304,24 +305,6 @@ export default function HomePage() {
           </div>
         </section>
 
-        {/* 4. Note — 만든 사람의 노트 */}
-        <section className="w-full max-w-3xl mt-20">
-          <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-7 text-left">
-            <p className="text-[11px] tracking-widest text-gray-500 font-bold mb-3">NOTE · 만드는 사람의 노트</p>
-            <p className="text-sm text-gray-700 leading-relaxed">
-              교육 컨설팅사 <strong className="text-gray-900">REFERENCE HRD</strong>가 자체 워크숍을 운영하며 매주 다듬고 있습니다.
-              "이 라이브러리를 쓸 걸", "이 화면은 가독성을 더 챙길 걸" — 셀프 피드백과 현장 의견을 빠르게 반영합니다.
-              <a href="mailto:pjh@referencehrd.com" className="ml-1 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-700 text-indigo-700 font-medium">
-                pjh@referencehrd.com
-              </a>
-            </p>
-          </div>
-        </section>
-
-        {/* 슬로건 */}
-        <p className="mt-16 text-sm text-gray-400 italic">
-          &ldquo;고객의 물음표를 느낌표로!&rdquo;
-        </p>
       </main>
 
       <footer className="relative text-center py-6 text-xs text-gray-400 border-t border-gray-100/80 backdrop-blur-sm bg-white/40">

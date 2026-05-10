@@ -1,18 +1,13 @@
 'use client';
 
-import {
-  GoogleAuthProvider,
-  onAuthStateChanged,
-  signInWithPopup,
-  signOut,
-  type User,
-} from 'firebase/auth';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { doc, onSnapshot } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 import { auth, db } from '@/lib/firebase/client';
 import { operatorDocPath } from '@/lib/firebase/collections';
 import { ensureOperatorDoc } from '@/lib/firebase/operators';
 import { isSuperAdminEmail } from '@/lib/auth/super-admin';
+import { signInWithGooglePopup } from '@/lib/auth/google-sign-in';
 import type { Operator } from '@/lib/types';
 
 export function useOperatorAuth() {
@@ -71,8 +66,7 @@ export function useOperatorAuth() {
   }, []);
 
   async function signInWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    await signInWithGooglePopup(auth);
     // 이후 onAuthStateChanged가 ensureOperatorDoc 호출
   }
 

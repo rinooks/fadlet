@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TemplateSelector } from '@/components/board/template-selector';
 import { SkinSelector } from '@/components/board/skin-selector';
+import { GoogleSignInError } from '@/lib/auth/google-sign-in';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
@@ -118,7 +119,17 @@ function NewBoardForm() {
           <h1 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h1>
           <p className="text-gray-400 text-sm mb-6">보드를 만들려면 운영자 계정으로 로그인하세요.</p>
           <Button
-            onClick={signInWithGoogle}
+            onClick={async () => {
+              try {
+                await signInWithGoogle();
+              } catch (err) {
+                if (err instanceof GoogleSignInError) {
+                  if (!err.silent) toast.error(err.message);
+                } else {
+                  toast.error('구글 로그인에 실패했습니다. 다시 시도해 주세요.');
+                }
+              }
+            }}
             variant="outline"
             className="w-full h-12 font-semibold"
           >
