@@ -76,7 +76,7 @@ export function DemoButton() {
       });
 
       sessionStorage.setItem(`board-role-${docRef.id}`, 'host');
-      sessionStorage.setItem(`board-nickname-${docRef.id}`, user.displayName ?? '운영자');
+      sessionStorage.setItem(`board-nickname-${docRef.id}`, user.displayName ?? '퍼실리테이터');
 
       router.push(`/boards/${docRef.id}?code=${boardCode}`);
     } catch (err) {

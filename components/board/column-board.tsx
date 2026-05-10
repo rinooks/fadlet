@@ -95,7 +95,7 @@ export function ColumnBoard({
     <>
       {isLocked && !isHost && (
         <div className="text-center py-3 mb-3 bg-gray-50 rounded-md border border-gray-200">
-          <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
+          <p className="text-sm text-gray-500">🔒 퍼실리테이터가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
         </div>
       )}
 

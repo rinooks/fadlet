@@ -30,7 +30,7 @@ const FEATURES = [
   },
   {
     icon: '🛡',
-    title: '운영자 도구',
+    title: '퍼실리테이터 도구',
     desc: '보드 잠금, 신고 관리, 금칙어, 8가지 스킨, 분석 대시보드.',
   },
 ];
@@ -43,7 +43,7 @@ const PAIN_POINTS = [
 
 const DIFFERENTIATORS = [
   {
-    title: '운영자(facilitator) 손에 맞는 도구',
+    title: '퍼실리테이터 손에 맞는 도구',
     body: '보드 잠금, 타이머, 신고 관리, 금칙어, 8가지 스킨. 일반 협업 도구가 아니라 워크숍을 "진행하는 사람"의 도구로 설계됐습니다.',
   },
   {
@@ -72,7 +72,7 @@ const TEMPLATES = [
   { emoji: '🔲', label: '9칸 (TRIZ)', desc: '시간 × 레벨로 9개 영역을 탐색합니다.' },
   { emoji: '📊', label: '라이브 폴', desc: '객관식 투표 + 실시간 막대 차트.' },
   { emoji: '☁️', label: '워드클라우드', desc: '한 단어 응답을 빈도수로 시각화.' },
-  { emoji: '❓', label: '라이브 Q&A', desc: '질문 모으고 좋아요 정렬, 운영자 답변.' },
+  { emoji: '❓', label: '라이브 Q&A', desc: '질문 모으고 좋아요 정렬, 퍼실리테이터 답변.' },
 ];
 
 // 결정론적 의사 난수 (hydration mismatch 방지: 인덱스 기반 일관된 값)
@@ -140,8 +140,8 @@ export default function HomePage() {
         <span className="text-indigo-600 font-bold text-xl tracking-tight">Fadlet</span>
         <Link
           href="/login"
-          aria-label="운영자 로그인"
-          title="운영자 로그인"
+          aria-label="퍼실리테이터 로그인"
+          title="퍼실리테이터 로그인"
           className="group inline-flex items-center justify-center w-9 h-9 rounded-full text-gray-500 hover:text-indigo-600 hover:bg-white hover:border-gray-300 border border-transparent transition-all"
         >
           <Settings size={18} className="transition-transform group-hover:rotate-90" />
@@ -176,7 +176,7 @@ export default function HomePage() {
             href="/dashboard"
             className="group inline-flex items-center justify-center h-11 px-6 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-indigo-300 text-gray-700 font-semibold text-sm transition-all"
           >
-            운영자로 시작하기
+            퍼실리테이터로 시작하기
             <span className="ml-1.5 transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
           <Link
@@ -261,7 +261,7 @@ export default function HomePage() {
           <div className="text-center mb-10">
             <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">What&apos;s Different</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-              협업 보드는 많지만,<br className="sm:hidden" /> 운영자에게 맞춘 건 드뭅니다
+              협업 보드는 많지만,<br className="sm:hidden" /> 퍼실리테이터에게 맞춘 건 드뭅니다
             </h2>
           </div>
 

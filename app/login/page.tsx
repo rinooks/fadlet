@@ -53,7 +53,7 @@ function LoginForm() {
         ← 홈
       </Link>
       <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">운영자 로그인</h1>
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">퍼실리테이터 로그인</h1>
         <p className="text-gray-400 text-sm mb-8">보드를 만들고 관리하려면 로그인하세요.</p>
 
         <Button

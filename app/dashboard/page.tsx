@@ -126,7 +126,7 @@ function DashboardContent() {
       const wsId = await createWorkspace({
         name: newName,
         ownerUid: user.uid,
-        ownerName: user.displayName ?? user.email ?? '운영자',
+        ownerName: user.displayName ?? user.email ?? '퍼실리테이터',
         ownerEmail: user.email ?? undefined,
       });
       toast.success('워크스페이스를 만들었습니다.');
@@ -148,7 +148,7 @@ function DashboardContent() {
       const wsId = await joinWorkspaceByCode({
         code: joinCode,
         uid: user.uid,
-        displayName: user.displayName ?? user.email ?? '운영자',
+        displayName: user.displayName ?? user.email ?? '퍼실리테이터',
         email: user.email ?? undefined,
       });
       toast.success('워크스페이스에 가입했습니다.');

@@ -66,7 +66,7 @@ export async function signInWithGooglePopup(auth: Auth): Promise<UserCredential>
     if (code === 'auth/unauthorized-domain') {
       throw new GoogleSignInError(
         code,
-        '이 도메인은 Firebase 인증이 허용되지 않았습니다. 운영자에게 문의해 주세요.',
+        '이 도메인은 Firebase 인증이 허용되지 않았습니다. 퍼실리테이터에게 문의해 주세요.',
       );
     }
     if (code === 'auth/network-request-failed') {

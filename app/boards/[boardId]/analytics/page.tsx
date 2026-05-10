@@ -152,7 +152,7 @@ export default function AnalyticsPage({ params }: PageProps) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen px-6 text-center">
         <p className="text-gray-700 font-semibold mb-1">접근 권한이 없습니다</p>
-        <p className="text-sm text-gray-500 mb-4">이 보드의 운영자만 분석을 볼 수 있습니다.</p>
+        <p className="text-sm text-gray-500 mb-4">이 보드의 퍼실리테이터만 분석을 볼 수 있습니다.</p>
         <Link href="/dashboard" className="text-sm text-indigo-600 hover:underline">내 워크스페이스로</Link>
       </div>
     );
@@ -204,7 +204,7 @@ export default function AnalyticsPage({ params }: PageProps) {
             icon={<MessageSquare size={14} />}
             label="메시지"
             value={stats.totalMessages}
-            hint={`운영자 ${stats.hostMessages} · 참여자 ${stats.memberMessages}`}
+            hint={`퍼실리테이터 ${stats.hostMessages} · 참여자 ${stats.memberMessages}`}
           />
           <CounterCard
             icon={<Clock size={14} />}

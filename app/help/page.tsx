@@ -26,7 +26,7 @@ export default function HelpPage() {
         <div className="flex items-center gap-3">
           <Link href="/" className="text-indigo-600 font-bold text-xl hover:text-indigo-700 transition-colors">Fadlet</Link>
           <span className="text-gray-300">|</span>
-          <span className="text-sm text-gray-600 font-medium">운영자 가이드</span>
+          <span className="text-sm text-gray-600 font-medium">퍼실리테이터 가이드</span>
         </div>
         <Link href="/dashboard" className="text-xs text-indigo-600 hover:underline">
           ← 내 워크스페이스
@@ -35,9 +35,9 @@ export default function HelpPage() {
 
       <main className="max-w-3xl mx-auto px-6 py-8 space-y-5">
         <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-6">
-          <h1 className="text-xl font-bold text-indigo-900 mb-1">워크숍 운영자를 위한 빠른 가이드</h1>
+          <h1 className="text-xl font-bold text-indigo-900 mb-1">워크숍 퍼실리테이터를 위한 빠른 가이드</h1>
           <p className="text-sm text-indigo-800">
-            Fadlet은 운영자(Facilitator) 관점에서 만든 협업 보드입니다. 핵심 기능 5분 안에 익혀
+            Fadlet은 퍼실리테이터 관점에서 만든 협업 보드입니다. 핵심 기능 5분 안에 익혀
             현장에서 바로 활용해 보세요.
           </p>
         </div>
@@ -63,24 +63,24 @@ export default function HelpPage() {
             <li><strong>9칸 윈도우 (TRIZ)</strong> — 시간 × 레벨 매트릭스</li>
             <li><strong>📊 라이브 폴</strong> — 객관식 투표 + 막대 차트</li>
             <li><strong>☁️ 워드클라우드</strong> — 빈도 시각화</li>
-            <li><strong>❓ 라이브 Q&amp;A</strong> — 좋아요 정렬 + 운영자 답변</li>
+            <li><strong>❓ 라이브 Q&amp;A</strong> — 좋아요 정렬 + 퍼실리테이터 답변</li>
           </ul>
           <p className="text-gray-500 text-xs">팁: 템플릿은 보드 생성 후 변경할 수 없으므로 선택 시 신중히 결정하세요.</p>
         </Section>
 
-        <Section emoji="🎛" title="운영자 패널 — 워크숍을 통제하는 핵심">
+        <Section emoji="🎛" title="퍼실리테이터 패널 — 워크숍을 통제하는 핵심">
           <p>헤더의 <strong>🎛 운영</strong> 버튼을 누르면 우측에 패널이 열립니다.</p>
           <ul className="list-disc list-inside space-y-1">
             <li><strong>단계 + 타이머</strong>: 단계별 제목·시간 등록 → 시작/정지/다음으로 진행. 모든 참여자에게 남은 시간이 실시간 표시됩니다.</li>
             <li><strong>채팅 공지 고정</strong>: 채팅 상단에 항상 표시되는 노란 공지 배너. 메시지에 호버해 핀 아이콘으로도 즉시 고정 가능.</li>
-            <li><strong>부적절 키워드 필터</strong>: 등록된 단어가 포함된 메시지·포스트는 자동 차단. 운영자는 차단되지 않습니다.</li>
+            <li><strong>부적절 키워드 필터</strong>: 등록된 단어가 포함된 메시지·포스트는 자동 차단. 퍼실리테이터는 차단되지 않습니다.</li>
             <li><strong>분석 대시보드</strong>: 참여도·활동량·시간대·상위 기여자를 한눈에 확인.</li>
           </ul>
         </Section>
 
         <Section emoji="🚩" title="모더레이션 — 신고와 잠금">
           <ul className="list-disc list-inside space-y-1">
-            <li>참여자가 메시지·포스트·댓글을 신고하면 운영자에게만 알림 배지가 뜹니다.</li>
+            <li>참여자가 메시지·포스트·댓글을 신고하면 퍼실리테이터에게만 알림 배지가 뜹니다.</li>
             <li>신고 패널에서 <strong>대상 삭제 + 해결</strong>(즉시 삭제) 또는 <strong>해결만</strong>(부적절하지 않다고 판단) 처리.</li>
             <li>워크숍이 끝나면 헤더의 <strong>🔒 잠금</strong>으로 더 이상 글이 추가되지 않게 할 수 있습니다.</li>
           </ul>
@@ -97,7 +97,7 @@ export default function HelpPage() {
         </Section>
 
         <Section emoji="👥" title="워크스페이스 — 팀 단위 운영">
-          <p>여러 명의 운영자가 보드를 공유하려면 워크스페이스를 사용하세요.</p>
+          <p>여러 명의 퍼실리테이터가 보드를 공유하려면 워크스페이스를 사용하세요.</p>
           <ul className="list-disc list-inside space-y-1">
             <li>로그인 직후 화면(<strong>내 워크스페이스</strong>)에서 <strong>+ 새 워크스페이스</strong> 또는 <strong>코드로 가입</strong>을 선택합니다.</li>
             <li>새 워크스페이스를 만들면 6자리 초대 코드가 자동 발급됩니다.</li>

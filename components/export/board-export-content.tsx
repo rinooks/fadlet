@@ -83,7 +83,7 @@ function MessageBlock({ msg }: { msg: Message }) {
       <div className="flex items-baseline justify-between mb-1">
         <span className={`text-xs font-semibold ${isHost ? 'text-indigo-600' : 'text-gray-700'}`}>
           {msg.authorName}
-          {isHost && ' (운영자)'}
+          {isHost && ' (퍼실리테이터)'}
         </span>
         <span className="text-[10px] text-gray-400">{formatDate(msg.createdAt?.toDate?.())}</span>
       </div>

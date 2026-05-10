@@ -190,7 +190,7 @@ export function WordcloudBoard({
           <div className="border-t border-gray-100 pt-5">
             {!showCloud ? (
               <p className="text-xs text-gray-400 text-center py-10">
-                결과는 운영자가 공개합니다.
+                결과는 퍼실리테이터가 공개합니다.
               </p>
             ) : aggregated.length === 0 ? (
               <p className="text-xs text-gray-400 text-center py-10">

@@ -44,7 +44,7 @@ export function HostActionsMenu({
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="relative flex items-center justify-center w-9 h-9 text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 rounded-md transition-colors focus-visible:outline focus-visible:outline-2"
-        aria-label="운영자 메뉴"
+        aria-label="퍼실리테이터 메뉴"
         aria-haspopup="menu"
         aria-expanded={open}
       >

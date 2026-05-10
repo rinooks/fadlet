@@ -168,12 +168,12 @@ export function FacilitatorPanel({
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="운영자 패널"
+        aria-label="퍼실리테이터 패널"
         className="w-full max-w-md bg-white shadow-xl flex flex-col h-full overflow-hidden"
       >
         <header className="flex items-center justify-between px-5 py-3 border-b border-gray-100">
           <div>
-            <h2 className="font-bold text-gray-900">운영자 패널</h2>
+            <h2 className="font-bold text-gray-900">퍼실리테이터 패널</h2>
             <p className="text-xs text-gray-500">단계 관리·공지를 설정합니다.</p>
           </div>
           <button
@@ -243,7 +243,7 @@ export function FacilitatorPanel({
               <span className="flex-1">
                 <span className="block text-sm font-medium text-gray-900">참여자에게 반응 수 표시</span>
                 <span className="block text-xs text-gray-500 mt-0.5">
-                  꺼두면 참여자에게 좋아요·이모지 카운트가 숨겨집니다. 운영자에게는 항상 표시됩니다.
+                  꺼두면 참여자에게 좋아요·이모지 카운트가 숨겨집니다. 퍼실리테이터에게는 항상 표시됩니다.
                 </span>
               </span>
             </label>

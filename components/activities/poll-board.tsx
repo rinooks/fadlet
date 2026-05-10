@@ -184,7 +184,7 @@ export function PollBoard({
               {allowMultiple ? '여러 개 선택 가능' : '한 개만 선택'}
               {state.closed && <span className="ml-2 text-red-600 font-semibold">· 마감됨</span>}
               {!showResults && !isHost && (
-                <span className="ml-2 text-gray-400">· 결과는 운영자가 공개합니다</span>
+                <span className="ml-2 text-gray-400">· 결과는 퍼실리테이터가 공개합니다</span>
               )}
             </p>
             {showResults && (

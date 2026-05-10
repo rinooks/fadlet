@@ -46,7 +46,7 @@ export function LiveActivityShell({
       {isHost && (onToggleResultsVisible || onToggleClosed) && (
         <div className="border-t border-indigo-100 bg-white/80 backdrop-blur-sm px-4 py-2 flex items-center justify-end gap-3 flex-shrink-0">
           <span className="text-[11px] font-bold text-indigo-500 uppercase tracking-wider hidden sm:inline">
-            운영자 컨트롤
+            퍼실리테이터 컨트롤
           </span>
           {onToggleResultsVisible && (
             <ToggleChip

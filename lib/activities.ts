@@ -31,7 +31,7 @@ const LIVE_ACTIVITIES: ActivityDefinition[] = [
     kind: 'live',
     emoji: '❓',
     label: '라이브 Q&A',
-    description: '질문을 모으고 좋아요로 정렬, 운영자가 답변/완료 처리합니다.',
+    description: '질문을 모으고 좋아요로 정렬, 퍼실리테이터가 답변/완료 처리합니다.',
   },
 ];
 

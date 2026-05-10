@@ -175,7 +175,7 @@ export function QnaBoard({
 
                       {q.answered && q.answer && (
                         <div className="mt-2 px-3 py-2 rounded-md bg-white border border-green-200">
-                          <p className="text-[10px] uppercase font-bold text-green-700 mb-1">운영자 답변</p>
+                          <p className="text-[10px] uppercase font-bold text-green-700 mb-1">퍼실리테이터 답변</p>
                           <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">{q.answer}</p>
                         </div>
                       )}

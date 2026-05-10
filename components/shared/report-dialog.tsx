@@ -53,7 +53,7 @@ export function ReportDialog({
         reporterName,
         reason: reason.trim() || '사유 미기재',
       });
-      toast.success('운영자에게 신고를 전달했습니다.');
+      toast.success('퍼실리테이터에게 신고를 전달했습니다.');
       setReason('');
       onClose();
     } catch {
@@ -76,7 +76,7 @@ export function ReportDialog({
           {targetType === 'message' ? '메시지' : '포스트'} 신고
         </h2>
         <p className="text-xs text-gray-500 mb-4">
-          신고 내용은 운영자에게만 전달됩니다.
+          신고 내용은 퍼실리테이터에게만 전달됩니다.
         </p>
 
         <div className="bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 mb-4 max-h-24 overflow-y-auto">

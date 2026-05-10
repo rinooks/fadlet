@@ -153,7 +153,7 @@ export function ProsConsBoard({
     <div className="flex flex-col flex-1 overflow-hidden h-full">
       {isLocked && !isHost && (
         <div className="text-center py-2.5 bg-gray-50 border-b border-gray-200 flex-shrink-0">
-          <p className="text-xs text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
+          <p className="text-xs text-gray-500">🔒 퍼실리테이터가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
         </div>
       )}
 

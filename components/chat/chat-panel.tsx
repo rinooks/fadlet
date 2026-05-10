@@ -422,7 +422,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                   {!isMine && (
                     <span className="text-xs text-gray-500 mb-0.5 ml-1">
                       {isHost ? (
-                        <span className="text-indigo-600 font-semibold">{msg.authorName} (운영자)</span>
+                        <span className="text-indigo-600 font-semibold">{msg.authorName} (퍼실리테이터)</span>
                       ) : (
                         msg.authorName
                       )}

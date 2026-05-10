@@ -556,14 +556,14 @@ export default function BoardPage({ params, searchParams }: PageProps) {
               {sortedStages.length === 0 ? (
                 <p className="text-sm text-gray-500 leading-relaxed">
                   {role === 'host'
-                    ? '운영자 패널을 열어 단계를 추가해 보세요. 단계를 시작하면 모든 참여자 화면이 그 활동으로 자동 전환됩니다.'
-                    : '운영자가 곧 단계를 시작합니다. 잠시만 기다려주세요.'}
+                    ? '퍼실리테이터 패널을 열어 단계를 추가해 보세요. 단계를 시작하면 모든 참여자 화면이 그 활동으로 자동 전환됩니다.'
+                    : '퍼실리테이터가 곧 단계를 시작합니다. 잠시만 기다려주세요.'}
                 </p>
               ) : (
                 <p className="text-sm text-gray-500 leading-relaxed">
                   {role === 'host'
                     ? '하단 단계 배너에서 ▶ 시작 버튼을 누르면 첫 단계가 시작됩니다.'
-                    : '운영자가 단계를 시작하면 화면이 자동으로 전환됩니다.'}
+                    : '퍼실리테이터가 단계를 시작하면 화면이 자동으로 전환됩니다.'}
                 </p>
               )}
             </div>
@@ -679,7 +679,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
                     {isLocked && role !== 'host' && (
                       <div className="text-center py-3 mb-4 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="text-sm text-gray-500">🔒 운영자가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
+                        <p className="text-sm text-gray-500">🔒 퍼실리테이터가 보드를 잠갔습니다. 새 포스트를 작성할 수 없습니다.</p>
                       </div>
                     )}
 

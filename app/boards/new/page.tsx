@@ -86,7 +86,7 @@ function NewBoardForm() {
         updatedAt: serverTimestamp(),
       });
 
-      const displayName = user.displayName?.split(' ')[0] ?? '운영자';
+      const displayName = user.displayName?.split(' ')[0] ?? '퍼실리테이터';
       sessionStorage.setItem(`board-role-${docRef.id}`, 'host');
       sessionStorage.setItem(`board-nickname-${docRef.id}`, displayName);
       router.push(`/boards/${docRef.id}?code=${boardCode}`);
@@ -117,7 +117,7 @@ function NewBoardForm() {
         </Link>
         <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-sm text-center">
           <h1 className="text-xl font-bold text-gray-900 mb-2">로그인이 필요합니다</h1>
-          <p className="text-gray-400 text-sm mb-6">보드를 만들려면 운영자 계정으로 로그인하세요.</p>
+          <p className="text-gray-400 text-sm mb-6">보드를 만들려면 퍼실리테이터 계정으로 로그인하세요.</p>
           <Button
             onClick={async () => {
               try {

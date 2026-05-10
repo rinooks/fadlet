@@ -272,19 +272,19 @@ export default function AdminPage() {
 
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <SummaryCard label="전체 운영자" value={operators.length} />
+          <SummaryCard label="전체 퍼실리테이터" value={operators.length} />
           <SummaryCard label="승인됨" value={allowedCount} accent="green" />
           <SummaryCard label="승인 대기" value={pendingCount} accent="amber" />
         </div>
 
-        <h2 className="text-base font-bold text-gray-900 mb-3">운영자 목록</h2>
+        <h2 className="text-base font-bold text-gray-900 mb-3">퍼실리테이터 목록</h2>
 
         {loadingOps ? (
           <p className="text-gray-400 text-sm text-center py-12">불러오는 중...</p>
         ) : operators.length === 0 ? (
           <div className="bg-white border border-gray-200 rounded-xl p-8 text-center">
             <Users size={28} className="text-gray-300 mx-auto mb-2" />
-            <p className="text-sm text-gray-500">아직 등록된 운영자가 없습니다.</p>
+            <p className="text-sm text-gray-500">아직 등록된 퍼실리테이터가 없습니다.</p>
           </div>
         ) : (
           <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">

@@ -15,7 +15,7 @@ interface Step {
 const STEPS: Step[] = [
   {
     emoji: '🎛',
-    title: '운영자 패널이 핵심입니다',
+    title: '퍼실리테이터 패널이 핵심입니다',
     description:
       '헤더의 🎛 환경설정 버튼을 누르면 단계 + 타이머, 공지 고정, 키워드 필터, 분석 대시보드까지 한 곳에서 관리할 수 있습니다.',
   },
@@ -59,12 +59,12 @@ export function HostOnboarding({ enabled }: HostOnboardingProps) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label="운영자 가이드"
+        aria-label="퍼실리테이터 가이드"
         className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6"
       >
         <div className="flex items-center justify-between mb-4">
           <span className="text-xs font-semibold text-indigo-600 uppercase">
-            운영자 가이드 {step + 1}/{STEPS.length}
+            퍼실리테이터 가이드 {step + 1}/{STEPS.length}
           </span>
           <button
             onClick={complete}
