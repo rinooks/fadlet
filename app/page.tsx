@@ -35,6 +35,33 @@ const FEATURES = [
   },
 ];
 
+const PAIN_POINTS = [
+  { before: '"단톡방부터 새로 팔까요?"', after: 'URL + 6자리 코드 → 30초 입장' },
+  { before: '"자료는 카톡으로 보내드릴게요"', after: '보드 한 화면에 자료·채팅·활동 한꺼번에' },
+  { before: '"끝나고 정리해서 메일로 드릴게요"', after: '종료 시 통합 PDF 리포트 자동 생성' },
+];
+
+const DIFFERENTIATORS = [
+  {
+    title: '운영자(facilitator) 손에 맞는 도구',
+    body: '보드 잠금, 타이머, 신고 관리, 금칙어, 8가지 스킨. 일반 협업 도구가 아니라 워크숍을 "진행하는 사람"의 도구로 설계됐습니다.',
+  },
+  {
+    title: '채팅·보드·라이브가 한 화면',
+    body: '파일 공유, 라이브 폴, Q&A까지 워크숍 한 곳에서. 끝나면 단계별로 정리된 PDF 한 권이 손에 남습니다.',
+  },
+  {
+    title: '템플릿이 아니라, 워크숍 흐름',
+    body: '보드형 7종 + 라이브 3종을 단계 시퀀스로 엮습니다. 단일 템플릿 도구가 아니라, 처음부터 끝까지 한 줄로 연결되는 OS.',
+  },
+];
+
+const VISION_NEXT = [
+  { tag: 'AI 자동 보고서', desc: '채팅과 결과 데이터를 한 권의 인사이트 리포트로 정리.' },
+  { tag: '다음 단계 추천', desc: '이번 워크숍 결과를 바탕으로 다음 워크숍 방향을 제안.' },
+  { tag: '워크숍 설계 초안', desc: '주제만 던지면 단계와 템플릿까지 자동 구성.' },
+];
+
 const TEMPLATES = [
   { emoji: '💡', label: '브레인스토밍', desc: '제약 없이 아이디어를 자유롭게 쏟아냅니다.' },
   { emoji: '🗺️', label: '캔버스', desc: '포스트를 원하는 위치에 자유롭게 배치합니다.' },
@@ -199,6 +226,97 @@ export default function HomePage() {
             </div>
           ))}
         </div>
+
+        {/* 1. Why — 문제와 해결 */}
+        <section className="w-full max-w-4xl mt-24 text-left">
+          <div className="text-center mb-10">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">Why Fadlet</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+              워크숍 시작 5분 전,<br className="sm:hidden" /> 늘 똑같이 사라지는 시간
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-2xl mx-auto leading-relaxed">
+              오프라인 미팅과 미니 워크숍에서 같은 공간에 모인 사람들에게 링크와 자료를 한 번에 공유하는 일은 의외로 거추장스럽습니다.
+              <strong className="text-gray-900"> Fadlet은 그 마찰을 30초로 줄이는 데서 출발했습니다.</strong>
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {PAIN_POINTS.map((p, i) => (
+              <div key={i} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl overflow-hidden">
+                <div className="px-5 py-3 bg-gray-50/80 border-b border-gray-200">
+                  <p className="text-[11px] font-semibold text-gray-500 mb-1 tracking-wide">기존</p>
+                  <p className="text-sm text-gray-700">{p.before}</p>
+                </div>
+                <div className="px-5 py-3">
+                  <p className="text-[11px] font-semibold text-indigo-600 mb-1 tracking-wide">Fadlet</p>
+                  <p className="text-sm text-gray-900 font-medium">{p.after}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 2. What's Different — 3가지 차별 */}
+        <section className="w-full max-w-4xl mt-20 text-left">
+          <div className="text-center mb-10">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">What&apos;s Different</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+              협업 보드는 많지만,<br className="sm:hidden" /> 운영자에게 맞춘 건 드뭅니다
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {DIFFERENTIATORS.map((d, i) => (
+              <div
+                key={i}
+                className="bg-white/80 backdrop-blur-sm border border-gray-300 rounded-xl p-6 hover:border-indigo-400 hover:bg-white hover:shadow-md transition-all"
+              >
+                <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center font-bold text-sm mb-4">
+                  0{i + 1}
+                </div>
+                <h3 className="text-base font-semibold text-gray-900 mb-2 leading-snug">{d.title}</h3>
+                <p className="text-sm text-gray-600 leading-relaxed">{d.body}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 3. Where It's Going — 비전 */}
+        <section className="w-full max-w-4xl mt-20 text-left">
+          <div className="text-center mb-10">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">Where It&apos;s Going</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+              지금은 워크숍 도구,<br className="sm:hidden" /> 다음은 <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">워크숍 OS</span>
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-2xl mx-auto leading-relaxed">
+              워크숍에서 쌓인 채팅과 결과 데이터를 AI가 정리하고, 다음 단계의 방향성과 워크숍 설계까지 제안하는 플랫폼.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            {VISION_NEXT.map((v, i) => (
+              <div key={i} className="bg-gradient-to-br from-indigo-50/60 to-purple-50/40 border border-indigo-100 rounded-xl p-5">
+                <p className="text-[11px] font-bold text-indigo-600 mb-2 tracking-widest">COMING NEXT</p>
+                <p className="text-sm font-semibold text-gray-900 mb-1">{v.tag}</p>
+                <p className="text-xs text-gray-600 leading-relaxed">{v.desc}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* 4. Note — 만든 사람의 노트 */}
+        <section className="w-full max-w-3xl mt-20">
+          <div className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-2xl p-7 text-left">
+            <p className="text-[11px] tracking-widest text-gray-500 font-bold mb-3">NOTE · 만드는 사람의 노트</p>
+            <p className="text-sm text-gray-700 leading-relaxed">
+              교육 컨설팅사 <strong className="text-gray-900">REFERENCE HRD</strong>가 자체 워크숍을 운영하며 매주 다듬고 있습니다.
+              "이 라이브러리를 쓸 걸", "이 화면은 가독성을 더 챙길 걸" — 셀프 피드백과 현장 의견을 빠르게 반영합니다.
+              <a href="mailto:pjh@referencehrd.com" className="ml-1 underline decoration-indigo-300 underline-offset-2 hover:text-indigo-700 text-indigo-700 font-medium">
+                pjh@referencehrd.com
+              </a>
+            </p>
+          </div>
+        </section>
 
         {/* 슬로건 */}
         <p className="mt-16 text-sm text-gray-400 italic">

@@ -6,7 +6,7 @@ import { collection, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
-import { Copy, LogOut, Share2, Trash2 } from 'lucide-react';
+import { Copy, Download, LogOut, Share2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -191,6 +191,16 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           </button>
         </nav>
         <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => window.open(`/workspaces/${wsId}/export`, '_blank', 'noopener')}
+            disabled={boards.length === 0}
+            className="text-xs h-7"
+            title={boards.length === 0 ? '보드가 없습니다' : '워크스페이스 전체를 PDF로 내보내기'}
+          >
+            <Download size={12} className="mr-1" /> 내보내기
+          </Button>
           <Button
             size="sm"
             onClick={() => setInviteOpen(true)}
