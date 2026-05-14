@@ -76,7 +76,7 @@ function JoinForm() {
         {step === 'code' ? (
           <>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">보드 입장</h1>
-            <p className="text-gray-400 text-sm mb-6">퍼실리테이터에게 받은 6자리 코드를 입력하세요.</p>
+            <p className="text-gray-400 text-sm mb-6">퍼실리테이터에게 받은 4자리 코드를 입력하세요.</p>
             <form onSubmit={handleCodeSubmit} className="flex flex-col gap-4">
               <Input
                 placeholder="예: K3F2"

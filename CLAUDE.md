@@ -135,7 +135,7 @@ Neutral    Gray 400   #9ca3af   (보조 텍스트)
 2. **API 키는 환경변수**로만. `.env.local`은 절대 커밋하지 않는다
 3. **사용자 입력은 검증**. zod 스키마로 클라이언트·서버 양쪽
 4. **익명 사용자도 권한 체크**. UID 기반 본인 확인
-5. **보드 코드는 6자리 영숫자**. brute force 방어 위해 rate limiting 고려
+5. **보드 코드는 4자리 영숫자** (워크스페이스 초대 코드는 6자리). brute force 방어 위해 rate limiting 고려
 
 ---
 
@@ -158,7 +158,7 @@ Neutral    Gray 400   #9ca3af   (보조 텍스트)
 ### 커밋 메시지
 Conventional Commits 형식:
 ```
-feat: 보드 생성 시 6자리 코드 자동 발급
+feat: 보드 생성 시 4자리 코드 자동 발급
 fix: 채팅 메시지 중복 표시 문제 수정
 docs: README에 환경변수 설명 추가
 style: 보드 카드 호버 인터랙션 개선

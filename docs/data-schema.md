@@ -47,7 +47,7 @@
 | 필드 | 타입 | Phase | 설명 |
 |---|---|---|---|
 | `title` | string | 1 | 보드 제목 |
-| `boardCode` | string | 1 | 6자리 영숫자 (대문자) |
+| `boardCode` | string | 1 | 4자리 영숫자 (대문자) |
 | `template` | string | 1/2 | `free`(1) → +`brainstorming`/`kpt`/`4f`/`qna`/`nineWindow`(2) |
 | `templateConfig` | object? | 2 | 템플릿별 설정 |
 | `ownerId` | string | 1 | 보드 소유자 UID |
@@ -70,7 +70,7 @@
 ```
 
 **보드 코드 규칙**:
-- 6자리, 대문자 영문 + 숫자
+- 4자리, 대문자 영문 + 숫자
 - 사용 문자: `ABCDEFGHJKMNPQRSTUVWXYZ23456789` (혼동 글자 0/O/1/I/L 제외)
 - 발급 시 중복 체크, 충돌 시 최대 5회 재생성
 

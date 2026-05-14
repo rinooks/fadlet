@@ -49,7 +49,7 @@ export function ShareDialog({ open, onClose, boardCode, boardTitle }: ShareDialo
             아래 코드 또는 QR 코드를 공유하세요.
           </p>
 
-          {/* 6자리 코드 */}
+          {/* 4자리 보드 코드 */}
           <div className="flex flex-col items-center gap-2 w-full">
             <div className="flex items-center gap-3 bg-indigo-50 rounded-xl px-6 py-4 w-full justify-center">
               <span className="text-4xl font-bold font-mono tracking-widest text-indigo-600">

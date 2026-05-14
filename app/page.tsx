@@ -2,53 +2,84 @@ import Link from 'next/link';
 import { Settings } from 'lucide-react';
 import { PrimaryCTA } from '@/components/shared/primary-cta';
 import { FeedbackButton } from '@/components/shared/feedback-button';
+import { SiteFooter } from '@/components/shared/site-footer';
+import {
+  JoinCodePreview,
+  BoardLivePreview,
+  SequencePreview,
+  PdfReportPreview,
+  ChatPreview,
+  FacilitatorPreview,
+  LiveSuitePreview,
+  BoardSuitePreview,
+  ChatSuitePreview,
+} from '@/components/landing/section-previews';
 
-const FEATURES = [
+const FEATURES: Array<{
+  Preview: React.ComponentType;
+  icon: string;
+  title: string;
+  desc: string;
+}> = [
   {
+    Preview: JoinCodePreview,
     icon: '⚡',
     title: '30초 입장',
-    desc: '가입 없이 6자리 코드로 즉시 합류. 호스트는 Google 로그인만으로 시작.',
+    desc: '가입 없이 4자리 코드로 즉시 합류. 호스트는 Google 로그인만으로 시작.',
   },
   {
+    Preview: BoardLivePreview,
     icon: '🗺️',
     title: '보드형 7종 + 라이브 3종',
     desc: '브레인스토밍·캔버스·찬반·칸반·KPT·4F·9칸 + 폴/워드클라우드/Q&A.',
   },
   {
+    Preview: SequencePreview,
     icon: '🎬',
     title: '단계 시퀀스',
     desc: '단계별로 활동을 자동 전환. 타이머와 함께 워크숍 흐름을 통제.',
   },
   {
+    Preview: PdfReportPreview,
     icon: '📊',
     title: '통합 PDF 리포트',
     desc: '보드형 결과 + 라이브 응답까지 한 PDF로. 단계당 한 페이지.',
   },
   {
+    Preview: ChatPreview,
     icon: '💬',
     title: '실시간 채팅',
     desc: '파일 첨부, 링크 미리보기, 미디어 갤러리, 공지 고정까지.',
   },
   {
+    Preview: FacilitatorPreview,
     icon: '🛡',
     title: '퍼실리테이터 도구',
     desc: '보드 잠금, 신고 관리, 금칙어, 8가지 스킨, 분석 대시보드.',
   },
 ];
 
-const TOOLS_UNIFIED = [
+const TOOLS_UNIFIED: Array<{
+  Preview: React.ComponentType;
+  tool: string;
+  role: string;
+  fadlet: string;
+}> = [
   {
+    Preview: LiveSuitePreview,
     tool: 'Slido',
     role: '실시간 폴 · 워드클라우드 · Q&A',
     fadlet: '단계 시퀀스 안에 라이브 3종 내장. 결과가 통합 PDF에 자동 정리됩니다.',
   },
   {
+    Preview: BoardSuitePreview,
     tool: 'Padlet',
     role: '보드 · 포스트잇 · 캔버스',
     fadlet: '보드형 7종 + 퍼실리테이터 도구(잠금 · 신고 · 8가지 스킨)까지 함께.',
   },
   {
-    tool: '카카오 오픈톡방',
+    Preview: ChatSuitePreview,
+    tool: '카카오 오픈채팅',
     role: '실시간 채팅 · 파일 공유',
     fadlet: '보드 옆 채팅으로 컨텍스트 유지. 첨부 · 미디어 갤러리 · 공지 고정 지원.',
   },
@@ -82,7 +113,7 @@ const FAQS = [
   },
   {
     q: '참여자도 가입해야 하나요?',
-    a: '아니요. 참여자는 6자리 코드만 입력하면 가입·로그인 없이 익명으로 합류합니다. 호스트(퍼실리테이터)만 Google 로그인이 필요합니다.',
+    a: '아니요. 참여자는 4자리 코드만 입력하면 가입·로그인 없이 익명으로 합류합니다. 호스트(퍼실리테이터)만 Google 로그인이 필요합니다.',
   },
   {
     q: '동시 접속 인원은 몇 명까지 가능한가요?',
@@ -90,7 +121,7 @@ const FAQS = [
   },
   {
     q: '오프라인 워크숍에서도 쓰나요?',
-    a: '가장 많이 쓰이는 시나리오입니다. 같은 공간에 모인 분들에게 6자리 코드를 공유하고 폰으로 합류해 사용합니다. 모바일 우선으로 설계되어 있어 작은 화면에서도 잘 작동합니다.',
+    a: '가장 많이 쓰이는 시나리오입니다. 같은 공간에 모인 분들에게 4자리 코드를 공유하고 폰으로 합류해 사용합니다. 모바일 우선으로 설계되어 있어 작은 화면에서도 잘 작동합니다.',
   },
   {
     q: '결과 데이터는 어떻게 보관되고 내보낼 수 있나요?',
@@ -246,16 +277,22 @@ export default function HomePage() {
 
         {/* 기능 카드 */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-w-4xl w-full">
-          {FEATURES.map((f) => (
-            <div
-              key={f.title}
-              className="bg-white/80 backdrop-blur-sm border border-gray-300 rounded-xl p-5 text-left transition-all hover:border-indigo-400 hover:bg-white hover:shadow-md hover:-translate-y-0.5"
-            >
-              <div className="text-2xl mb-2">{f.icon}</div>
-              <h3 className="font-semibold text-gray-900 text-sm mb-1">{f.title}</h3>
-              <p className="text-gray-500 text-xs leading-relaxed">{f.desc}</p>
-            </div>
-          ))}
+          {FEATURES.map((f) => {
+            const Preview = f.Preview;
+            return (
+              <div
+                key={f.title}
+                className="bg-white/80 backdrop-blur-sm border border-gray-300 rounded-xl p-4 text-left transition-all hover:border-indigo-400 hover:bg-white hover:shadow-md hover:-translate-y-0.5"
+              >
+                <Preview />
+                <div className="mt-3 flex items-center gap-2">
+                  <span className="text-xl">{f.icon}</span>
+                  <h3 className="font-semibold text-gray-900 text-sm">{f.title}</h3>
+                </div>
+                <p className="text-gray-500 text-xs leading-relaxed mt-1">{f.desc}</p>
+              </div>
+            );
+          })}
         </div>
 
         {/* 1. Why — 도구 3종을 하나로 */}
@@ -263,7 +300,7 @@ export default function HomePage() {
           <div className="text-center mb-10">
             <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">Why Fadlet</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-              <span className="text-gray-500 font-semibold">슬라이도 + 패들렛 + 카카오오픈톡방</span>을<br className="sm:hidden" />{' '}
+              <span className="text-gray-500 font-semibold">Slido + Padlet + 카카오 오픈채팅</span>을<br className="sm:hidden" />{' '}
               <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Fadlet 하나로</span>
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-2xl mx-auto leading-relaxed">
@@ -273,19 +310,25 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {TOOLS_UNIFIED.map((t, i) => (
-              <div key={i} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl overflow-hidden">
-                <div className="px-5 py-3 bg-gray-50/80 border-b border-gray-200">
-                  <p className="text-[11px] font-semibold text-gray-500 mb-1 tracking-wide">기존 도구</p>
-                  <p className="text-sm font-semibold text-gray-900">{t.tool}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{t.role}</p>
+            {TOOLS_UNIFIED.map((t, i) => {
+              const Preview = t.Preview;
+              return (
+                <div key={i} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl overflow-hidden">
+                  <div className="px-5 py-3 bg-gray-50/80 border-b border-gray-200">
+                    <p className="text-[11px] font-semibold text-gray-500 mb-1 tracking-wide">기존 도구</p>
+                    <p className="text-sm font-semibold text-gray-900">{t.tool}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{t.role}</p>
+                  </div>
+                  <div className="px-4 pt-3">
+                    <Preview />
+                  </div>
+                  <div className="px-5 py-3">
+                    <p className="text-[11px] font-semibold text-indigo-600 mb-1 tracking-wide">Fadlet</p>
+                    <p className="text-sm text-gray-900 leading-relaxed">{t.fadlet}</p>
+                  </div>
                 </div>
-                <div className="px-5 py-3">
-                  <p className="text-[11px] font-semibold text-indigo-600 mb-1 tracking-wide">Fadlet</p>
-                  <p className="text-sm text-gray-900 leading-relaxed">{t.fadlet}</p>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
 
@@ -376,7 +419,7 @@ export default function HomePage() {
           <div className="relative bg-gradient-to-br from-indigo-50/70 via-white/60 to-purple-50/50 border border-indigo-100 rounded-2xl p-8 sm:p-10 backdrop-blur-sm">
             <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3 text-center">About</p>
             <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-5 leading-tight">
-              워크숍을 직접 진행하는 곳에서 만든 도구
+              워크숍을 직접 설계하고 진행하는 곳에서 만든 도구
             </h2>
             <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto text-center leading-relaxed mb-6">
               Fadlet은 기업 HRD 컨설팅 <strong className="text-gray-900">REFERENCE HRD</strong>가
@@ -418,10 +461,8 @@ export default function HomePage() {
 
       </main>
 
-      <footer className="relative text-center py-6 text-xs text-gray-400 border-t border-gray-100/80 backdrop-blur-sm bg-white/40">
-        © 2026 REFERENCE HRD. All Rights Reserved.
-      </footer>
       </div>
+      <SiteFooter />
     </div>
   );
 }

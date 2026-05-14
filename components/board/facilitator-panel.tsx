@@ -204,6 +204,7 @@ export function FacilitatorPanel({
           <section>
             <h3 className="text-sm font-semibold text-gray-900 mb-2">🎨 보드 스킨</h3>
             <SkinSelector
+              variant="select"
               value={currentSkin}
               onChange={async (skin) => { await onSkinChange(skin); }}
             />

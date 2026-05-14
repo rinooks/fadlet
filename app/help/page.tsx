@@ -45,7 +45,7 @@ export default function HelpPage() {
         <Section emoji="🚀" title="시작하기 — 보드 만들고 공유">
           <ol className="list-decimal list-inside space-y-1">
             <li>워크스페이스 카드를 클릭한 뒤 <strong>+ 새 보드</strong>를 눌러 제목·템플릿을 선택합니다.</li>
-            <li>생성 직후 <strong>6자리 코드</strong>가 자동 발급됩니다 (예: K3F2X9).</li>
+            <li>생성 직후 <strong>4자리 코드</strong>가 자동 발급됩니다 (예: K3F2).</li>
             <li>헤더의 <strong>공유</strong> 버튼으로 링크·QR을 참여자에게 전달합니다.</li>
             <li>참여자는 코드 입력 + 닉네임만으로 로그인 없이 즉시 입장합니다.</li>
           </ol>
