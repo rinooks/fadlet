@@ -36,10 +36,22 @@ const FEATURES = [
   },
 ];
 
-const PAIN_POINTS = [
-  { before: '"단톡방부터 새로 팔까요?"', after: 'URL + 6자리 코드 → 30초 입장' },
-  { before: '"자료는 카톡으로 보내드릴게요"', after: '보드 한 화면에 자료·채팅·활동 한꺼번에' },
-  { before: '"끝나고 정리해서 메일로 드릴게요"', after: '종료 시 통합 PDF 리포트 자동 생성' },
+const TOOLS_UNIFIED = [
+  {
+    tool: 'Slido',
+    role: '실시간 폴 · 워드클라우드 · Q&A',
+    fadlet: '단계 시퀀스 안에 라이브 3종 내장. 결과가 통합 PDF에 자동 정리됩니다.',
+  },
+  {
+    tool: 'Padlet',
+    role: '보드 · 포스트잇 · 캔버스',
+    fadlet: '보드형 7종 + 퍼실리테이터 도구(잠금 · 신고 · 8가지 스킨)까지 함께.',
+  },
+  {
+    tool: '카카오 오픈톡방',
+    role: '실시간 채팅 · 파일 공유',
+    fadlet: '보드 옆 채팅으로 컨텍스트 유지. 첨부 · 미디어 갤러리 · 공지 고정 지원.',
+  },
 ];
 
 const DIFFERENTIATORS = [
@@ -61,6 +73,33 @@ const VISION_NEXT = [
   { tag: 'AI 자동 보고서', desc: '채팅과 결과 데이터를 한 권의 인사이트 리포트로 정리.' },
   { tag: '다음 단계 추천', desc: '이번 워크숍 결과를 바탕으로 다음 워크숍 방향을 제안.' },
   { tag: '워크숍 설계 초안', desc: '주제만 던지면 단계와 템플릿까지 자동 구성.' },
+];
+
+const FAQS = [
+  {
+    q: '무료로 어디까지 쓸 수 있나요?',
+    a: '현재 모든 기능을 무료로 쓸 수 있습니다. 무료 플랜은 워크스페이스 1개와 워크스페이스당 보드 3개까지 만들 수 있고, 그 이상은 운영자(pjh@referencehrd.com)에게 메일 주시면 안내드립니다.',
+  },
+  {
+    q: '참여자도 가입해야 하나요?',
+    a: '아니요. 참여자는 6자리 코드만 입력하면 가입·로그인 없이 익명으로 합류합니다. 호스트(퍼실리테이터)만 Google 로그인이 필요합니다.',
+  },
+  {
+    q: '동시 접속 인원은 몇 명까지 가능한가요?',
+    a: '한 보드 기준 수십 명 동시 작업·채팅·라이브 폴 응답까지 무리 없이 지원합니다. 50명 이상 대규모 워크숍이라면 사전에 한 번 운영자에게 알려주세요.',
+  },
+  {
+    q: '오프라인 워크숍에서도 쓰나요?',
+    a: '가장 많이 쓰이는 시나리오입니다. 같은 공간에 모인 분들에게 6자리 코드를 공유하고 폰으로 합류해 사용합니다. 모바일 우선으로 설계되어 있어 작은 화면에서도 잘 작동합니다.',
+  },
+  {
+    q: '결과 데이터는 어떻게 보관되고 내보낼 수 있나요?',
+    a: 'Google Firebase 위에서 동작하며 보드 소유자(호스트)만 데이터에 접근할 수 있도록 보안 규칙이 적용됩니다. 워크숍 종료 후 단계별 결과와 채팅 로그를 통합 PDF로 내보낼 수 있습니다.',
+  },
+  {
+    q: '유료 플랜은 언제 나오나요?',
+    a: '정식 출시 시점에 일부 기능(고급 분석·대규모 워크숍·전용 워크스페이스 등)이 유료화될 예정입니다. 베타 기간 동안 사용해 주신 분들께는 별도로 우대 혜택을 안내드릴 예정입니다.',
+  },
 ];
 
 const TEMPLATES = [
@@ -219,29 +258,31 @@ export default function HomePage() {
           ))}
         </div>
 
-        {/* 1. Why — 문제와 해결 */}
+        {/* 1. Why — 도구 3종을 하나로 */}
         <section className="w-full max-w-4xl mt-24 text-left">
           <div className="text-center mb-10">
             <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">Why Fadlet</p>
             <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
-              워크숍 시작 5분 전,<br className="sm:hidden" /> 늘 똑같이 사라지는 시간
+              <span className="text-gray-500 font-semibold">슬라이도 + 패들렛 + 카카오오픈톡방</span>을<br className="sm:hidden" />{' '}
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Fadlet 하나로</span>
             </h2>
             <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-2xl mx-auto leading-relaxed">
-              오프라인 미팅과 미니 워크숍에서 같은 공간에 모인 사람들에게 링크와 자료를 한 번에 공유하는 일은 의외로 거추장스럽습니다.
-              <strong className="text-gray-900"> Fadlet은 그 마찰을 30초로 줄이는 데서 출발했습니다.</strong>
+              워크숍 한 번 진행하려면 도구 세 개를 띄워두고 탭을 오가는 게 일상이었습니다.<br />
+              <strong className="text-gray-900">Fadlet은 그 세 가지를 한 화면에서 끝냅니다.</strong>
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {PAIN_POINTS.map((p, i) => (
+            {TOOLS_UNIFIED.map((t, i) => (
               <div key={i} className="bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl overflow-hidden">
                 <div className="px-5 py-3 bg-gray-50/80 border-b border-gray-200">
-                  <p className="text-[11px] font-semibold text-gray-500 mb-1 tracking-wide">기존</p>
-                  <p className="text-sm text-gray-700">{p.before}</p>
+                  <p className="text-[11px] font-semibold text-gray-500 mb-1 tracking-wide">기존 도구</p>
+                  <p className="text-sm font-semibold text-gray-900">{t.tool}</p>
+                  <p className="text-xs text-gray-500 mt-0.5">{t.role}</p>
                 </div>
                 <div className="px-5 py-3">
                   <p className="text-[11px] font-semibold text-indigo-600 mb-1 tracking-wide">Fadlet</p>
-                  <p className="text-sm text-gray-900 font-medium">{p.after}</p>
+                  <p className="text-sm text-gray-900 leading-relaxed">{t.fadlet}</p>
                 </div>
               </div>
             ))}
@@ -294,6 +335,84 @@ export default function HomePage() {
                 <p className="text-xs text-gray-600 leading-relaxed">{v.desc}</p>
               </div>
             ))}
+          </div>
+        </section>
+
+        {/* 4. FAQ */}
+        <section className="w-full max-w-3xl mt-20 text-left">
+          <div className="text-center mb-10">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3">FAQ</p>
+            <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 leading-tight">
+              자주 묻는 질문
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600 mt-4 max-w-2xl mx-auto leading-relaxed">
+              가입 전에 가장 많이 받는 질문 6개를 정리했습니다.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            {FAQS.map((f, i) => (
+              <details
+                key={i}
+                className="group bg-white/80 backdrop-blur-sm border border-gray-200 rounded-xl px-5 py-4 transition-colors hover:border-indigo-300"
+              >
+                <summary className="flex items-center justify-between gap-3 cursor-pointer list-none">
+                  <span className="text-sm sm:text-base font-semibold text-gray-900">{f.q}</span>
+                  <span
+                    aria-hidden
+                    className="flex-shrink-0 w-6 h-6 rounded-full bg-gray-100 text-gray-500 flex items-center justify-center text-xs transition-transform group-open:rotate-180"
+                  >
+                    ▾
+                  </span>
+                </summary>
+                <p className="text-sm text-gray-600 leading-relaxed mt-3">{f.a}</p>
+              </details>
+            ))}
+          </div>
+        </section>
+
+        {/* 5. About — 만든 곳 */}
+        <section className="w-full max-w-4xl mt-20 text-left">
+          <div className="relative bg-gradient-to-br from-indigo-50/70 via-white/60 to-purple-50/50 border border-indigo-100 rounded-2xl p-8 sm:p-10 backdrop-blur-sm">
+            <p className="text-xs text-gray-400 uppercase tracking-widest font-semibold mb-3 text-center">About</p>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 text-center mb-5 leading-tight">
+              워크숍을 직접 진행하는 곳에서 만든 도구
+            </h2>
+            <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto text-center leading-relaxed mb-6">
+              Fadlet은 기업 HRD 컨설팅 <strong className="text-gray-900">REFERENCE HRD</strong>가
+              현장에서 부딪힌 워크숍 운영의 마찰을 줄이기 위해 만든 도구입니다.
+              <br className="hidden sm:inline" />
+              퍼실리테이터의 시점에서 설계하고, 매주 진행하는 워크숍에서 직접 검증합니다.
+            </p>
+            <p className="text-center">
+              <span className="inline-block bg-white/80 border border-indigo-200 rounded-full px-4 py-1.5 text-sm font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                "고객의 물음표를 느낌표로!"
+              </span>
+            </p>
+          </div>
+        </section>
+
+        {/* 6. 마지막 CTA */}
+        <section className="w-full max-w-4xl mt-20 mb-8">
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-indigo-50/80 via-white to-purple-50/70 border border-indigo-100 p-10 sm:p-14 text-center">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0"
+              style={{
+                background:
+                  'radial-gradient(600px 300px at 50% -10%, rgba(99,102,241,0.18), transparent 60%), radial-gradient(500px 300px at 50% 110%, rgba(168,85,247,0.14), transparent 60%)',
+              }}
+            />
+            <div className="relative">
+              <h2 className="text-3xl sm:text-5xl font-bold text-gray-900 mb-5 leading-tight">
+                30초면 충분합니다.
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed">
+                구글 로그인 한 번이면 첫 보드를 만들 수 있어요.<br />
+                신용카드, 설치 모두 필요 없습니다.
+              </p>
+              <PrimaryCTA />
+            </div>
           </div>
         </section>
 
