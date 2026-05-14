@@ -11,11 +11,13 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { TemplateSelector } from '@/components/board/template-selector';
 import { SkinSelector } from '@/components/board/skin-selector';
+import { ProfileCompletionModal } from '@/components/profile/profile-completion-modal';
 import { GoogleSignInError } from '@/lib/auth/google-sign-in';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
+import { useUserProfile } from '@/lib/hooks/use-user-profile';
 import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import { getSkinMeta } from '@/lib/skins';
@@ -36,6 +38,9 @@ function NewBoardForm() {
   const [workspaceId, setWorkspaceId] = useState<string>(queryWsId ?? '');
   const [step, setStep] = useState<0 | 1 | 2>(0);
   const [creating, setCreating] = useState(false);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [pendingNav, setPendingNav] = useState<{ id: string; code: string } | null>(null);
+  const { profile } = useUserProfile(user?.uid ?? null);
 
   // 워크스페이스 목록이 로드되면 기본값을 첫 번째로 세팅 (쿼리 파람이 우선)
   if (!workspaceId && workspaces.length > 0) {
@@ -89,12 +94,30 @@ function NewBoardForm() {
       const displayName = user.displayName?.split(' ')[0] ?? '퍼실리테이터';
       sessionStorage.setItem(`board-role-${docRef.id}`, 'host');
       sessionStorage.setItem(`board-nickname-${docRef.id}`, displayName);
+
+      // 프로필 미완성이면 모달 → 닫히면 이동
+      if (!profile?.profileCompletedAt) {
+        setPendingNav({ id: docRef.id, code: boardCode });
+        setProfileModalOpen(true);
+        setCreating(false);
+        return;
+      }
+
       router.push(`/boards/${docRef.id}?code=${boardCode}`);
     } catch (err) {
       toast.error('보드 생성에 실패했습니다. 다시 시도해 주세요.');
       console.error(err);
     } finally {
       setCreating(false);
+    }
+  }
+
+  function handleProfileModalClose() {
+    setProfileModalOpen(false);
+    if (pendingNav) {
+      const nav = pendingNav;
+      setPendingNav(null);
+      router.push(`/boards/${nav.id}?code=${nav.code}`);
     }
   }
 
@@ -411,6 +434,15 @@ function NewBoardForm() {
           </>
         )}
       </div>
+
+      {user && (
+        <ProfileCompletionModal
+          open={profileModalOpen}
+          onClose={handleProfileModalClose}
+          user={user}
+          existingProfile={profile}
+        />
+      )}
     </main>
   );
 }

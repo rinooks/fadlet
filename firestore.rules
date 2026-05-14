@@ -52,6 +52,16 @@ service cloud.firestore {
       allow update: if isSuperAdmin();
     }
 
+    // users 컬렉션: 본인 read/write, 슈퍼관리자가 전체 read
+    match /users/{uid} {
+      allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());
+      allow list: if isSuperAdmin();
+      allow create, update: if isAuthenticated()
+        && request.auth.uid == uid
+        && request.resource.data.uid == uid;
+      allow delete: if isSuperAdmin();
+    }
+
     // operators 컬렉션: 본인은 문서 read 가능, super가 전체 read/write
     match /operators/{uid} {
       allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());

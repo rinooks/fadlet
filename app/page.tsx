@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { Settings } from 'lucide-react';
-import { DemoButton } from '@/components/shared/demo-button';
+import { PrimaryCTA } from '@/components/shared/primary-cta';
 import { FeedbackButton } from '@/components/shared/feedback-button';
 
 const FEATURES = [
@@ -167,22 +167,10 @@ export default function HomePage() {
           기획부터 운영, 결과 정리까지 한 화면에서.
         </p>
 
-        {/* 무료 체험 CTA */}
-        <div className="flex flex-col items-center gap-2 mb-4">
-          <DemoButton />
-          <p className="text-xs text-gray-400">
-            구글 로그인만으로 바로 시작
-          </p>
-        </div>
+        {/* Primary CTA — 로그인 상태에 따라 자동 분기 */}
+        <PrimaryCTA />
 
-        <div className="flex flex-col sm:flex-row gap-3 justify-center mb-14">
-          <Link
-            href="/dashboard"
-            className="group inline-flex items-center justify-center h-11 px-6 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-indigo-300 text-gray-700 font-semibold text-sm transition-all"
-          >
-            퍼실리테이터로 시작하기
-            <span className="ml-1.5 transition-transform group-hover:translate-x-0.5">→</span>
-          </Link>
+        <div className="flex justify-center mb-14">
           <Link
             href="/boards/join"
             className="inline-flex items-center justify-center h-11 px-6 rounded-xl border border-gray-200 bg-white/80 backdrop-blur-sm hover:bg-white hover:border-gray-300 text-gray-700 font-semibold text-sm transition-all"

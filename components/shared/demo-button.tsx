@@ -11,6 +11,7 @@ import { boardsPath } from '@/lib/firebase/collections';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import { SkinSelector } from '@/components/board/skin-selector';
 import { TemplateSelector } from '@/components/board/template-selector';
+import { ProfileCompletionModal } from '@/components/profile/profile-completion-modal';
 import {
   Dialog,
   DialogContent,
@@ -18,6 +19,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from '@/components/ui/dialog';
+import { useUserProfile } from '@/lib/hooks/use-user-profile';
 import type { BoardMode, BoardSkin, BoardTemplate, Stage } from '@/lib/types';
 
 type DemoMode = 'single' | 'workshop';
@@ -68,7 +70,10 @@ export function DemoButton() {
   const [creating, setCreating] = useState(false);
   const [signingIn, setSigningIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const [profileModalOpen, setProfileModalOpen] = useState(false);
+  const [pendingNav, setPendingNav] = useState<{ id: string; code: string } | null>(null);
   const router = useRouter();
+  const { profile } = useUserProfile(user?.uid ?? null);
 
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
@@ -122,11 +127,29 @@ export function DemoButton() {
       sessionStorage.setItem(`board-role-${docRef.id}`, 'host');
       sessionStorage.setItem(`board-nickname-${docRef.id}`, user.displayName ?? '퍼실리테이터');
 
+      // 프로필 미완성이면 모달 → 닫히면 이동
+      if (!profile?.profileCompletedAt) {
+        setOpen(false);
+        setPendingNav({ id: docRef.id, code: boardCode });
+        setProfileModalOpen(true);
+        setCreating(false);
+        return;
+      }
+
       router.push(`/boards/${docRef.id}?code=${boardCode}`);
     } catch (err) {
       console.error('[demo]', err);
       toast.error('보드 생성에 실패했습니다. 잠시 후 다시 시도해 주세요.');
       setCreating(false);
+    }
+  }
+
+  function handleProfileModalClose() {
+    setProfileModalOpen(false);
+    if (pendingNav) {
+      const nav = pendingNav;
+      setPendingNav(null);
+      router.push(`/boards/${nav.id}?code=${nav.code}`);
     }
   }
 
@@ -136,14 +159,22 @@ export function DemoButton() {
         onClick={() => setOpen(true)}
         className="group inline-flex items-center justify-center h-14 px-10 rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold text-base transition-all shadow-lg shadow-indigo-600/25 hover:shadow-xl hover:shadow-indigo-600/35 hover:-translate-y-0.5"
       >
-        지금 무료 체험하기
+        무료로 시작하기
         <span className="ml-2 transition-transform group-hover:translate-x-0.5">→</span>
       </button>
 
       <Dialog open={open} onOpenChange={(v) => { if (!creating && !signingIn) setOpen(v); }}>
-        <DialogContent className="w-[95vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8 sm:max-w-5xl">
+        <DialogContent
+          className={
+            user
+              ? 'w-[95vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8 sm:max-w-5xl'
+              : 'w-[92vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8 sm:max-w-md'
+          }
+        >
           <DialogHeader className="mb-4">
-            <DialogTitle className="text-2xl font-bold">새 보드 만들기</DialogTitle>
+            <DialogTitle className="text-2xl font-bold">
+              {user ? '새 보드 만들기' : 'Fadlet 시작하기'}
+            </DialogTitle>
             <DialogDescription className="text-sm text-gray-500">
               {user
                 ? '템플릿과 스킨을 선택하면 바로 시작할 수 있습니다.'
@@ -152,10 +183,7 @@ export function DemoButton() {
           </DialogHeader>
 
           {!user ? (
-            <div className="flex flex-col items-center justify-center py-12 gap-5">
-              <div className="text-center text-sm text-gray-500 leading-relaxed">
-                구글 계정으로 로그인하면 바로 보드를 만들 수 있어요.
-              </div>
+            <div className="flex flex-col items-center justify-center py-8 gap-5">
               <button
                 onClick={handleGoogleSignIn}
                 disabled={signingIn}
@@ -281,6 +309,15 @@ export function DemoButton() {
           )}
         </DialogContent>
       </Dialog>
+
+      {user && (
+        <ProfileCompletionModal
+          open={profileModalOpen}
+          onClose={handleProfileModalClose}
+          user={user}
+          existingProfile={profile}
+        />
+      )}
     </>
   );
 }

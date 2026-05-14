@@ -15,6 +15,7 @@ export const COLLECTIONS = {
   ACTIVITY_STATES: 'activityStates',
   SETTINGS: 'settings',
   FEEDBACK: 'feedback',
+  USERS: 'users',
 } as const;
 
 export const SETTINGS_DOC_ID = 'global';
@@ -85,4 +86,12 @@ export function settingsDocPath() {
 
 export function feedbackPath() {
   return COLLECTIONS.FEEDBACK;
+}
+
+export function usersPath() {
+  return COLLECTIONS.USERS;
+}
+
+export function userDocPath(uid: string) {
+  return `${COLLECTIONS.USERS}/${uid}`;
 }
