@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export function SiteFooter() {
   return (
     <footer className="relative bg-gray-950 text-gray-400">
@@ -57,6 +59,19 @@ export function SiteFooter() {
 
         {/* 하단 사업자 정보 + 저작권 */}
         <div className="mt-12 pt-6 border-t border-gray-800">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 mb-3 text-xs">
+            <Link href="/terms" className="text-gray-300 hover:text-white transition-colors font-semibold">
+              이용약관
+            </Link>
+            <span className="text-gray-700">·</span>
+            <Link href="/privacy" className="text-gray-300 hover:text-white transition-colors font-semibold">
+              개인정보처리방침
+            </Link>
+            <span className="text-gray-700">·</span>
+            <Link href="/help" className="text-gray-400 hover:text-white transition-colors">
+              도움말
+            </Link>
+          </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-gray-500 leading-relaxed">
               상호명 <span className="text-gray-400">(주)레퍼런스에이치알디</span> ·
