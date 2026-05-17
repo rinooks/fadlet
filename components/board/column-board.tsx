@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useDroppable } from '@dnd-kit/core';
-import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { SortableContext, rectSortingStrategy, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortablePostCard } from './sortable-post-card';
 import { NewPostDialog } from './new-post-dialog';
 import type { TemplateDefinition } from '@/lib/templates';
@@ -26,6 +26,9 @@ interface ColumnBoardProps {
 interface DroppableColumnProps {
   columnId: string;
   isGrid: boolean;
+  isCompact?: boolean;
+  /** 포스트를 메모지처럼 가로로 wrap되게 배치 */
+  isWrap?: boolean;
   postIds: string[];
   children: React.ReactNode;
 }
@@ -44,16 +47,18 @@ function FlowFragment({ showFlow, isFirst, children }: { showFlow: boolean; isFi
   );
 }
 
-function DroppableColumn({ columnId, isGrid, postIds, children }: DroppableColumnProps) {
+function DroppableColumn({ columnId, isGrid, isCompact, isWrap, postIds, children }: DroppableColumnProps) {
   const { setNodeRef, isOver } = useDroppable({ id: `col-${columnId}`, data: { columnId, type: 'column' } });
+  const minHeightClass = isCompact ? 'min-h-[80px]' : isGrid ? 'min-h-[120px]' : 'min-h-[200px]';
+  const layoutClass = isWrap ? 'flex flex-wrap gap-2' : 'space-y-2';
 
   return (
-    <SortableContext items={postIds} strategy={verticalListSortingStrategy}>
+    <SortableContext items={postIds} strategy={isWrap ? rectSortingStrategy : verticalListSortingStrategy}>
       <div
         ref={setNodeRef}
-        className={`flex-1 p-2 space-y-2 overflow-y-auto rounded-b-md transition-colors ${
+        className={`flex-1 p-2 overflow-y-auto rounded-b-md transition-colors ${layoutClass} ${
           isOver ? 'bg-indigo-50' : ''
-        } ${isGrid ? 'min-h-[120px]' : 'min-h-[200px]'}`}
+        } ${minHeightClass}`}
       >
         {children}
       </div>
@@ -79,13 +84,16 @@ export function ColumnBoard({
 
   const columns = template.columns ?? [];
   const isGrid = !!template.gridCols;
-  const showFlow = !!template.showFlow && !isGrid;
+  const stackRows = !!template.stackRows && !isGrid;
+  const showFlow = !!template.showFlow && !isGrid && !stackRows;
 
   const containerClass = isGrid
     ? `grid gap-2`
-    : showFlow
-      ? 'flex items-stretch overflow-x-auto pb-2'
-      : 'flex gap-3 overflow-x-auto pb-2';
+    : stackRows
+      ? 'flex flex-col gap-3'
+      : showFlow
+        ? 'flex items-stretch overflow-x-auto pb-2'
+        : 'flex gap-3 overflow-x-auto pb-2';
 
   const containerStyle = isGrid
     ? { gridTemplateColumns: `repeat(${template.gridCols}, minmax(0, 1fr))` }
@@ -107,7 +115,11 @@ export function ColumnBoard({
             <FlowFragment key={col.id} showFlow={showFlow} isFirst={idx === 0}>
             <div
               className={`flex flex-col rounded-md border border-gray-200 bg-white/70 ${
-                isGrid ? 'min-h-[200px]' : 'min-w-[240px] flex-shrink-0 w-64'
+                isGrid
+                  ? 'min-h-[200px]'
+                  : stackRows
+                    ? 'w-full'
+                    : 'min-w-[240px] flex-shrink-0 w-64'
               } ${showFlow ? 'mx-1' : ''}`}
             >
               <div
@@ -118,7 +130,7 @@ export function ColumnBoard({
                 <span className="text-xs opacity-70">{colPosts.length}</span>
               </div>
 
-              <DroppableColumn columnId={col.id} isGrid={isGrid} postIds={postIds}>
+              <DroppableColumn columnId={col.id} isGrid={isGrid} isCompact={stackRows} isWrap={stackRows} postIds={postIds}>
                 {colPosts.map((post) => (
                   <SortablePostCard
                     key={post.id}
@@ -128,6 +140,7 @@ export function ColumnBoard({
                     isHost={isHost}
                     showReactionCounts={showReactionCounts}
                     canDrag={!isLocked || isHost}
+                    className={stackRows ? 'w-56 flex-shrink-0' : ''}
                     onUpdate={onUpdatePost}
                     onDelete={onDeletePost}
                     onOpenDetail={onOpenDetail}

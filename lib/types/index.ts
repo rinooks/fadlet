@@ -3,7 +3,7 @@ import { Timestamp } from 'firebase/firestore';
 export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray';
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
-export type BoardTemplate = 'free' | 'canvas' | 'brainstorming' | 'proscons' | 'kanban' | 'kpt' | '4f' | 'qna' | 'nineWindow';
+export type BoardTemplate = 'free' | 'canvas' | 'brainstorming' | 'categories' | 'proscons' | 'kanban' | 'kpt' | '4f' | 'qna' | 'nineWindow';
 export type LiveActivity = 'poll' | 'wordcloud';
 export type ActivityType = BoardTemplate | LiveActivity;
 export type BoardMode = 'single' | 'workshop';

@@ -12,7 +12,8 @@ import { useBannedWords } from '@/lib/hooks/use-banned-words';
 import { SkinSelector } from '@/components/board/skin-selector';
 import { BackgroundSelector } from '@/components/board/background-selector';
 import { KanbanColumnEditor } from '@/components/board/kanban-column-editor';
-import { TEMPLATES } from '@/lib/templates';
+import { TEMPLATES, isColumnEditableTemplate } from '@/lib/templates';
+import { DEFAULT_CATEGORY_COLUMNS, DEFAULT_KANBAN_COLUMNS } from '@/lib/kanban-colors';
 import { ACTIVITIES, getActivity } from '@/lib/activities';
 import type { ActivityConfig, ActivityType, BoardBackground, BoardMode, BoardSkin, BoardTemplate, KanbanColumn, PinnedAnnouncement, Stage } from '@/lib/types';
 
@@ -220,14 +221,19 @@ export function FacilitatorPanel({
             />
           </section>
 
-          {boardTemplate === 'kanban' && (
+          {isColumnEditableTemplate(boardTemplate) && (
             <section>
-              <h3 className="text-sm font-semibold text-gray-900 mb-2">🗂️ 칸반 컬럼</h3>
+              <h3 className="text-sm font-semibold text-gray-900 mb-2">
+                {boardTemplate === 'categories' ? '🏷️ 카테고리' : '🗂️ 칸반 컬럼'}
+              </h3>
               <p className="text-xs text-gray-500 mb-3">
-                컬럼을 자유롭게 추가/편집/삭제하고 색상을 지정합니다.
+                {boardTemplate === 'categories'
+                  ? '카테고리를 자유롭게 추가/편집/삭제하고 색상을 지정합니다. 참여자는 카테고리별로 포스트를 올립니다.'
+                  : '컬럼을 자유롭게 추가/편집/삭제하고 색상을 지정합니다.'}
               </p>
               <KanbanColumnEditor
                 columns={kanbanColumns}
+                defaultColumns={boardTemplate === 'categories' ? DEFAULT_CATEGORY_COLUMNS : DEFAULT_KANBAN_COLUMNS}
                 onChange={onKanbanColumnsChange}
               />
             </section>

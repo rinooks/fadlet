@@ -17,6 +17,8 @@ export interface TemplateDefinition {
   columns: TemplateColumn[] | null;
   gridCols?: number;
   showFlow?: boolean;
+  /** 컬럼을 가로 배치(false, 기본) 대신 행 단위로 위→아래로 쌓아 표시 */
+  stackRows?: boolean;
 }
 
 export const TEMPLATES: TemplateDefinition[] = [
@@ -42,6 +44,18 @@ export const TEMPLATES: TemplateDefinition[] = [
     columns: [
       { id: 'pros', label: '👍 찬성', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
       { id: 'cons', label: '👎 반대', headerClass: 'bg-red-500 text-white', defaultColor: 'pink' },
+    ],
+  },
+  {
+    id: 'categories',
+    label: '카테고리',
+    description: '운영자가 카테고리를 정의하면 참여자가 해당 카테고리에 포스트를 올립니다. 카테고리는 행 단위로 쌓입니다. (패들렛 섹션 스타일)',
+    emoji: '🏷️',
+    stackRows: true,
+    columns: [
+      { id: 'cat-1', label: '🟦 카테고리 1', headerClass: 'bg-blue-500 text-white', defaultColor: 'blue' },
+      { id: 'cat-2', label: '🟩 카테고리 2', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
+      { id: 'cat-3', label: '🟧 카테고리 3', headerClass: 'bg-amber-500 text-white', defaultColor: 'yellow' },
     ],
   },
   {
@@ -101,4 +115,9 @@ export const TEMPLATES: TemplateDefinition[] = [
 
 export function getTemplate(id: BoardTemplate): TemplateDefinition {
   return TEMPLATES.find((t) => t.id === id) ?? TEMPLATES[0];
+}
+
+/** 운영자가 컬럼을 자유롭게 추가/편집/삭제할 수 있는 템플릿인지 */
+export function isColumnEditableTemplate(id: BoardTemplate): boolean {
+  return id === 'kanban' || id === 'categories';
 }

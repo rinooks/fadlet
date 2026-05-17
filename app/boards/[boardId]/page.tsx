@@ -36,7 +36,7 @@ import { QnaBoard } from '@/components/activities/qna-board';
 import { ExportMenu } from '@/components/shared/export-menu';
 import { FeedbackButton } from '@/components/shared/feedback-button';
 import { ShareDialog } from '@/components/shared/share-dialog';
-import { getTemplate } from '@/lib/templates';
+import { getTemplate, isColumnEditableTemplate } from '@/lib/templates';
 import { getActivity, isLiveActivity } from '@/lib/activities';
 import { useAuth } from '@/lib/hooks/use-auth';
 import { useBoard } from '@/lib/hooks/use-board';
@@ -54,7 +54,7 @@ import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/fir
 import { toast } from 'sonner';
 import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, KanbanColumn, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
 import { getBackground } from '@/lib/backgrounds';
-import { DEFAULT_KANBAN_COLUMNS } from '@/lib/kanban-colors';
+import { DEFAULT_KANBAN_COLUMNS, DEFAULT_CATEGORY_COLUMNS } from '@/lib/kanban-colors';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 import { cloneBoard } from '@/lib/utils/clone-board';
 
@@ -378,10 +378,19 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     ? (activeActivity as BoardTemplate)
     : 'free';
   const baseTemplate = getTemplate(boardTemplateId);
-  const template = (boardTemplateId === 'kanban' && board?.kanbanColumns && board.kanbanColumns.length > 0)
+  const isEditableColumns = isColumnEditableTemplate(boardTemplateId);
+  const editableColumnDefaults = boardTemplateId === 'categories'
+    ? DEFAULT_CATEGORY_COLUMNS
+    : DEFAULT_KANBAN_COLUMNS;
+  const editableColumnSource = isEditableColumns
+    ? (board?.kanbanColumns && board.kanbanColumns.length > 0
+        ? board.kanbanColumns
+        : editableColumnDefaults)
+    : null;
+  const template = editableColumnSource
     ? {
         ...baseTemplate,
-        columns: board.kanbanColumns.map((c) => ({
+        columns: editableColumnSource.map((c) => ({
           id: c.id,
           label: c.label,
           headerClass: '',
@@ -389,18 +398,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           defaultColor: c.defaultPostColor,
         })),
       }
-    : boardTemplateId === 'kanban' && (!board?.kanbanColumns || board.kanbanColumns.length === 0)
-      ? {
-          ...baseTemplate,
-          columns: DEFAULT_KANBAN_COLUMNS.map((c) => ({
-            id: c.id,
-            label: c.label,
-            headerClass: '',
-            headerStyle: { backgroundColor: c.headerColor, color: '#fff' },
-            defaultColor: c.defaultPostColor,
-          })),
-        }
-      : baseTemplate;
+    : baseTemplate;
   const hasActiveActivity = !!activeActivity;
   const isFreeLayout = template.columns === null;
   const isCanvas = template.id === 'canvas';

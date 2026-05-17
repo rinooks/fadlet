@@ -13,12 +13,14 @@ interface SortablePostCardProps {
   isHost: boolean;
   showReactionCounts: boolean;
   canDrag: boolean;
+  /** outer wrapper에 추가할 클래스 (메모지 wrap 레이아웃 등) */
+  className?: string;
   onUpdate: (postId: string, content: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }
 
-export function SortablePostCard({ post, canDrag, ...rest }: SortablePostCardProps) {
+export function SortablePostCard({ post, canDrag, className, ...rest }: SortablePostCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: post.id,
     data: { columnId: post.columnId ?? null, type: 'post' },
@@ -32,7 +34,7 @@ export function SortablePostCard({ post, canDrag, ...rest }: SortablePostCardPro
   };
 
   return (
-    <div ref={setNodeRef} style={style} className="relative group">
+    <div ref={setNodeRef} style={style} className={`relative group ${className ?? ''}`}>
       {canDrag && (
         <button
           type="button"

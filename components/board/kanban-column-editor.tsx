@@ -14,11 +14,13 @@ import type { KanbanColumn, PostColor } from '@/lib/types';
 
 interface KanbanColumnEditorProps {
   columns?: KanbanColumn[];
+  /** columns가 undefined일 때 화면에 표시할 기본 컬럼 (저장은 아직 안 됨) */
+  defaultColumns?: KanbanColumn[];
   onChange: (columns: KanbanColumn[]) => Promise<void>;
 }
 
-export function KanbanColumnEditor({ columns, onChange }: KanbanColumnEditorProps) {
-  const list = columns ?? DEFAULT_KANBAN_COLUMNS;
+export function KanbanColumnEditor({ columns, defaultColumns, onChange }: KanbanColumnEditorProps) {
+  const list = columns ?? defaultColumns ?? DEFAULT_KANBAN_COLUMNS;
   const [busy, setBusy] = useState(false);
   const [colorOpenId, setColorOpenId] = useState<string | null>(null);
 
