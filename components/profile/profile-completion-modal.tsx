@@ -30,7 +30,6 @@ export function ProfileCompletionModal({
   user,
   existingProfile,
 }: ProfileCompletionModalProps) {
-  const [email, setEmail] = useState('');
   const [name, setName] = useState('');
   const [organization, setOrganization] = useState('');
   const [jobTitle, setJobTitle] = useState('');
@@ -39,7 +38,6 @@ export function ProfileCompletionModal({
 
   useEffect(() => {
     if (!open) return;
-    setEmail(existingProfile?.email ?? user.email ?? '');
     setName(existingProfile?.name ?? user.displayName ?? '');
     setOrganization(existingProfile?.organization ?? '');
     setJobTitle(existingProfile?.jobTitle ?? '');
@@ -49,7 +47,7 @@ export function ProfileCompletionModal({
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (submitting) return;
-    if (!email.trim() || !name.trim() || !organization.trim()) {
+    if (!name.trim() || !organization.trim()) {
       toast.error('필수 항목을 입력해 주세요.');
       return;
     }
@@ -60,7 +58,7 @@ export function ProfileCompletionModal({
         doc(db, userDocPath(user.uid)),
         {
           uid: user.uid,
-          email: email.trim(),
+          email: existingProfile?.email ?? user.email ?? null,
           name: name.trim(),
           organization: organization.trim(),
           jobTitle: jobTitle.trim() || null,
@@ -93,36 +91,17 @@ export function ProfileCompletionModal({
     <Dialog open={open} onOpenChange={(v) => { if (!submitting && !v) onClose(); }}>
       <DialogContent className="w-[95vw] max-h-[90vh] overflow-y-auto p-6 sm:p-8 sm:max-w-lg">
         <DialogHeader className="mb-4">
-          <DialogTitle className="text-2xl font-bold">프로필을 완성해 주세요</DialogTitle>
+          <DialogTitle className="text-2xl font-bold">Fadlet을 자주 쓰시네요 👋</DialogTitle>
           <DialogDescription className="text-sm text-gray-500 leading-relaxed">
-            제품 업데이트와 워크숍 운영 노하우를 정확히 전해 드리려고 합니다.
+            워크숍 운영에 도움이 될 자료와 제품 업데이트를 정확히 전해 드리고 싶어요.
             <br />
             <span className="text-[11px] text-gray-400">
-              나중에 입력해도 됩니다. 다음 보드 만들 때 다시 안내해 드릴게요.
+              30초면 끝나요. 지금 건너뛰셔도 됩니다.
             </span>
           </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <label htmlFor="profile-email" className="text-sm font-semibold text-gray-700">
-              이메일 <span className="text-red-500">*</span>
-            </label>
-            <Input
-              id="profile-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@company.com"
-              maxLength={120}
-              disabled={submitting}
-            />
-            <p className="text-[11px] text-gray-400">
-              구글 계정 이메일과 다른 업무 이메일을 받으실 수 있어요.
-            </p>
-          </div>
-
           <div className="flex flex-col gap-1.5">
             <label htmlFor="profile-name" className="text-sm font-semibold text-gray-700">
               이름 <span className="text-red-500">*</span>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ArrowDown, ArrowUp, Plus, Trash2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -84,12 +84,9 @@ export function KanbanColumnEditor({ columns, defaultColumns, onChange }: Kanban
               className="w-6 h-6 rounded border-2 border-white shadow flex-shrink-0 ring-1 ring-gray-200"
               style={{ backgroundColor: col.headerColor }}
             />
-            <Input
+            <ColumnLabelInput
               value={col.label}
-              onChange={(e) => updateLabel(col.id, e.target.value)}
-              disabled={busy}
-              maxLength={20}
-              className="text-sm h-7 flex-1 min-w-0"
+              onCommit={(v) => updateLabel(col.id, v)}
             />
             <button
               type="button"
@@ -182,5 +179,56 @@ export function KanbanColumnEditor({ columns, defaultColumns, onChange }: Kanban
         <Plus size={12} /> 컬럼 추가
       </Button>
     </div>
+  );
+}
+
+/**
+ * 컬럼 라벨 입력 — 로컬 상태로 매끄럽게 타이핑하고, onBlur 또는 Enter에서 커밋.
+ * (매 keystroke마다 Firestore 저장 → 포커스 손실/입력 끊김 문제 회피)
+ */
+function ColumnLabelInput({
+  value,
+  onCommit,
+}: {
+  value: string;
+  onCommit: (next: string) => void;
+}) {
+  const [local, setLocal] = useState(value);
+  const editingRef = useRef(false);
+
+  useEffect(() => {
+    if (!editingRef.current) setLocal(value);
+  }, [value]);
+
+  function commitIfChanged() {
+    editingRef.current = false;
+    const trimmed = local.trim();
+    if (trimmed && trimmed !== value) {
+      onCommit(trimmed);
+    } else if (!trimmed) {
+      // 빈 값은 되돌림
+      setLocal(value);
+    }
+  }
+
+  return (
+    <Input
+      value={local}
+      onChange={(e) => setLocal(e.target.value)}
+      onFocus={() => { editingRef.current = true; }}
+      onBlur={commitIfChanged}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          (e.target as HTMLInputElement).blur();
+        } else if (e.key === 'Escape') {
+          setLocal(value);
+          editingRef.current = false;
+          (e.target as HTMLInputElement).blur();
+        }
+      }}
+      maxLength={20}
+      className="text-sm h-7 flex-1 min-w-0"
+    />
   );
 }

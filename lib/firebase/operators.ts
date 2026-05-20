@@ -23,7 +23,7 @@ export async function ensureOperatorDoc(params: {
       email: (params.email ?? '').toLowerCase(),
       displayName: params.displayName ?? params.email ?? '',
       ...(params.photoURL ? { photoURL: params.photoURL } : {}),
-      allowed: isSuper, // 슈퍼관리자만 자동 승인
+      allowed: true, // 가입 즉시 자동 승인
       isSuperAdmin: isSuper,
       createdAt: serverTimestamp(),
       lastLoginAt: serverTimestamp(),

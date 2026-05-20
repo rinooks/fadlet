@@ -21,9 +21,9 @@ export const DEFAULT_KANBAN_COLUMNS: KanbanColumn[] = [
 ];
 
 export const DEFAULT_CATEGORY_COLUMNS: KanbanColumn[] = [
-  { id: 'cat-1', label: '🟦 카테고리 1', headerColor: '#3B82F6', defaultPostColor: 'blue' },
-  { id: 'cat-2', label: '🟩 카테고리 2', headerColor: '#22C55E', defaultPostColor: 'green' },
-  { id: 'cat-3', label: '🟧 카테고리 3', headerColor: '#F59E0B', defaultPostColor: 'yellow' },
+  { id: 'cat-1', label: '카테고리 1', headerColor: '#3B82F6', defaultPostColor: 'blue' },
+  { id: 'cat-2', label: '카테고리 2', headerColor: '#22C55E', defaultPostColor: 'green' },
+  { id: 'cat-3', label: '카테고리 3', headerColor: '#F59E0B', defaultPostColor: 'yellow' },
 ];
 
 export function genKanbanColumnId(): string {

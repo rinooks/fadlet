@@ -16,6 +16,7 @@ import { GoogleSignInError } from '@/lib/auth/google-sign-in';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
+import { DEFAULT_PROFILE_PROMPT_THRESHOLD, useAppSettings } from '@/lib/firebase/settings';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { useUserProfile } from '@/lib/hooks/use-user-profile';
 import { useMyWorkspaces } from '@/lib/hooks/use-workspaces';
@@ -41,6 +42,7 @@ function NewBoardForm() {
   const [profileModalOpen, setProfileModalOpen] = useState(false);
   const [pendingNav, setPendingNav] = useState<{ id: string; code: string } | null>(null);
   const { profile } = useUserProfile(user?.uid ?? null);
+  const { settings: appSettings } = useAppSettings();
 
   // 워크스페이스 목록이 로드되면 기본값을 첫 번째로 세팅 (쿼리 파람이 우선)
   if (!workspaceId && workspaces.length > 0) {
@@ -95,12 +97,20 @@ function NewBoardForm() {
       sessionStorage.setItem(`board-role-${docRef.id}`, 'host');
       sessionStorage.setItem(`board-nickname-${docRef.id}`, displayName);
 
-      // 프로필 미완성이면 모달 → 닫히면 이동
-      if (!profile?.profileCompletedAt) {
-        setPendingNav({ id: docRef.id, code: boardCode });
-        setProfileModalOpen(true);
-        setCreating(false);
-        return;
+      // 프로필 미완성 + 본인이 만든 보드가 임계치 이상이면 모달 노출 (지연 요청 패턴)
+      // 임계치는 관리자 설정 우선, 미설정 시 DEFAULT 사용. 0이면 비활성화.
+      const threshold = appSettings?.profilePromptThresholdBoards
+        ?? DEFAULT_PROFILE_PROMPT_THRESHOLD;
+      if (threshold > 0 && !profile?.profileCompletedAt) {
+        const myBoardsSnap = await getDocs(
+          query(collection(db, boardsPath()), where('ownerId', '==', user.uid)),
+        );
+        if (myBoardsSnap.size >= threshold) {
+          setPendingNav({ id: docRef.id, code: boardCode });
+          setProfileModalOpen(true);
+          setCreating(false);
+          return;
+        }
       }
 
       router.push(`/boards/${docRef.id}?code=${boardCode}`);

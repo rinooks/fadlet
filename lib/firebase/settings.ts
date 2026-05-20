@@ -8,6 +8,9 @@ import type { AppSettings } from '@/lib/types';
 
 export const DEFAULT_GEMINI_MODEL = 'gemini-2.5-flash';
 
+/** 기본 프로필 임계치 — 본인이 만든 보드가 이 수치 이상일 때 모달 노출. */
+export const DEFAULT_PROFILE_PROMPT_THRESHOLD = 2;
+
 export function useAppSettings() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,4 +55,20 @@ export async function saveGeminiSettings(params: {
   if (params.apiKey !== undefined) payload.geminiApiKey = params.apiKey;
   if (params.model !== undefined) payload.geminiModel = params.model;
   await setDoc(ref, payload, { merge: true });
+}
+
+export async function saveProfilePromptThreshold(params: {
+  uid: string;
+  threshold: number;
+}): Promise<void> {
+  const ref = doc(db, settingsDocPath());
+  await setDoc(
+    ref,
+    {
+      profilePromptThresholdBoards: Math.max(0, Math.floor(params.threshold)),
+      updatedAt: serverTimestamp(),
+      updatedBy: params.uid,
+    },
+    { merge: true },
+  );
 }

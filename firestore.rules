@@ -66,11 +66,11 @@ service cloud.firestore {
     match /operators/{uid} {
       allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());
       allow list: if isSuperAdmin();
-      // 첫 로그인 시 본인이 자기 문서를 생성. allowed/isSuperAdmin은 슈퍼관리자만 true 설정 가능.
+      // 첫 로그인 시 본인이 자기 문서를 생성. 자동 승인이므로 allowed는 true 허용.
+      // isSuperAdmin은 슈퍼관리자만 true 설정 가능.
       allow create: if isAuthenticated()
         && request.auth.uid == uid
         && request.resource.data.uid == uid
-        && (request.resource.data.allowed == false || isSuperAdmin())
         && (request.resource.data.isSuperAdmin == false || isSuperAdmin());
       // 본인은 메타(displayName/email/lastLoginAt)만 갱신, allowed/isSuperAdmin은 슈퍼만
       allow update: if isAuthenticated()

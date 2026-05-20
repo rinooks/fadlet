@@ -239,6 +239,8 @@ export interface Operator {
 export interface AppSettings {
   geminiApiKey?: string;
   geminiModel?: string;
+  /** N번째 보드 생성 시 프로필 완성 모달 노출. 0이면 사용 안 함, undefined면 기본값(3) 사용. */
+  profilePromptThresholdBoards?: number;
   updatedAt?: Timestamp;
   updatedBy?: string;
 }
@@ -252,6 +254,8 @@ export interface BoardAiInsights {
   generatedBy: string;
 }
 
+export type FeedbackStatus = 'open' | 'resolved';
+
 export interface Feedback {
   id: string;
   uid: string;
@@ -261,6 +265,10 @@ export interface Feedback {
   url?: string;
   boardId?: string;
   userAgent?: string;
+  /** 'open'(기본) | 'resolved'. 필드 부재는 'open'으로 간주. */
+  status?: FeedbackStatus;
+  resolvedAt?: Timestamp;
+  resolvedBy?: string;
   createdAt: Timestamp;
 }
 

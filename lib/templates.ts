@@ -53,9 +53,9 @@ export const TEMPLATES: TemplateDefinition[] = [
     emoji: '🏷️',
     stackRows: true,
     columns: [
-      { id: 'cat-1', label: '🟦 카테고리 1', headerClass: 'bg-blue-500 text-white', defaultColor: 'blue' },
-      { id: 'cat-2', label: '🟩 카테고리 2', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
-      { id: 'cat-3', label: '🟧 카테고리 3', headerClass: 'bg-amber-500 text-white', defaultColor: 'yellow' },
+      { id: 'cat-1', label: '카테고리 1', headerClass: 'bg-blue-500 text-white', defaultColor: 'blue' },
+      { id: 'cat-2', label: '카테고리 2', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
+      { id: 'cat-3', label: '카테고리 3', headerClass: 'bg-amber-500 text-white', defaultColor: 'yellow' },
     ],
   },
   {
