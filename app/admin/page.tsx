@@ -19,6 +19,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ChevronDown,
   ChevronRight,
+  Megaphone,
   MessageSquare,
   Pencil,
   Search,
@@ -37,6 +38,7 @@ import { Input } from '@/components/ui/input';
 import { AiSettingsCard } from '@/components/admin/ai-settings-card';
 import { SiteSettingsCard } from '@/components/admin/site-settings-card';
 import { FeedbackPanel } from '@/components/admin/feedback-panel';
+import { UpdateNotesPanel } from '@/components/admin/update-notes-panel';
 import { db } from '@/lib/firebase/client';
 import {
   boardsPath,
@@ -51,7 +53,7 @@ import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import type { Board, Feedback, Operator, Workspace } from '@/lib/types';
 import type { UserProfile } from '@/lib/types/user-profile';
 
-type AdminTab = 'overview' | 'operators' | 'feedback';
+type AdminTab = 'overview' | 'operators' | 'feedback' | 'updates';
 type OperatorFilter = 'all' | 'allowed' | 'pending';
 
 export default function AdminPage() {
@@ -342,6 +344,9 @@ export default function AdminPage() {
                 {openFeedbackCount}
               </span>
             )}
+          </NavTab>
+          <NavTab active={tab === 'updates'} onClick={() => setTab('updates')} icon={<Megaphone size={14} />}>
+            업데이트 노트
           </NavTab>
         </div>
 
@@ -673,6 +678,8 @@ export default function AdminPage() {
         )}
 
         {tab === 'feedback' && user && <FeedbackPanel uid={user.uid} />}
+
+        {tab === 'updates' && user && <UpdateNotesPanel uid={user.uid} />}
       </main>
     </div>
   );

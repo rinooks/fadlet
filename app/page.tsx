@@ -14,6 +14,7 @@ import {
   BoardSuitePreview,
   ChatSuitePreview,
 } from '@/components/landing/section-previews';
+import { UpdateNotesSection } from '@/components/landing/update-notes-section';
 
 const FEATURES: Array<{
   Preview: React.ComponentType;
@@ -381,6 +382,9 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* 3-1. What's New — 업데이트 노트 (게시된 항목이 있을 때만 노출) */}
+        <UpdateNotesSection />
+
         {/* 4. FAQ */}
         <section className="w-full max-w-3xl mt-20 text-left">
           <div className="text-center mb-10">
@@ -422,7 +426,7 @@ export default function HomePage() {
               워크숍을 직접 설계하고 진행하는 곳에서 만든 도구
             </h2>
             <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto text-center leading-relaxed mb-6">
-              Fadlet은 기업 HRD 컨설팅 <strong className="text-gray-900">REFERENCE HRD</strong>가
+              Fadlet은 <strong className="text-gray-900">REFERENCE HRD</strong>가
               현장에서 부딪힌 워크숍 운영의 마찰을 줄이기 위해 만든 도구입니다.
               <br className="hidden sm:inline" />
               퍼실리테이터의 시점에서 설계하고, 매주 진행하는 워크숍에서 직접 검증합니다.

@@ -254,6 +254,26 @@ export interface BoardAiInsights {
   generatedBy: string;
 }
 
+export interface UpdateNote {
+  id: string;
+  title: string;
+  /** 사용자용 본문 — 랜딩/updates 페이지에 노출. 사용자가 이해하기 쉽게 쓴 변경 내용. */
+  userBody: string;
+  /** 개발자용 본문 — admin에서만 노출. 기술적 변경 메모. */
+  devBody?: string;
+  /** @deprecated 구버전 호환 — userBody가 비어있을 때만 폴백. */
+  body?: string;
+  /** 표시용 버전 라벨 (예: "v0.6.0"). 비워두면 노출하지 않음. */
+  version?: string;
+  /** 게시 여부. false면 관리자에게만 보임. */
+  isPublished: boolean;
+  /** 게시 시각 — 정렬·표시에 사용. createdAt과 다를 수 있음. */
+  publishedAt?: Timestamp;
+  createdBy: string;
+  createdAt: Timestamp;
+  updatedAt: Timestamp;
+}
+
 export type FeedbackStatus = 'open' | 'resolved';
 
 export interface Feedback {

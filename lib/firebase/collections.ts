@@ -16,6 +16,7 @@ export const COLLECTIONS = {
   SETTINGS: 'settings',
   FEEDBACK: 'feedback',
   USERS: 'users',
+  UPDATE_NOTES: 'updateNotes',
 } as const;
 
 export const SETTINGS_DOC_ID = 'global';
@@ -94,4 +95,12 @@ export function usersPath() {
 
 export function userDocPath(uid: string) {
   return `${COLLECTIONS.USERS}/${uid}`;
+}
+
+export function updateNotesPath() {
+  return COLLECTIONS.UPDATE_NOTES;
+}
+
+export function updateNoteDocPath(id: string) {
+  return `${COLLECTIONS.UPDATE_NOTES}/${id}`;
 }

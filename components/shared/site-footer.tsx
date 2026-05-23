@@ -68,6 +68,10 @@ export function SiteFooter() {
               개인정보처리방침
             </Link>
             <span className="text-gray-700">·</span>
+            <Link href="/updates" className="text-gray-400 hover:text-white transition-colors">
+              업데이트 노트
+            </Link>
+            <span className="text-gray-700">·</span>
             <Link href="/help" className="text-gray-400 hover:text-white transition-colors">
               도움말
             </Link>

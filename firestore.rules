@@ -44,6 +44,12 @@ service cloud.firestore {
       allow write: if isSuperAdmin();
     }
 
+    // 업데이트 노트 — 게시된 항목은 누구나 읽기, 슈퍼 관리자가 작성/수정/삭제.
+    match /updateNotes/{noteId} {
+      allow read, list: if true;
+      allow create, update, delete: if isSuperAdmin();
+    }
+
     // 인앱 피드백 — 인증된 누구나 작성, 슈퍼 관리자만 읽기/관리.
     match /feedback/{feedbackId} {
       allow read, list, delete: if isSuperAdmin();
