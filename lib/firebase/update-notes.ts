@@ -5,9 +5,11 @@ import {
   collection,
   deleteDoc,
   doc,
+  limit as fbLimit,
   onSnapshot,
   orderBy,
   query,
+  type QueryConstraint,
   serverTimestamp,
   updateDoc,
   where,
@@ -95,22 +97,22 @@ export function useAllUpdateNotes() {
   return { notes, loading };
 }
 
-/** 공개용 — 게시된 노트만, publishedAt 최신순. */
+/** 공개용 — 게시된 노트만, publishedAt 최신순. max 지정 시 Firestore limit() 적용. */
 export function usePublishedUpdateNotes(max?: number) {
   const [notes, setNotes] = useState<UpdateNote[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const q = query(
-      collection(db, updateNotesPath()),
+    const constraints: QueryConstraint[] = [
       where('isPublished', '==', true),
       orderBy('publishedAt', 'desc'),
-    );
+    ];
+    if (typeof max === 'number') constraints.push(fbLimit(max));
+    const q = query(collection(db, updateNotesPath()), ...constraints);
     const unsub = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as UpdateNote);
-        setNotes(typeof max === 'number' ? list.slice(0, max) : list);
+        setNotes(snap.docs.map((d) => ({ id: d.id, ...d.data() }) as UpdateNote));
         setLoading(false);
       },
       (err) => {

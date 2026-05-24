@@ -2,7 +2,7 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
@@ -16,13 +16,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { BoardDeleteDialog } from '@/components/board/board-delete-dialog';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { leaveWorkspace, useWorkspace, useWorkspaceMembers } from '@/lib/hooks/use-workspaces';
-import { getBackground } from '@/lib/backgrounds';
+import { getTemplate } from '@/lib/templates';
 import type { Board } from '@/lib/types';
+import { runFirestore } from '@/lib/utils/firestore-action';
 
 interface PageProps {
   params: Promise<{ wsId: string }>;
@@ -37,6 +39,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
   const [boards, setBoards] = useState<Board[]>([]);
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
+  const [deletingBoard, setDeletingBoard] = useState<Board | null>(null);
 
   const inviteUrl =
     workspace && typeof window !== 'undefined'
@@ -126,6 +129,13 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     } catch {
       toast.error('제외 실패');
     }
+  }
+
+  async function handleDeleteBoard(board: Board) {
+    await runFirestore('보드를 삭제하지 못했습니다.', () =>
+      deleteDoc(doc(db, boardsPath(), board.id)),
+    );
+    toast.success(`"${board.title}" 보드를 삭제했습니다.`);
   }
 
   if (loading || !isOperator) {
@@ -248,26 +258,83 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {boards.map((board) => (
-                <Link
-                  key={board.id}
-                  href={`/boards/${board.id}`}
-                  style={getBackground(board.background, board.customBackgroundColor).style}
-                  className="rounded-xl border border-gray-200 p-4 hover:border-indigo-400 hover:shadow-md transition-all group"
-                >
-                  <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 line-clamp-2 mb-2">
-                    {board.title}
-                  </h3>
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-indigo-700 bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded border border-white">
-                      {board.boardCode}
-                    </span>
-                    <span className="text-[10px] text-gray-500">
-                      {board.createdAt?.toDate?.().toLocaleDateString('ko-KR') ?? ''}
-                    </span>
+              {boards.map((board) => {
+                const canDelete = !!user && board.ownerId === user.uid;
+                const template = getTemplate(board.template);
+                const isWorkshop = board.mode === 'workshop';
+                const isLocked = !!board.settings?.lockedAt;
+                const stageCount = board.stages?.length ?? 0;
+                return (
+                  <div key={board.id} className="relative group">
+                    <Link
+                      href={`/boards/${board.id}`}
+                      className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-indigo-400 hover:shadow-md transition-all"
+                    >
+                      <div
+                        aria-hidden
+                        className={`h-1 ${isWorkshop ? 'bg-gradient-to-r from-indigo-500 to-purple-500' : 'bg-gradient-to-r from-indigo-400 to-indigo-300'}`}
+                      />
+                      <div className="p-4">
+                        <div className="flex items-start gap-3 mb-3">
+                          <div
+                            className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl flex-shrink-0 ${
+                              isWorkshop
+                                ? 'bg-purple-50 text-purple-700'
+                                : 'bg-indigo-50 text-indigo-700'
+                            }`}
+                            aria-hidden
+                          >
+                            {template.emoji}
+                          </div>
+                          <div className="min-w-0 flex-1 pr-7">
+                            <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 leading-snug line-clamp-2 transition-colors">
+                              {board.title}
+                            </h3>
+                            <p className="text-[11px] text-gray-500 mt-0.5 truncate">
+                              {template.label}
+                              {isWorkshop && stageCount > 0 && ` · ${stageCount}단계`}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-mono text-[11px] font-bold text-indigo-700 bg-indigo-50 px-1.5 py-0.5 rounded">
+                            {board.boardCode}
+                          </span>
+                          {isWorkshop && (
+                            <span className="text-[10px] font-semibold text-purple-700 bg-purple-50 px-1.5 py-0.5 rounded">
+                              🎬 워크숍
+                            </span>
+                          )}
+                          {isLocked && (
+                            <span className="text-[10px] font-semibold text-amber-700 bg-amber-50 px-1.5 py-0.5 rounded">
+                              🔒 잠금
+                            </span>
+                          )}
+                          <span className="ml-auto text-[10px] text-gray-400 flex-shrink-0">
+                            {board.createdAt?.toDate?.().toLocaleDateString('ko-KR') ?? ''}
+                          </span>
+                        </div>
+                      </div>
+                    </Link>
+                    {canDelete && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setDeletingBoard(board);
+                        }}
+                        aria-label={`${board.title} 보드 삭제`}
+                        title="보드 삭제"
+                        className="absolute top-3 right-3 inline-flex items-center justify-center w-7 h-7 rounded-md bg-white text-gray-300 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all"
+                      >
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
-                </Link>
-              ))}
+                );
+              })}
             </div>
           )}
         </section>
@@ -358,6 +425,15 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <BoardDeleteDialog
+        open={!!deletingBoard}
+        boardTitle={deletingBoard?.title ?? ''}
+        onClose={() => setDeletingBoard(null)}
+        onConfirm={async () => {
+          if (deletingBoard) await handleDeleteBoard(deletingBoard);
+        }}
+      />
     </div>
   );
 }

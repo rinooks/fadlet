@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { pollResponsesPath } from '@/lib/firebase/collections';
 import type { PollResponse } from '@/lib/types';
+import { runFirestore } from '@/lib/utils/firestore-action';
 
 export function usePoll(boardId: string, stageId: string | null) {
   const [responses, setResponses] = useState<PollResponse[]>([]);
@@ -49,16 +50,18 @@ export function usePoll(boardId: string, stageId: string | null) {
       if (!boardId || !stageId) return;
       const docId = `${stageId}_${userId}`;
       const ref = doc(db, pollResponsesPath(boardId), docId);
-      await setDoc(
-        ref,
-        {
-          stageId,
-          userId,
-          optionIndexes,
-          createdAt: serverTimestamp(),
-          updatedAt: serverTimestamp(),
-        },
-        { merge: true },
+      await runFirestore('투표 응답을 저장하지 못했습니다.', () =>
+        setDoc(
+          ref,
+          {
+            stageId,
+            userId,
+            optionIndexes,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          },
+          { merge: true },
+        ),
       );
     },
     [boardId, stageId],

@@ -18,11 +18,16 @@ interface Props {
   uid: string;
 }
 
-type Mode = 'idle' | 'creating' | { editing: string };
+type Mode =
+  | { kind: 'idle' }
+  | { kind: 'creating' }
+  | { kind: 'editing'; id: string };
+
+const IDLE: Mode = { kind: 'idle' };
 
 export function UpdateNotesPanel({ uid }: Props) {
   const { notes, loading } = useAllUpdateNotes();
-  const [mode, setMode] = useState<Mode>('idle');
+  const [mode, setMode] = useState<Mode>(IDLE);
   const [title, setTitle] = useState('');
   const [version, setVersion] = useState('');
   const [userBody, setUserBody] = useState('');
@@ -32,21 +37,25 @@ export function UpdateNotesPanel({ uid }: Props) {
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
   const [showDevId, setShowDevId] = useState<string | null>(null);
 
-  const isEditing = typeof mode === 'object' && 'editing' in mode;
-  const isCreating = mode === 'creating';
+  const isCreating = mode.kind === 'creating';
+  const isEditing = mode.kind === 'editing';
 
-  function startCreate() {
-    setMode('creating');
+  function resetForm() {
     setTitle('');
     setVersion('');
     setUserBody('');
     setDevBody('');
     setIsPublished(true);
+  }
+
+  function startCreate() {
+    setMode({ kind: 'creating' });
+    resetForm();
     setConfirmDelete(null);
   }
 
   function startEdit(note: UpdateNote) {
-    setMode({ editing: note.id });
+    setMode({ kind: 'editing', id: note.id });
     setTitle(note.title);
     setVersion(note.version ?? '');
     setUserBody(resolveUserBody(note));
@@ -56,12 +65,8 @@ export function UpdateNotesPanel({ uid }: Props) {
   }
 
   function cancel() {
-    setMode('idle');
-    setTitle('');
-    setVersion('');
-    setUserBody('');
-    setDevBody('');
-    setIsPublished(true);
+    setMode(IDLE);
+    resetForm();
   }
 
   async function handleSave() {
@@ -75,26 +80,20 @@ export function UpdateNotesPanel({ uid }: Props) {
       toast.error('사용자용 본문을 입력해 주세요.');
       return;
     }
+    const fields = {
+      title: trimmedTitle,
+      userBody: trimmedUserBody,
+      devBody,
+      version,
+      isPublished,
+    };
     setSaving(true);
     try {
-      if (isCreating) {
-        await createUpdateNote({
-          uid,
-          title: trimmedTitle,
-          userBody: trimmedUserBody,
-          devBody,
-          version,
-          isPublished,
-        });
+      if (mode.kind === 'creating') {
+        await createUpdateNote({ uid, ...fields });
         toast.success(isPublished ? '업데이트 노트를 게시했습니다.' : '초안으로 저장했습니다.');
-      } else if (isEditing) {
-        await updateUpdateNote(mode.editing, {
-          title: trimmedTitle,
-          userBody: trimmedUserBody,
-          devBody,
-          version,
-          isPublished,
-        });
+      } else if (mode.kind === 'editing') {
+        await updateUpdateNote(mode.id, fields);
         toast.success('업데이트 노트를 수정했습니다.');
       }
       cancel();
@@ -135,7 +134,7 @@ export function UpdateNotesPanel({ uid }: Props) {
           <h2 className="text-base font-bold text-gray-900">업데이트 노트</h2>
           <span className="text-[11px] text-gray-400">총 {notes.length}</span>
         </div>
-        {mode === 'idle' && (
+        {mode.kind === 'idle' && (
           <Button
             size="sm"
             onClick={startCreate}

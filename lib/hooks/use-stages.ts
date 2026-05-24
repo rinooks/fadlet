@@ -4,6 +4,7 @@ import { doc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import type { ActivityConfig, ActivityType, Stage } from '@/lib/types';
+import { runFirestore } from '@/lib/utils/firestore-action';
 
 function genId() {
   return Math.random().toString(36).slice(2, 10);
@@ -11,10 +12,12 @@ function genId() {
 
 export function useStages(boardId: string) {
   async function setStages(stages: Stage[]) {
-    await updateDoc(doc(db, boardsPath(), boardId), {
-      stages,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('단계를 저장하지 못했습니다.', () =>
+      updateDoc(doc(db, boardsPath(), boardId), {
+        stages,
+        updatedAt: serverTimestamp(),
+      }),
+    );
   }
 
   async function addStage(

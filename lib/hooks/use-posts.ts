@@ -16,6 +16,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { postsPath } from '@/lib/firebase/collections';
 import type { Post, PostColor } from '@/lib/types';
+import { runFirestore } from '@/lib/utils/firestore-action';
 
 export function usePosts(boardId: string) {
   const [posts, setPosts] = useState<Post[]>([]);
@@ -59,25 +60,33 @@ export function usePosts(boardId: string) {
     if (params.imageUrl) payload.imageUrl = params.imageUrl;
     if (params.columnId) payload.columnId = params.columnId;
     if (params.stageId) payload.stageId = params.stageId;
-    await addDoc(collection(db, postsPath(boardId)), payload);
+    await runFirestore('포스트를 추가하지 못했습니다.', () =>
+      addDoc(collection(db, postsPath(boardId)), payload),
+    );
   }
 
   async function updatePost(postId: string, content: string) {
-    await updateDoc(doc(db, postsPath(boardId), postId), {
-      content,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('포스트를 수정하지 못했습니다.', () =>
+      updateDoc(doc(db, postsPath(boardId), postId), {
+        content,
+        updatedAt: serverTimestamp(),
+      }),
+    );
   }
 
   async function updatePosition(postId: string, position: { x: number; y: number }) {
-    await updateDoc(doc(db, postsPath(boardId), postId), {
-      position,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('포스트 위치를 저장하지 못했습니다.', () =>
+      updateDoc(doc(db, postsPath(boardId), postId), {
+        position,
+        updatedAt: serverTimestamp(),
+      }),
+    );
   }
 
   async function deletePost(postId: string) {
-    await deleteDoc(doc(db, postsPath(boardId), postId));
+    await runFirestore('포스트를 삭제하지 못했습니다.', () =>
+      deleteDoc(doc(db, postsPath(boardId), postId)),
+    );
   }
 
   async function reorderPosts(orderedIds: string[], columnUpdates?: Record<string, string | undefined>) {
@@ -88,7 +97,7 @@ export function usePosts(boardId: string) {
       if (columnUpdates && id in columnUpdates) payload.columnId = columnUpdates[id] ?? null;
       batch.update(ref, payload);
     });
-    await batch.commit();
+    await runFirestore('포스트 순서를 저장하지 못했습니다.', () => batch.commit());
   }
 
   return { posts, loading, addPost, updatePost, updatePosition, deletePost, reorderPosts };

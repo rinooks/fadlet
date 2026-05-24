@@ -21,12 +21,9 @@
  */
 
 import { parseArgs } from 'node:util';
-import { existsSync } from 'node:fs';
-import { resolve } from 'node:path';
-import { cert, getApps, initializeApp, applicationDefault } from 'firebase-admin/app';
-import { FieldValue, getFirestore } from 'firebase-admin/firestore';
+import { FieldValue } from 'firebase-admin/firestore';
+import { COLLECTION_UPDATE_NOTES, initFirestore } from './lib/admin-init.mjs';
 
-const PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'fadlet-reference';
 const SUPER_ADMIN_UID = process.env.FADLET_SUPER_ADMIN_UID || 'cli-script';
 
 function parseBool(v) {
@@ -69,47 +66,7 @@ if (!values.title || !rawUserBody) {
   process.exit(1);
 }
 
-function findCredentials() {
-  // 1순위: 환경 변수
-  const envPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
-  if (envPath && existsSync(envPath)) return { path: envPath, source: 'env' };
-
-  // 2순위: 표준 경로 (프로젝트 루트 또는 부모 디렉토리)
-  const candidates = [
-    resolve(process.cwd(), 'fadlet-admin-key.json'),
-    resolve(process.cwd(), '..', 'fadlet-admin-key.json'),
-  ];
-  for (const p of candidates) {
-    if (existsSync(p)) return { path: p, source: 'fallback' };
-  }
-  return null;
-}
-
-function initAdmin() {
-  if (getApps().length > 0) return;
-  const found = findCredentials();
-  if (found) {
-    initializeApp({ credential: cert(found.path), projectId: PROJECT_ID });
-    if (found.source === 'fallback') {
-      console.log(`✓ 인증 키 자동 발견: ${found.path}`);
-    }
-  } else {
-    // ADC fallback — gcloud auth application-default login
-    initializeApp({ credential: applicationDefault(), projectId: PROJECT_ID });
-  }
-}
-
-try {
-  initAdmin();
-} catch (err) {
-  console.error('✗ firebase-admin 초기화 실패. ADC 설정을 확인하세요.');
-  console.error('  → gcloud auth application-default login');
-  console.error(`  → 또는 GOOGLE_APPLICATION_CREDENTIALS=<service-account.json> 환경 변수 지정`);
-  console.error(`\n원본 오류: ${err?.message ?? err}`);
-  process.exit(1);
-}
-
-const db = getFirestore();
+const db = initFirestore({ verbose: true });
 const isPublished = parseBool(values.published);
 const userBody = String(rawUserBody).replace(/\\n/g, '\n');
 const devBodyRaw = values['dev-body'];
@@ -128,7 +85,7 @@ const payload = {
 };
 
 try {
-  const ref = await db.collection('updateNotes').add(payload);
+  const ref = await db.collection(COLLECTION_UPDATE_NOTES).add(payload);
   console.log(`✓ 업데이트 노트 추가됨 — id=${ref.id} (${isPublished ? '게시됨' : '초안'})`);
   console.log(`  제목: ${payload.title}`);
   if (payload.version) console.log(`  버전: ${payload.version}`);

@@ -42,8 +42,8 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: '주제에 대한 찬성과 반대 의견을 나눕니다.',
     emoji: '⚖️',
     columns: [
-      { id: 'pros', label: '👍 찬성', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
-      { id: 'cons', label: '👎 반대', headerClass: 'bg-red-500 text-white', defaultColor: 'pink' },
+      { id: 'pros', label: '👍 찬성', headerClass: 'bg-emerald-600 text-white', defaultColor: 'green' },
+      { id: 'cons', label: '👎 반대', headerClass: 'bg-rose-500 text-white', defaultColor: 'pink' },
     ],
   },
   {
@@ -53,9 +53,9 @@ export const TEMPLATES: TemplateDefinition[] = [
     emoji: '🏷️',
     stackRows: true,
     columns: [
-      { id: 'cat-1', label: '카테고리 1', headerClass: 'bg-blue-500 text-white', defaultColor: 'blue' },
-      { id: 'cat-2', label: '카테고리 2', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
-      { id: 'cat-3', label: '카테고리 3', headerClass: 'bg-amber-500 text-white', defaultColor: 'yellow' },
+      { id: 'cat-1', label: '카테고리 1', headerClass: 'bg-sky-600 text-white', defaultColor: 'blue' },
+      { id: 'cat-2', label: '카테고리 2', headerClass: 'bg-emerald-600 text-white', defaultColor: 'green' },
+      { id: 'cat-3', label: '카테고리 3', headerClass: 'bg-amber-600 text-white', defaultColor: 'yellow' },
     ],
   },
   {
@@ -64,9 +64,9 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: '할 일 · 진행 중 · 완료로 작업 흐름을 시각화합니다.',
     emoji: '🗂️',
     columns: [
-      { id: 'todo', label: '📝 할 일', headerClass: 'bg-gray-500 text-white', defaultColor: 'gray' },
-      { id: 'doing', label: '🔄 진행 중', headerClass: 'bg-blue-500 text-white', defaultColor: 'blue' },
-      { id: 'done', label: '✅ 완료', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
+      { id: 'todo', label: '📝 할 일', headerClass: 'bg-slate-500 text-white', defaultColor: 'gray' },
+      { id: 'doing', label: '🔄 진행 중', headerClass: 'bg-sky-600 text-white', defaultColor: 'blue' },
+      { id: 'done', label: '✅ 완료', headerClass: 'bg-emerald-600 text-white', defaultColor: 'green' },
     ],
   },
   {
@@ -75,9 +75,9 @@ export const TEMPLATES: TemplateDefinition[] = [
     description: 'Keep · Problem · Try 세 가지로 팀을 돌아봅니다.',
     emoji: '🔄',
     columns: [
-      { id: 'keep', label: '💚 Keep', headerClass: 'bg-green-500 text-white', defaultColor: 'green' },
-      { id: 'problem', label: '🔴 Problem', headerClass: 'bg-red-500 text-white', defaultColor: 'pink' },
-      { id: 'try', label: '🔵 Try', headerClass: 'bg-indigo-500 text-white', defaultColor: 'blue' },
+      { id: 'keep', label: '💚 Keep', headerClass: 'bg-emerald-600 text-white', defaultColor: 'green' },
+      { id: 'problem', label: '🔴 Problem', headerClass: 'bg-rose-500 text-white', defaultColor: 'pink' },
+      { id: 'try', label: '🔵 Try', headerClass: 'bg-indigo-600 text-white', defaultColor: 'blue' },
     ],
   },
   {
@@ -88,8 +88,8 @@ export const TEMPLATES: TemplateDefinition[] = [
     showFlow: true,
     columns: [
       { id: 'fact', label: '📌 Fact (사실)', headerClass: 'bg-slate-500 text-white', defaultColor: 'gray' },
-      { id: 'feeling', label: '💛 Feeling (감정)', headerClass: 'bg-amber-500 text-white', defaultColor: 'yellow' },
-      { id: 'finding', label: '💡 Finding (발견)', headerClass: 'bg-orange-500 text-white', defaultColor: 'purple' },
+      { id: 'feeling', label: '💛 Feeling (감정)', headerClass: 'bg-amber-600 text-white', defaultColor: 'yellow' },
+      { id: 'finding', label: '💡 Finding (발견)', headerClass: 'bg-orange-600 text-white', defaultColor: 'purple' },
       { id: 'future', label: '🚀 Future (액션)', headerClass: 'bg-indigo-600 text-white', defaultColor: 'blue' },
     ],
   },

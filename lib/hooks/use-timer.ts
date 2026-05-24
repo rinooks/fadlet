@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import type { TimerState } from '@/lib/types';
+import { runFirestore } from '@/lib/utils/firestore-action';
 
 const IDLE: TimerState = {
   stageId: null,
@@ -15,27 +16,26 @@ const IDLE: TimerState = {
 };
 
 export function useTimer(boardId: string, timer?: TimerState) {
+  const ref = doc(db, boardsPath(), boardId);
+
   async function selectStage(stageId: string) {
     const next: TimerState = { ...IDLE, stageId };
-    await updateDoc(doc(db, boardsPath(), boardId), {
-      timer: next,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('단계를 변경하지 못했습니다.', () =>
+      updateDoc(ref, { timer: next, updatedAt: serverTimestamp() }),
+    );
   }
 
   async function startTimer(stageId: string) {
-    const now = Date.now();
     const next: TimerState = {
       stageId,
       status: 'running',
-      startedAt: now,
+      startedAt: Date.now(),
       pausedAt: null,
       accumulatedMs: 0,
     };
-    await updateDoc(doc(db, boardsPath(), boardId), {
-      timer: next,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('타이머를 시작하지 못했습니다.', () =>
+      updateDoc(ref, { timer: next, updatedAt: serverTimestamp() }),
+    );
   }
 
   async function pauseTimer() {
@@ -48,10 +48,9 @@ export function useTimer(boardId: string, timer?: TimerState) {
       pausedAt: now,
       accumulatedMs: timer.accumulatedMs + elapsed,
     };
-    await updateDoc(doc(db, boardsPath(), boardId), {
-      timer: next,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('타이머를 일시정지하지 못했습니다.', () =>
+      updateDoc(ref, { timer: next, updatedAt: serverTimestamp() }),
+    );
   }
 
   async function resumeTimer() {
@@ -62,17 +61,15 @@ export function useTimer(boardId: string, timer?: TimerState) {
       startedAt: Date.now(),
       pausedAt: null,
     };
-    await updateDoc(doc(db, boardsPath(), boardId), {
-      timer: next,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('타이머를 재개하지 못했습니다.', () =>
+      updateDoc(ref, { timer: next, updatedAt: serverTimestamp() }),
+    );
   }
 
   async function stopTimer() {
-    await updateDoc(doc(db, boardsPath(), boardId), {
-      timer: IDLE,
-      updatedAt: serverTimestamp(),
-    });
+    await runFirestore('타이머를 정지하지 못했습니다.', () =>
+      updateDoc(ref, { timer: IDLE, updatedAt: serverTimestamp() }),
+    );
   }
 
   return { selectStage, startTimer, pauseTimer, resumeTimer, stopTimer };

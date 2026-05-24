@@ -17,6 +17,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { messagesPath } from '@/lib/firebase/collections';
 import type { EmojiType, LinkPreview, Message, MessageReplyTo, MessageType, UserRole } from '@/lib/types';
+import { runFirestore } from '@/lib/utils/firestore-action';
 
 const URL_REGEX = /https?:\/\/[^\s]+/g;
 
@@ -96,18 +97,19 @@ export function useMessages(boardId: string) {
       }
     }
 
-    await addDoc(collection(db, messagesPath(boardId)), data);
+    await runFirestore('메시지를 보내지 못했습니다.', () =>
+      addDoc(collection(db, messagesPath(boardId)), data),
+    );
   }
 
   const toggleReaction = useCallback(async (messageId: string, userId: string, emoji: EmojiType) => {
     const msg = messagesRef.current.find((m) => m.id === messageId);
     const reactors = (msg?.reactions?.[emoji] ?? []) as string[];
     const ref = doc(db, messagesPath(boardId), messageId);
-    if (reactors.includes(userId)) {
-      await updateDoc(ref, { [`reactions.${emoji}`]: arrayRemove(userId) });
-    } else {
-      await updateDoc(ref, { [`reactions.${emoji}`]: arrayUnion(userId) });
-    }
+    const update = reactors.includes(userId)
+      ? { [`reactions.${emoji}`]: arrayRemove(userId) }
+      : { [`reactions.${emoji}`]: arrayUnion(userId) };
+    await runFirestore('반응을 저장하지 못했습니다.', () => updateDoc(ref, update));
   }, [boardId]);
 
   return { messages, loading, sendMessage, toggleReaction };
