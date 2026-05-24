@@ -27,6 +27,7 @@ import {
   joinWorkspaceByCode,
   useMyWorkspaces,
 } from '@/lib/hooks/use-workspaces';
+import { getTemplate } from '@/lib/templates';
 import type { Board } from '@/lib/types';
 
 const PREVIEW_BOARDS_PER_WORKSPACE = 3;
@@ -295,15 +296,23 @@ function DashboardContent() {
                       <p className="text-xs text-gray-400 text-center py-4">아직 보드가 없습니다.</p>
                     ) : (
                       <ul className="flex flex-col gap-1">
-                        {preview.map((b) => (
-                          <li
-                            key={b.id}
-                            className="text-xs text-gray-700 truncate flex items-center gap-1.5"
-                          >
-                            <span className="text-gray-300">{b.mode === 'workshop' ? '🎬' : '·'}</span>
-                            <span className="truncate">{b.title}</span>
-                          </li>
-                        ))}
+                        {preview.map((b) => {
+                          const tpl = getTemplate(b.template);
+                          return (
+                            <li
+                              key={b.id}
+                              className="text-xs text-gray-700 truncate flex items-center gap-1.5"
+                            >
+                              <span className="text-sm leading-none" aria-hidden>{tpl.emoji}</span>
+                              <span className="truncate">{b.title}</span>
+                              {b.mode === 'workshop' && (
+                                <span className="text-[9px] font-semibold text-purple-600 bg-purple-50 px-1 rounded flex-shrink-0">
+                                  🎬
+                                </span>
+                              )}
+                            </li>
+                          );
+                        })}
                         {more > 0 && (
                           <li className="text-[11px] text-gray-400 mt-1">+{more}개 더보기</li>
                         )}

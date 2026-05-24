@@ -268,12 +268,8 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                   <div key={board.id} className="relative group">
                     <Link
                       href={`/boards/${board.id}`}
-                      className="block bg-white rounded-xl border border-gray-200 overflow-hidden hover:border-indigo-400 hover:shadow-md transition-all"
+                      className="block bg-white rounded-xl border border-gray-200 hover:border-indigo-400 hover:shadow-md transition-all"
                     >
-                      <div
-                        aria-hidden
-                        className={`h-1 ${isWorkshop ? 'bg-gradient-to-r from-indigo-500 to-purple-500' : 'bg-gradient-to-r from-indigo-400 to-indigo-300'}`}
-                      />
                       <div className="p-4">
                         <div className="flex items-start gap-3 mb-3">
                           <div
