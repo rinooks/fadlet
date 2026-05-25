@@ -49,7 +49,7 @@ export const TEMPLATES: TemplateDefinition[] = [
   {
     id: 'categories',
     label: '카테고리',
-    description: '운영자가 카테고리를 정의하면 참여자가 해당 카테고리에 포스트를 올립니다. 카테고리는 행 단위로 쌓입니다. (패들렛 섹션 스타일)',
+    description: '운영자가 카테고리를 섹션 단위로 자유롭게 정의합니다.',
     emoji: '🏷️',
     stackRows: true,
     columns: [
