@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { usePostStats } from '@/lib/hooks/use-post-stats';
 import type { EmojiType, Post, PostColor } from '@/lib/types';
+import { linkify } from '@/lib/utils/linkify';
 
 const COLOR_MAP: Record<PostColor, string> = {
   yellow: 'bg-yellow-100 border-yellow-300',
@@ -88,7 +89,7 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
           <>
             {post.content && (
               <p className="text-sm text-gray-800 flex-1 whitespace-pre-wrap break-words line-clamp-4">
-                {post.content}
+                {linkify(post.content)}
               </p>
             )}
             {(commentCount > 0 || (canShowReactions && reactionTotal > 0)) && (

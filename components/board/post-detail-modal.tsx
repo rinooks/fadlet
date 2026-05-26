@@ -10,6 +10,7 @@ import { ReportDialog } from '@/components/shared/report-dialog';
 import { useComments } from '@/lib/hooks/use-comments';
 import { useReactions } from '@/lib/hooks/use-reactions';
 import type { Comment, EmojiType, Post } from '@/lib/types';
+import { linkify } from '@/lib/utils/linkify';
 
 const EMOJIS: { type: EmojiType; label: string }[] = [
   { type: 'thumbsup', label: '👍' },
@@ -85,7 +86,7 @@ export function PostDetailModal({
         <div className={`rounded-t-2xl px-5 py-4 ${COLOR_MAP[post.color] ?? 'bg-gray-100'}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
-              <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{post.content}</p>
+              <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{linkify(post.content)}</p>
               {post.imageUrl && (
                 <div className="mt-3 rounded-lg overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
