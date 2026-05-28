@@ -2,11 +2,11 @@
 
 export const dynamic = 'force-dynamic';
 
-import { collection, deleteDoc, doc, onSnapshot, query, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
-import { Copy, Download, LogOut, Share2, Trash2 } from 'lucide-react';
+import { Copy, Download, LogOut, Pencil, Share2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { BoardDeleteDialog } from '@/components/board/board-delete-dialog';
+import { BoardRenameDialog } from '@/components/board/board-rename-dialog';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
@@ -40,6 +41,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
   const [boardsLoading, setBoardsLoading] = useState(true);
   const [inviteOpen, setInviteOpen] = useState(false);
   const [deletingBoard, setDeletingBoard] = useState<Board | null>(null);
+  const [renamingBoard, setRenamingBoard] = useState<Board | null>(null);
 
   const inviteUrl =
     workspace && typeof window !== 'undefined'
@@ -136,6 +138,16 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
       deleteDoc(doc(db, boardsPath(), board.id)),
     );
     toast.success(`"${board.title}" 보드를 삭제했습니다.`);
+  }
+
+  async function handleRenameBoard(board: Board, nextTitle: string) {
+    await runFirestore('보드 이름을 변경하지 못했습니다.', () =>
+      updateDoc(doc(db, boardsPath(), board.id), {
+        title: nextTitle,
+        updatedAt: serverTimestamp(),
+      }),
+    );
+    toast.success('보드 이름을 변경했습니다.');
   }
 
   if (loading || !isOperator) {
@@ -259,7 +271,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {boards.map((board) => {
-                const canDelete = !!user && board.ownerId === user.uid;
+                const canManage = !!user && board.ownerId === user.uid;
                 const template = getTemplate(board.template);
                 const isWorkshop = board.mode === 'workshop';
                 const isLocked = !!board.settings?.lockedAt;
@@ -282,7 +294,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                           >
                             {template.emoji}
                           </div>
-                          <div className="min-w-0 flex-1 pr-7">
+                          <div className="min-w-0 flex-1 pr-16">
                             <h3 className="font-semibold text-gray-900 group-hover:text-indigo-700 leading-snug line-clamp-2 transition-colors">
                               {board.title}
                             </h3>
@@ -313,20 +325,35 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
                         </div>
                       </div>
                     </Link>
-                    {canDelete && (
-                      <button
-                        type="button"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          setDeletingBoard(board);
-                        }}
-                        aria-label={`${board.title} 보드 삭제`}
-                        title="보드 삭제"
-                        className="absolute top-3 right-3 inline-flex items-center justify-center w-7 h-7 rounded-md bg-white text-gray-300 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-all"
-                      >
-                        <Trash2 size={13} />
-                      </button>
+                    {canManage && (
+                      <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-all">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setRenamingBoard(board);
+                          }}
+                          aria-label={`${board.title} 보드 이름 변경`}
+                          title="이름 변경"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-white text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 border border-transparent hover:border-indigo-200 transition-all"
+                        >
+                          <Pencil size={13} />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            setDeletingBoard(board);
+                          }}
+                          aria-label={`${board.title} 보드 삭제`}
+                          title="보드 삭제"
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md bg-white text-gray-300 hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-200 transition-all"
+                        >
+                          <Trash2 size={13} />
+                        </button>
+                      </div>
                     )}
                   </div>
                 );
@@ -428,6 +455,15 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
         onClose={() => setDeletingBoard(null)}
         onConfirm={async () => {
           if (deletingBoard) await handleDeleteBoard(deletingBoard);
+        }}
+      />
+
+      <BoardRenameDialog
+        open={!!renamingBoard}
+        initialTitle={renamingBoard?.title ?? ''}
+        onClose={() => setRenamingBoard(null)}
+        onSubmit={async (nextTitle) => {
+          if (renamingBoard) await handleRenameBoard(renamingBoard, nextTitle);
         }}
       />
     </div>
