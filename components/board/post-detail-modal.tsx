@@ -3,7 +3,7 @@
 import { formatDistanceToNow } from 'date-fns';
 import { ko } from 'date-fns/locale';
 import { Flag, X } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ReportDialog } from '@/components/shared/report-dialog';
@@ -59,6 +59,15 @@ export function PostDetailModal({
   const [reportingPost, setReportingPost] = useState(false);
   const canReportPost = post.authorId !== currentUid && !isHost;
 
+  // Esc로 닫기
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') onClose();
+    }
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
   async function handleComment(e: React.FormEvent) {
     e.preventDefault();
     if (!commentText.trim()) return;
@@ -81,7 +90,12 @@ export function PostDetailModal({
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col">
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] flex flex-col"
+        role="dialog"
+        aria-modal="true"
+        aria-label="포스트 상세"
+      >
         {/* 헤더 */}
         <div className={`rounded-t-2xl px-5 py-4 ${COLOR_MAP[post.color] ?? 'bg-gray-100'}`}>
           <div className="flex items-start justify-between gap-3">

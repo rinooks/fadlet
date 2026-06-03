@@ -12,6 +12,12 @@ export function useBoard(boardId: string) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    // boardId 변경 시 이전 보드 데이터가 잠깐 노출되지 않도록 초기화.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setBoard(null);
+    setError(null);
+    setLoading(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
     const ref = doc(db, boardsPath(), boardId);
     const unsub = onSnapshot(
       ref,

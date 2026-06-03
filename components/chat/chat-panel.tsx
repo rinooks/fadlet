@@ -478,7 +478,7 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                       </div>
                     )}
 
-                    <div className={`absolute top-full mt-1 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-100 px-1.5 py-1 opacity-0 group-hover:opacity-100 transition-opacity ${isMine ? 'right-0' : 'left-0'}`}>
+                    <div className={`absolute top-full mt-1 z-10 flex items-center gap-0.5 bg-white rounded-full shadow-md border border-gray-100 px-1.5 py-1 opacity-0 group-hover:opacity-100 group-focus-within:opacity-100 transition-opacity ${isMine ? 'right-0' : 'left-0'}`}>
                       {EMOJI_LIST.map(({ key, emoji, label }) => (
                         <button
                           key={key}

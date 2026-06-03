@@ -39,7 +39,16 @@ function JoinForm() {
         toast.error('보드를 찾을 수 없습니다. 코드를 다시 확인해 주세요.');
         return;
       }
-      setBoardId(snap.docs[0].id);
+      // 드물게 같은 코드가 중복 발급된 경우, 가장 최근 생성된 보드로 입장(결정적 선택).
+      const docs = [...snap.docs];
+      if (docs.length > 1) {
+        console.warn(`[join] 코드 ${code.toUpperCase()}에 보드 ${docs.length}개 매칭 — 최신 보드로 입장`);
+        docs.sort(
+          (a, b) =>
+            (b.data().createdAt?.toMillis?.() ?? 0) - (a.data().createdAt?.toMillis?.() ?? 0),
+        );
+      }
+      setBoardId(docs[0].id);
       setStep('nickname');
     } catch {
       toast.error('오류가 발생했습니다. 다시 시도해 주세요.');

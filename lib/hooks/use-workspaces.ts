@@ -29,12 +29,15 @@ export function useMyWorkspaces(uid: string | null) {
   const [loading, setLoading] = useState<boolean>(() => !!uid);
 
   useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!uid) {
       setWorkspaces([]);
       setLoading(false);
       return;
     }
     setLoading(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    let cancelled = false;
     const q = query(collectionGroup(db, 'members'), where('uid', '==', uid));
     const unsub = onSnapshot(
       q,
@@ -43,6 +46,7 @@ export function useMyWorkspaces(uid: string | null) {
           .map((d) => d.ref.parent.parent?.id)
           .filter((v): v is string => !!v);
         if (wsIds.length === 0) {
+          if (cancelled) return;
           setWorkspaces([]);
           setLoading(false);
           return;
@@ -51,23 +55,28 @@ export function useMyWorkspaces(uid: string | null) {
           const docs = await Promise.all(
             wsIds.map((wsId) => getDoc(doc(db, workspaceDocPath(wsId)))),
           );
+          if (cancelled) return; // 구독 해제/uid 변경 후 늦게 도착한 응답 무시
           const list: Workspace[] = docs
             .filter((d) => d.exists())
             .map((d) => ({ id: d.id, ...d.data() }) as Workspace);
           list.sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
           setWorkspaces(list);
         } catch (err) {
-          console.error('[useMyWorkspaces] 워크스페이스 문서 로드 실패', err);
+          if (!cancelled) console.error('[useMyWorkspaces] 워크스페이스 문서 로드 실패', err);
         } finally {
-          setLoading(false);
+          if (!cancelled) setLoading(false);
         }
       },
       (err) => {
+        if (cancelled) return;
         console.error('[useMyWorkspaces] members 구독 실패', err);
         setLoading(false);
       },
     );
-    return unsub;
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, [uid]);
 
   return { workspaces, loading };

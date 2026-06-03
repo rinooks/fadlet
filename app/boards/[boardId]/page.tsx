@@ -107,6 +107,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   useEffect(() => {
     const saved = Number(localStorage.getItem(CHAT_WIDTH_KEY));
     if (saved >= CHAT_WIDTH_MIN && saved <= CHAT_WIDTH_MAX) {
+      /* eslint-disable-next-line react-hooks/set-state-in-effect */
       setChatWidth(saved);
       chatWidthRef.current = saved;
     }
@@ -373,28 +374,29 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   }, [board?.mode, board?.timer?.stageId, board?.stages]);
 
   const overdueNotifiedRef = useRef<string | null>(null);
+  // 의존성을 원시값으로 추출 — board.timer/stages 객체 참조가 매 스냅샷마다 바뀌어 interval이 재생성되는 것을 방지.
+  const overdueIsWorkshop = (board?.mode ?? 'single') === 'workshop';
+  const overdueStageId = board?.timer?.stageId ?? null;
+  const overdueStage = (board?.stages ?? []).find((s) => s.id === overdueStageId);
+  const overdueDurationSec = overdueStage?.durationSec ?? 0;
+  const overdueStageTitle = overdueStage?.title ?? '';
+  const timerStatus = board?.timer?.status;
+  const timerStartedAt = board?.timer?.startedAt ?? null;
+  const timerAccumulatedMs = board?.timer?.accumulatedMs ?? 0;
   useEffect(() => {
-    const isWorkshopMode = (board?.mode ?? 'single') === 'workshop';
-    if (!isWorkshopMode || role !== 'host') return;
-    const stages = [...(board?.stages ?? [])].sort((a, b) => a.order - b.order);
-    const stage = stages.find((s) => s.id === (board?.timer?.stageId ?? null));
-    if (!stage || stage.durationSec <= 0) return;
-    const timer = board?.timer;
-    if (!timer || timer.status !== 'running' || !timer.startedAt) return;
-    const totalMs = stage.durationSec * 1000;
-    const startedAt = timer.startedAt;
-    const accumulatedMs = timer.accumulatedMs;
-    const stageId = stage.id;
-    const stageTitle = stage.title;
+    if (!overdueIsWorkshop || role !== 'host') return;
+    if (!overdueStageId || overdueDurationSec <= 0) return;
+    if (timerStatus !== 'running' || !timerStartedAt) return;
+    const totalMs = overdueDurationSec * 1000;
     const interval = setInterval(() => {
-      const elapsed = (Date.now() - startedAt) + accumulatedMs;
-      if (elapsed >= totalMs && overdueNotifiedRef.current !== stageId) {
-        overdueNotifiedRef.current = stageId;
-        toast.warning(`⏰ "${stageTitle}" 시간이 종료되었습니다`);
+      const elapsed = (Date.now() - timerStartedAt) + timerAccumulatedMs;
+      if (elapsed >= totalMs && overdueNotifiedRef.current !== overdueStageId) {
+        overdueNotifiedRef.current = overdueStageId;
+        toast.warning(`⏰ "${overdueStageTitle}" 시간이 종료되었습니다`);
       }
     }, 1000);
     return () => clearInterval(interval);
-  }, [board?.mode, board?.timer, board?.stages, role]);
+  }, [overdueIsWorkshop, role, overdueStageId, overdueDurationSec, overdueStageTitle, timerStatus, timerStartedAt, timerAccumulatedMs]);
 
   if (authLoading || boardLoading) {
     return (
@@ -922,7 +924,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
       {/* 모바일 채팅 오버레이 */}
       {allowChat && showChat && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-white">
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col bg-white" role="dialog" aria-modal="true" aria-label="채팅">
           <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100">
             <span className="font-semibold text-gray-900">채팅</span>
             <button
