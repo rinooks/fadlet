@@ -61,7 +61,7 @@ function buildContext(input: Omit<InsightInput, 'apiKey' | 'model'>): string {
           lines.push(`질문: ${cfg.question}`);
           const counts = cfg.options.map(() => 0);
           for (const r of stagePolls) {
-            for (const idx of r.optionIndexes) {
+            for (const idx of Array.isArray(r.optionIndexes) ? r.optionIndexes : []) {
               if (idx >= 0 && idx < counts.length) counts[idx] += 1;
             }
           }

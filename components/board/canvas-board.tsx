@@ -2,7 +2,7 @@
 
 import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useDraggable, useSensor, useSensors } from '@dnd-kit/core';
 import { CSS } from '@dnd-kit/utilities';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { PostCard } from './post-card';
 import type { Post } from '@/lib/types';
 
@@ -81,6 +81,31 @@ export function CanvasBoard({
 
   // 드래그 종료 직후 Firestore 스냅샷 도착 전까지 위치를 유지하기 위한 로컬 오버라이드
   const [localPositions, setLocalPositions] = useState<Record<string, { x: number; y: number }>>({});
+
+  // 스냅샷이 로컬 오버라이드와 일치하면(또는 포스트가 사라지면) 오버라이드를 정리한다.
+  // 정리하지 않으면 다른 참여자의 이후 이동이 화면에 영영 반영되지 않는다.
+  /* eslint-disable react-hooks/set-state-in-effect */
+  useEffect(() => {
+    setLocalPositions((prev) => {
+      const ids = Object.keys(prev);
+      if (ids.length === 0) return prev;
+      let changed = false;
+      const next = { ...prev };
+      for (const id of ids) {
+        const post = posts.find((p) => p.id === id);
+        const synced =
+          post?.position &&
+          Math.round(post.position.x) === prev[id].x &&
+          Math.round(post.position.y) === prev[id].y;
+        if (!post || synced) {
+          delete next[id];
+          changed = true;
+        }
+      }
+      return changed ? next : prev;
+    });
+  }, [posts]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   // 위치가 없는 포스트엔 자동으로 적당한 좌표를 배정 (생성 순서 기반 격자)
   const positioned = useMemo(() => {

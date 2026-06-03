@@ -61,8 +61,9 @@ export function PollBoard({
     const counts = config.options.map(() => 0);
     let totalRespondents = 0;
     for (const r of responses) {
-      if (r.optionIndexes.length > 0) totalRespondents += 1;
-      for (const idx of r.optionIndexes) {
+      const idxs = Array.isArray(r.optionIndexes) ? r.optionIndexes : [];
+      if (idxs.length > 0) totalRespondents += 1;
+      for (const idx of idxs) {
         if (idx >= 0 && idx < counts.length) counts[idx] += 1;
       }
     }

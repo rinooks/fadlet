@@ -47,13 +47,15 @@ export function usePosts(boardId: string) {
     stageId?: string;
     position?: { x: number; y: number };
   }) {
+    // reorderPosts와 동일한 order 스케일(천 단위) 유지 — 신규 포스트는 항상 끝에 배치.
+    const maxOrder = posts.reduce((m, p) => Math.max(m, p.order ?? 0), 0);
     const payload: Record<string, unknown> = {
       authorId: params.authorId,
       authorName: params.authorName,
       content: params.content,
       color: params.color,
       position: params.position ?? null,
-      order: Date.now(),
+      order: maxOrder + 1000,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };

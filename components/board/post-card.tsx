@@ -121,7 +121,7 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
               {canEdit && (
                 <div className="flex gap-1">
                   {post.authorId === currentUid && (
-                    <button onClick={() => setEditing(true)} className="text-xs text-gray-400 hover:text-gray-700 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="수정">수정</button>
+                    <button onClick={() => { setEditContent(post.content); setEditing(true); }} className="text-xs text-gray-400 hover:text-gray-700 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="수정">수정</button>
                   )}
                   <button onClick={() => onDelete(post.id)} className="text-xs text-red-400 hover:text-red-600 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="삭제">삭제</button>
                 </div>

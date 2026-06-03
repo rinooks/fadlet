@@ -26,7 +26,8 @@ export function useTyping(boardId: string, uid: string, name: string) {
       const now = Date.now();
       const users: TypingUser[] = [];
       snap.forEach((child) => {
-        const val = child.val() as { name: string; typingAt: number };
+        const val = child.val() as { name?: unknown; typingAt?: unknown } | null;
+        if (!val || typeof val.typingAt !== 'number' || typeof val.name !== 'string') return;
         if (child.key !== uid && now - val.typingAt < STALE_THRESHOLD_MS) {
           users.push({ uid: child.key!, name: val.name });
         }
