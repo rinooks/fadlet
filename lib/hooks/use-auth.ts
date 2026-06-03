@@ -9,6 +9,12 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!auth) {
+      // Firebase 미초기화(환경변수 누락 등) 시 런타임 크래시 방지
+      console.error('[useAuth] Firebase Auth가 초기화되지 않았습니다. 환경변수를 확인하세요.');
+      setLoading(false);
+      return;
+    }
     const unsub = auth.onAuthStateChanged(async (user) => {
       if (user) {
         setUid(user.uid);

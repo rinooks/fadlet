@@ -15,22 +15,27 @@ export function usePresence(boardId: string, uid: string | null) {
   const sessionRef = useRef<ReturnType<typeof ref> | null>(null);
 
   useEffect(() => {
-    if (!boardId || !uid || !rtdb) return;
+    if (!boardId || !uid) return;
+    if (!rtdb) {
+      // databaseURL 환경변수 누락 시 rtdb가 null → 접속자 수가 0으로 고정된다.
+      console.warn('[usePresence] Realtime Database가 초기화되지 않았습니다. NEXT_PUBLIC_FIREBASE_DATABASE_URL 환경변수를 확인하세요. (접속자 수가 0으로 표시됩니다)');
+      return;
+    }
 
     const sessionId = `${uid}_${Math.random().toString(36).slice(2, 9)}`;
     const sRef = ref(rtdb, `presence/${boardId}/${sessionId}`);
     sessionRef.current = sRef;
 
-    set(sRef, { uid, connectedAt: Date.now() }).catch(() => {});
-    try { onDisconnect(sRef).remove(); } catch { /* RTDB 미활성화 시 무시 */ }
+    set(sRef, { uid, connectedAt: Date.now() }).catch((err) => console.error('[usePresence] 세션 등록 실패', err));
+    try { onDisconnect(sRef).remove(); } catch (err) { console.error('[usePresence] onDisconnect 설정 실패', err); }
 
     const boardPresenceRef = ref(rtdb, `presence/${boardId}`);
     let unsub: (() => void) | null = null;
     try {
       unsub = onValue(boardPresenceRef, (snap) => {
         setSessionCount(snap.exists() ? Object.keys(snap.val() as object).length : 0);
-      }, () => { /* 연결 실패 시 조용히 처리 */ });
-    } catch { /* RTDB 미활성화 시 무시 */ }
+      }, (err) => { console.error('[usePresence] presence 구독 실패', err); });
+    } catch (err) { console.error('[usePresence] presence 구독 등록 실패', err); }
 
     return () => {
       unsub?.();

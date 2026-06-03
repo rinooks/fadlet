@@ -14,6 +14,15 @@ const firebaseConfig = {
   databaseURL: process.env.NEXT_PUBLIC_FIREBASE_DATABASE_URL,
 };
 
+// 브라우저에서 필수 환경변수 누락 시 경고 (무증상 장애 방지)
+if (typeof window !== 'undefined') {
+  if (!firebaseConfig.apiKey) {
+    console.error('[firebase] NEXT_PUBLIC_FIREBASE_API_KEY가 없습니다. Firebase가 초기화되지 않습니다.');
+  } else if (!firebaseConfig.databaseURL) {
+    console.error('[firebase] NEXT_PUBLIC_FIREBASE_DATABASE_URL이 없습니다. 실시간 접속자 수가 동작하지 않습니다.');
+  }
+}
+
 // apiKey가 없으면(빌드 타임 SSR) 초기화 건너뜀
 const app = firebaseConfig.apiKey
   ? getApps().length ? getApp() : initializeApp(firebaseConfig)
