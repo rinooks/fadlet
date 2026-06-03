@@ -71,6 +71,12 @@ const IDLE_TIMER: TimerState = {
   accumulatedMs: 0,
 };
 
+// 데스크톱 채팅 패널 너비(px) — 드래그로 조절, localStorage에 기억
+const CHAT_WIDTH_DEFAULT = 320;
+const CHAT_WIDTH_MIN = 280;
+const CHAT_WIDTH_MAX = 640;
+const CHAT_WIDTH_KEY = 'fadlet-chat-width';
+
 export default function BoardPage({ params, searchParams }: PageProps) {
   const { boardId } = use(params);
   const { code } = use(searchParams);
@@ -83,6 +89,10 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [isWsMember, setIsWsMember] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [showDesktopChat, setShowDesktopChat] = useState(true);
+  const [chatWidth, setChatWidth] = useState(CHAT_WIDTH_DEFAULT);
+  const chatWidthRef = useRef(CHAT_WIDTH_DEFAULT);
+  const chatPanelRef = useRef<HTMLDivElement>(null);
+  const chatResizingRef = useRef(false);
   const [showNewPost, setShowNewPost] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const [showFacilitator, setShowFacilitator] = useState(false);
@@ -91,6 +101,46 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [showAiInsights, setShowAiInsights] = useState(false);
   const [detailPost, setDetailPost] = useState<Post | null>(null);
   const [joined, setJoined] = useState(false);
+
+  // 저장된 채팅 너비 복원
+  useEffect(() => {
+    const saved = Number(localStorage.getItem(CHAT_WIDTH_KEY));
+    if (saved >= CHAT_WIDTH_MIN && saved <= CHAT_WIDTH_MAX) {
+      setChatWidth(saved);
+      chatWidthRef.current = saved;
+    }
+  }, []);
+
+  // 채팅 패널 드래그 리사이즈 (드래그 중엔 DOM만 갱신해 보드 리렌더 방지, 놓을 때 1회 커밋)
+  useEffect(() => {
+    function onMove(e: MouseEvent) {
+      if (!chatResizingRef.current) return;
+      const next = Math.min(CHAT_WIDTH_MAX, Math.max(CHAT_WIDTH_MIN, window.innerWidth - e.clientX));
+      chatWidthRef.current = next;
+      if (chatPanelRef.current) chatPanelRef.current.style.width = `${next}px`;
+    }
+    function onUp() {
+      if (!chatResizingRef.current) return;
+      chatResizingRef.current = false;
+      document.body.style.userSelect = '';
+      document.body.style.cursor = '';
+      setChatWidth(chatWidthRef.current);
+      try { localStorage.setItem(CHAT_WIDTH_KEY, String(chatWidthRef.current)); } catch { /* 무시 */ }
+    }
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+    return () => {
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+  }, []);
+
+  function startChatResize(e: React.MouseEvent) {
+    e.preventDefault();
+    chatResizingRef.current = true;
+    document.body.style.userSelect = 'none';
+    document.body.style.cursor = 'col-resize';
+  }
 
   const { board, loading: boardLoading, error: boardError } = useBoard(boardId);
   const { posts, loading: postsLoading, addPost, updatePost, updatePosition, deletePost, reorderPosts } = usePosts(boardId);
@@ -803,7 +853,27 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
         {/* 데스크톱 채팅 패널 */}
         {allowChat && showDesktopChat && (
-          <div className="hidden lg:flex w-80 flex-col flex-shrink-0">
+          <div
+            ref={chatPanelRef}
+            className="hidden lg:flex flex-col flex-shrink-0 relative"
+            style={{ width: chatWidth }}
+          >
+            {/* 너비 조절 핸들 */}
+            <div
+              onMouseDown={startChatResize}
+              onDoubleClick={() => {
+                setChatWidth(CHAT_WIDTH_DEFAULT);
+                chatWidthRef.current = CHAT_WIDTH_DEFAULT;
+                try { localStorage.setItem(CHAT_WIDTH_KEY, String(CHAT_WIDTH_DEFAULT)); } catch { /* 무시 */ }
+              }}
+              role="separator"
+              aria-orientation="vertical"
+              aria-label="채팅 너비 조절 (더블클릭 시 기본값)"
+              title="드래그하여 너비 조절 · 더블클릭 시 기본 너비"
+              className="group absolute left-0 top-0 bottom-0 z-20 flex w-2 -translate-x-1/2 cursor-col-resize items-center justify-center"
+            >
+              <div className="h-10 w-0.5 rounded-full bg-gray-200 transition-colors group-hover:bg-indigo-400" />
+            </div>
             <ChatPanel
               messages={messages}
               loading={msgsLoading}
