@@ -11,6 +11,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
   where,
 } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
@@ -138,6 +139,12 @@ export async function createWorkspace(params: {
     joinedAt: serverTimestamp(),
   });
   return wsId;
+}
+
+export async function renameWorkspace(wsId: string, name: string): Promise<void> {
+  const next = name.trim();
+  if (!next) throw new Error('워크스페이스 이름을 입력해주세요.');
+  await updateDoc(doc(db, workspaceDocPath(wsId)), { name: next });
 }
 
 export async function joinWorkspaceByCode(params: {

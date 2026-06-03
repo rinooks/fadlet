@@ -22,7 +22,7 @@ import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
 import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
-import { leaveWorkspace, useWorkspace, useWorkspaceMembers } from '@/lib/hooks/use-workspaces';
+import { leaveWorkspace, renameWorkspace, useWorkspace, useWorkspaceMembers } from '@/lib/hooks/use-workspaces';
 import { getTemplate } from '@/lib/templates';
 import type { Board } from '@/lib/types';
 import { runFirestore } from '@/lib/utils/firestore-action';
@@ -42,6 +42,7 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [deletingBoard, setDeletingBoard] = useState<Board | null>(null);
   const [renamingBoard, setRenamingBoard] = useState<Board | null>(null);
+  const [renameWsOpen, setRenameWsOpen] = useState(false);
 
   const inviteUrl =
     workspace && typeof window !== 'undefined'
@@ -150,6 +151,13 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
     toast.success('보드 이름을 변경했습니다.');
   }
 
+  async function handleRenameWorkspace(nextName: string) {
+    await runFirestore('워크스페이스 이름을 변경하지 못했습니다.', () =>
+      renameWorkspace(wsId, nextName),
+    );
+    toast.success('워크스페이스 이름을 변경했습니다.');
+  }
+
   if (loading || !isOperator) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -203,6 +211,16 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           <h1 className="font-semibold text-gray-900 truncate" aria-current="page">
             {workspace.name}
           </h1>
+          {isOwner && (
+            <button
+              onClick={() => setRenameWsOpen(true)}
+              className="flex-shrink-0 text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 p-1 rounded transition-colors"
+              aria-label="워크스페이스 이름 변경"
+              title="이름 변경"
+            >
+              <Pencil size={13} />
+            </button>
+          )}
           <button
             onClick={copyCode}
             className="flex items-center gap-1 font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100 flex-shrink-0"
@@ -465,6 +483,16 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
         onSubmit={async (nextTitle) => {
           if (renamingBoard) await handleRenameBoard(renamingBoard, nextTitle);
         }}
+      />
+
+      <BoardRenameDialog
+        open={renameWsOpen}
+        initialTitle={workspace.name}
+        dialogTitle="워크스페이스 이름 변경"
+        placeholder="워크스페이스 이름"
+        maxLength={40}
+        onClose={() => setRenameWsOpen(false)}
+        onSubmit={handleRenameWorkspace}
       />
     </div>
   );

@@ -16,9 +16,23 @@ interface BoardRenameDialogProps {
   initialTitle: string;
   onClose: () => void;
   onSubmit: (title: string) => Promise<void> | void;
+  /** 다이얼로그 제목 (기본: 보드 이름 변경) */
+  dialogTitle?: string;
+  /** 인풋 placeholder (기본: 보드 이름) */
+  placeholder?: string;
+  /** 최대 글자 수 (기본: 60) */
+  maxLength?: number;
 }
 
-export function BoardRenameDialog({ open, initialTitle, onClose, onSubmit }: BoardRenameDialogProps) {
+export function BoardRenameDialog({
+  open,
+  initialTitle,
+  onClose,
+  onSubmit,
+  dialogTitle = '보드 이름 변경',
+  placeholder = '보드 이름',
+  maxLength = 60,
+}: BoardRenameDialogProps) {
   const [title, setTitle] = useState(initialTitle);
   const [busy, setBusy] = useState(false);
 
@@ -52,15 +66,15 @@ export function BoardRenameDialog({ open, initialTitle, onClose, onSubmit }: Boa
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>보드 이름 변경</DialogTitle>
+          <DialogTitle>{dialogTitle}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-3">
           <Input
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            maxLength={60}
+            maxLength={maxLength}
             autoFocus
-            placeholder="보드 이름"
+            placeholder={placeholder}
             className="text-base"
           />
           <DialogFooter>
