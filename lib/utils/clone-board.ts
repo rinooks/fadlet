@@ -3,6 +3,7 @@
 import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
+import { FREE_TIER_LIMIT_CODE, isBoardQuotaReached } from '@/lib/free-tier';
 import { generateBoardCode } from '@/lib/utils/generate-board-code';
 import type { Board, Stage } from '@/lib/types';
 
@@ -13,6 +14,8 @@ interface CloneBoardParams {
   workspaceId?: string;
   /** 제목 prefix. 기본값: "[복제] " */
   titlePrefix?: string;
+  /** 슈퍼관리자 등 무료 한도 면제 대상이면 true. */
+  bypassLimit?: boolean;
 }
 
 /**
@@ -20,8 +23,14 @@ interface CloneBoardParams {
  * 포스트·메시지·라이브 응답 등 인스턴스 데이터는 복사하지 않는다 (원본 워크숍 결과 보존).
  */
 export async function cloneBoard(params: CloneBoardParams): Promise<{ id: string; boardCode: string }> {
-  const { source, ownerUid, workspaceId, titlePrefix = '[복제] ' } = params;
+  const { source, ownerUid, workspaceId, titlePrefix = '[복제] ', bypassLimit = false } = params;
   const targetWs = workspaceId ?? source.workspaceId;
+
+  // 무료 한도 체크 — 복제로 제한 우회 방지.
+  if (!bypassLimit && targetWs !== 'demo' && (await isBoardQuotaReached(targetWs))) {
+    throw new Error(FREE_TIER_LIMIT_CODE);
+  }
+
   const boardCode = await generateBoardCode();
 
   // stages는 id를 새로 발급 — 원본과 충돌 방지.

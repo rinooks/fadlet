@@ -15,7 +15,7 @@ import { ProfileCompletionModal } from '@/components/profile/profile-completion-
 import { GoogleSignInError } from '@/lib/auth/google-sign-in';
 import { db } from '@/lib/firebase/client';
 import { boardsPath } from '@/lib/firebase/collections';
-import { FREE_TIER_BOARDS_PER_WORKSPACE, showUpgradeMessage } from '@/lib/free-tier';
+import { isBoardQuotaReached, showUpgradeMessage } from '@/lib/free-tier';
 import { DEFAULT_PROFILE_PROMPT_THRESHOLD, useAppSettings } from '@/lib/firebase/settings';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { useUserProfile } from '@/lib/hooks/use-user-profile';
@@ -65,15 +65,10 @@ function NewBoardForm() {
 
     setCreating(true);
     try {
-      if (!isSuperAdmin) {
-        const boardCountSnap = await getDocs(
-          query(collection(db, boardsPath()), where('workspaceId', '==', workspaceId)),
-        );
-        if (boardCountSnap.size >= FREE_TIER_BOARDS_PER_WORKSPACE) {
-          showUpgradeMessage('board');
-          setCreating(false);
-          return;
-        }
+      if (!isSuperAdmin && (await isBoardQuotaReached(workspaceId))) {
+        showUpgradeMessage('board');
+        setCreating(false);
+        return;
       }
       const boardCode = await generateBoardCode();
       const docRef = await addDoc(collection(db, boardsPath()), {

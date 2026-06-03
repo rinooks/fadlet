@@ -1,8 +1,26 @@
+import { collection, getDocs, query, where } from 'firebase/firestore';
 import { toast } from 'sonner';
+import { db } from '@/lib/firebase/client';
+import { boardsPath } from '@/lib/firebase/collections';
 
 export const FREE_TIER_WORKSPACE_LIMIT = 1;
 export const FREE_TIER_BOARDS_PER_WORKSPACE = 3;
 export const UPGRADE_CONTACT_EMAIL = 'pjh@referencehrd.com';
+
+/** 무료 한도 초과로 보드 생성/복제가 거부될 때 throw하는 에러 코드. */
+export const FREE_TIER_LIMIT_CODE = 'FREE_TIER_LIMIT';
+
+/**
+ * 워크스페이스의 보드 수가 무료 한도 이상인지 확인.
+ * 주의: 클라이언트 측 best-effort 체크다. 동시 생성(TOCTOU)을 완전히 막으려면
+ * 서버(Cloud Function 카운터 + 규칙) 강제가 필요하다.
+ */
+export async function isBoardQuotaReached(workspaceId: string): Promise<boolean> {
+  const snap = await getDocs(
+    query(collection(db, boardsPath()), where('workspaceId', '==', workspaceId)),
+  );
+  return snap.size >= FREE_TIER_BOARDS_PER_WORKSPACE;
+}
 
 type LimitReason = 'workspace' | 'board';
 

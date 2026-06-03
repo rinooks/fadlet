@@ -57,6 +57,7 @@ import { getBackground } from '@/lib/backgrounds';
 import { DEFAULT_KANBAN_COLUMNS, DEFAULT_CATEGORY_COLUMNS } from '@/lib/kanban-colors';
 import { uploadPostImage } from '@/lib/utils/upload-file';
 import { cloneBoard } from '@/lib/utils/clone-board';
+import { FREE_TIER_LIMIT_CODE, showUpgradeMessage } from '@/lib/free-tier';
 
 interface PageProps {
   params: Promise<{ boardId: string }>;
@@ -592,8 +593,12 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                           toast.success('보드를 복제했습니다.');
                           router.push(`/boards/${id}`);
                         } catch (err) {
-                          console.error('[clone]', err);
-                          toast.error('복제에 실패했습니다.');
+                          if (err instanceof Error && err.message === FREE_TIER_LIMIT_CODE) {
+                            showUpgradeMessage('board');
+                          } else {
+                            console.error('[clone]', err);
+                            toast.error('복제에 실패했습니다.');
+                          }
                         }
                       }
                     : undefined
