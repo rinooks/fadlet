@@ -13,6 +13,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { wordcloudEntriesPath } from '@/lib/firebase/collections';
+import { safeParseDocs, wordcloudEntrySchema } from '@/lib/types/schemas';
 import type { WordcloudEntry } from '@/lib/types';
 
 export function useWordcloud(boardId: string, stageId: string | null) {
@@ -33,7 +34,7 @@ export function useWordcloud(boardId: string, stageId: string | null) {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as WordcloudEntry);
+        const list = safeParseDocs<WordcloudEntry>(snap.docs, wordcloudEntrySchema, 'useWordcloud');
         setEntries(list);
         setLoading(false);
       },

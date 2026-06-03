@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { pollResponsesPath } from '@/lib/firebase/collections';
+import { pollResponseSchema, safeParseDocs } from '@/lib/types/schemas';
 import type { PollResponse } from '@/lib/types';
 import { runFirestore } from '@/lib/utils/firestore-action';
 
@@ -33,7 +34,7 @@ export function usePoll(boardId: string, stageId: string | null) {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as PollResponse);
+        const list = safeParseDocs<PollResponse>(snap.docs, pollResponseSchema, 'usePoll');
         setResponses(list);
         setLoading(false);
       },

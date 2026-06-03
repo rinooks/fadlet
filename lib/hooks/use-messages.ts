@@ -16,7 +16,8 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { messagesPath } from '@/lib/firebase/collections';
-import type { EmojiType, LinkPreview, Message, MessageReplyTo, MessageType, UserRole } from '@/lib/types';
+import type { EmojiType, Message, MessageReplyTo, MessageType, UserRole } from '@/lib/types';
+import { linkPreviewSchema } from '@/lib/types/schemas';
 import { runFirestore } from '@/lib/utils/firestore-action';
 
 const URL_REGEX = /https?:\/\/[^\s]+/g;
@@ -85,10 +86,10 @@ export function useMessages(boardId: string) {
         try {
           const res = await fetch(`/api/og-preview?url=${encodeURIComponent(urls[0])}`);
           if (res.ok) {
-            const preview: LinkPreview = await res.json();
-            if (preview.title) {
+            const parsed = linkPreviewSchema.safeParse(await res.json());
+            if (parsed.success && parsed.data.title) {
               data.type = 'link';
-              data.linkPreview = preview;
+              data.linkPreview = parsed.data;
             }
           }
         } catch {

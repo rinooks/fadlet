@@ -16,6 +16,7 @@ import {
 import { useCallback, useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { qnaQuestionsPath } from '@/lib/firebase/collections';
+import { qnaQuestionSchema, safeParseDocs } from '@/lib/types/schemas';
 import type { QnaQuestion } from '@/lib/types';
 
 export function useQna(boardId: string, stageId: string | null) {
@@ -36,7 +37,7 @@ export function useQna(boardId: string, stageId: string | null) {
     const unsub = onSnapshot(
       q,
       (snap) => {
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as QnaQuestion);
+        const list = safeParseDocs<QnaQuestion>(snap.docs, qnaQuestionSchema, 'useQna');
         setQuestions(list);
         setLoading(false);
       },
