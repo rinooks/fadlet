@@ -69,12 +69,40 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const res = await fetch(parsed.toString(), {
-      headers: { 'User-Agent': 'Fadlet-Bot/1.0' },
-      signal: AbortSignal.timeout(5000),
-      redirect: 'follow',
-    });
+    // 리다이렉트를 수동으로 따라가며 각 hop의 호스트를 재검증한다 (SSRF: 사설/메타데이터 IP로의 리다이렉트 우회 차단).
+    let currentUrl = parsed.toString();
+    let res: Response | null = null;
+    for (let hop = 0; hop < 5; hop++) {
+      const r = await fetch(currentUrl, {
+        headers: { 'User-Agent': 'Fadlet-Bot/1.0' },
+        signal: AbortSignal.timeout(5000),
+        redirect: 'manual',
+      });
+      if (r.status >= 300 && r.status < 400) {
+        const loc = r.headers.get('location');
+        if (!loc) break;
+        let next: URL;
+        try {
+          next = new URL(loc, currentUrl);
+        } catch {
+          return NextResponse.json({ error: '유효하지 않은 리다이렉트 주소입니다.' }, { status: 400 });
+        }
+        if (next.protocol !== 'http:' && next.protocol !== 'https:') {
+          return NextResponse.json({ error: 'http(s)만 허용됩니다.' }, { status: 400 });
+        }
+        if (isPrivateHost(next.hostname)) {
+          return NextResponse.json({ error: '내부 주소는 허용되지 않습니다.' }, { status: 400 });
+        }
+        currentUrl = next.toString();
+        continue;
+      }
+      res = r;
+      break;
+    }
+    if (!res) throw new Error('리다이렉트가 너무 많습니다.');
     if (!res.ok) throw new Error('페이지 요청 실패');
+    // 최종 도달 URL 기준으로 메타 구성
+    parsed = new URL(currentUrl);
 
     // 응답 크기 제한 (512KB) — 메타 태그만 필요하므로 충분
     const reader = res.body?.getReader();

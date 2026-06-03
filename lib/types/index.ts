@@ -237,6 +237,7 @@ export interface Operator {
 }
 
 export interface AppSettings {
+  /** @deprecated 키는 서버 환경변수 GEMINI_API_KEY로 이전됨. Firestore에 저장하지 않는다. */
   geminiApiKey?: string;
   geminiModel?: string;
   /** N번째 보드 생성 시 프로필 완성 모달 노출. 0이면 사용 안 함, undefined면 기본값(3) 사용. */

@@ -5,7 +5,7 @@ import { Sparkles, RefreshCw, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { db } from '@/lib/firebase/client';
+import { auth, db } from '@/lib/firebase/client';
 import {
   boardsPath,
   pollResponsesPath,
@@ -13,7 +13,6 @@ import {
   wordcloudEntriesPath,
 } from '@/lib/firebase/collections';
 import { DEFAULT_GEMINI_MODEL, fetchAppSettings } from '@/lib/firebase/settings';
-import { generateInsights } from '@/lib/ai/gemini';
 import type {
   Board,
   Message,
@@ -38,11 +37,14 @@ export function AiInsightsCard({ board, posts, messages, isHost }: Props) {
     if (!isHost) return;
     setGenerating(true);
     try {
-      const settings = await fetchAppSettings();
-      if (!settings?.geminiApiKey) {
-        toast.error('관리자 페이지에서 Gemini API 키를 먼저 설정해 주세요.');
+      const idToken = await auth?.currentUser?.getIdToken();
+      if (!idToken) {
+        toast.error('로그인 상태를 확인해 주세요.');
         return;
       }
+
+      const settings = await fetchAppSettings();
+      const model = settings?.geminiModel ?? DEFAULT_GEMINI_MODEL;
 
       const [polls, words, qnas] = await Promise.all([
         snapshotOnce<PollResponse>(pollResponsesPath(board.id)),
@@ -50,23 +52,37 @@ export function AiInsightsCard({ board, posts, messages, isHost }: Props) {
         snapshotOnce<QnaQuestion>(qnaQuestionsPath(board.id)),
       ]);
 
-      const result = await generateInsights({
-        apiKey: settings.geminiApiKey,
-        model: settings.geminiModel ?? DEFAULT_GEMINI_MODEL,
-        board: { title: board.title, mode: board.mode, stages: board.stages },
-        posts,
-        messages,
-        pollResponses: polls,
-        wordcloudEntries: words,
-        qnaQuestions: qnas,
+      // Gemini 키는 서버에만 있으므로 서버 API route를 통해 호출한다.
+      const res = await fetch('/api/insights', {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify({
+          model,
+          board: { title: board.title, mode: board.mode, stages: board.stages },
+          posts,
+          messages,
+          pollResponses: polls,
+          wordcloudEntries: words,
+          qnaQuestions: qnas,
+        }),
       });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? `요청 실패 (${res.status})`);
+      }
+
+      const result = (await res.json()) as { summary: string; insights: string[]; nextSteps: string[] };
 
       await updateDoc(doc(db, boardsPath(), board.id), {
         aiInsights: {
           summary: result.summary,
           insights: result.insights,
           nextSteps: result.nextSteps,
-          model: settings.geminiModel ?? DEFAULT_GEMINI_MODEL,
+          model,
           generatedAt: serverTimestamp(),
           generatedBy: board.ownerId,
         },

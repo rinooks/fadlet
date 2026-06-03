@@ -72,12 +72,13 @@ service cloud.firestore {
     match /operators/{uid} {
       allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());
       allow list: if isSuperAdmin();
-      // 첫 로그인 시 본인이 자기 문서를 생성. 자동 승인이므로 allowed는 true 허용.
-      // isSuperAdmin은 슈퍼관리자만 true 설정 가능.
+      // 첫 로그인 시 본인이 자기 문서를 생성. 비-슈퍼는 allowed=false(승인 대기)로만 생성 가능 — 자기 승인 차단.
+      // isSuperAdmin/allowed=true는 슈퍼관리자만 설정 가능.
       allow create: if isAuthenticated()
         && request.auth.uid == uid
         && request.resource.data.uid == uid
-        && (request.resource.data.isSuperAdmin == false || isSuperAdmin());
+        && (request.resource.data.isSuperAdmin == false || isSuperAdmin())
+        && (request.resource.data.allowed == false || isSuperAdmin());
       // 본인은 메타(displayName/email/lastLoginAt)만 갱신, allowed/isSuperAdmin은 슈퍼만
       allow update: if isAuthenticated()
         && (
@@ -103,7 +104,10 @@ service cloud.firestore {
         || (isAllowedOperator() && resource.data.ownerUid == request.auth.uid);
 
       match /members/{memberUid} {
-        allow read: if isAuthenticated();
+        // 본인 문서(가입 확인용), 같은 워크스페이스 멤버(멤버 목록 조회), 슈퍼관리자만 읽기.
+        // 비멤버 외부인의 이메일·이름 열람 차단.
+        allow read: if isAuthenticated()
+          && (request.auth.uid == memberUid || isWorkspaceMember(wsId) || isSuperAdmin());
         allow create: if isAllowedOperator()
           && request.auth.uid == memberUid
           && request.resource.data.uid == memberUid;

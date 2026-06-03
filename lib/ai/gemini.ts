@@ -1,5 +1,4 @@
-'use client';
-
+// 서버 전용 모듈 — Gemini API 키는 서버 환경변수로만 다루고 클라이언트에 노출하지 않는다.
 import type {
   Board,
   Message,

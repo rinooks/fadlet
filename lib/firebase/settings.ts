@@ -42,19 +42,23 @@ export async function fetchAppSettings(): Promise<AppSettings | null> {
   return snap.exists() ? (snap.data() as AppSettings) : null;
 }
 
+/**
+ * Gemini 모델 선택 저장. API 키는 Firestore에 저장하지 않고 서버 환경변수(GEMINI_API_KEY)로만 다룬다.
+ */
 export async function saveGeminiSettings(params: {
   uid: string;
-  apiKey?: string;
-  model?: string;
+  model: string;
 }): Promise<void> {
   const ref = doc(db, settingsDocPath());
-  const payload: Record<string, unknown> = {
-    updatedAt: serverTimestamp(),
-    updatedBy: params.uid,
-  };
-  if (params.apiKey !== undefined) payload.geminiApiKey = params.apiKey;
-  if (params.model !== undefined) payload.geminiModel = params.model;
-  await setDoc(ref, payload, { merge: true });
+  await setDoc(
+    ref,
+    {
+      geminiModel: params.model,
+      updatedAt: serverTimestamp(),
+      updatedBy: params.uid,
+    },
+    { merge: true },
+  );
 }
 
 export async function saveProfilePromptThreshold(params: {
