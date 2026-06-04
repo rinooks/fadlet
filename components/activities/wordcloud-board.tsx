@@ -18,8 +18,15 @@ interface WordcloudBoardProps {
   isHost: boolean;
 }
 
-const MIN_FONT_REM = 0.85;
-const MAX_FONT_REM = 3.6;
+// 워드클라우드 가상 좌표계(viewBox) — 충돌 계산을 이 공간에서 하고 SVG가 반응형으로 스케일.
+const VW = 1000;
+const VH = 600;
+const MIN_FONT = 26;
+const MAX_FONT = 96;
+const GAP = 7; // 단어 간 최소 간격(가상 단위)
+const MAX_WORDS = 120;
+// 브랜드 톤 색상 hue (인디고·바이올렛·퍼플·핑크·블루·틸)
+const HUES = [245, 262, 284, 330, 212, 188];
 
 function hashString(s: string): number {
   let h = 2166136261;
@@ -27,6 +34,23 @@ function hashString(s: string): number {
     h = Math.imul(h ^ s.charCodeAt(i), 16777619);
   }
   return h >>> 0;
+}
+
+// 텍스트 폭 측정(캔버스). SSR 등 캔버스 미가용 시 글자 종류 기반 추정으로 폴백.
+let _measureCtx: CanvasRenderingContext2D | null = null;
+function measureWidth(text: string, fontPx: number): number {
+  if (typeof document !== 'undefined') {
+    if (!_measureCtx) _measureCtx = document.createElement('canvas').getContext('2d');
+    if (_measureCtx) {
+      _measureCtx.font = `800 ${fontPx}px "Pretendard Variable", Pretendard, sans-serif`;
+      return _measureCtx.measureText(text).width;
+    }
+  }
+  let w = 0;
+  for (const ch of text) {
+    w += /[ᄀ-ᇿ㄰-㆏가-힣　-〿＀-￯]/.test(ch) ? fontPx : fontPx * 0.56;
+  }
+  return w;
 }
 
 export function WordcloudBoard({
@@ -66,42 +90,78 @@ export function WordcloudBoard({
   const maxCount = Math.max(1, ...aggregated.map((a) => a.count));
 
   const positionedWords = useMemo(() => {
-    if (aggregated.length === 0) return [];
+    const words = aggregated.slice(0, MAX_WORDS);
+    if (words.length === 0) return [];
 
-    const ringSlotCount = (r: number) => 6 + r * 4;
-    const ringRadius = (r: number) => 22 + r * 13;
+    // 가장 큰 단어가 가로폭을 넘지 않도록 최대 폰트를 보정
+    const top = words[0];
+    const topLabel = top.count > 1 ? `${top.text} ×${top.count}` : top.text;
+    const topW = measureWidth(topLabel, MAX_FONT);
+    const maxFont = topW > VW - 60 ? (MAX_FONT * (VW - 60)) / topW : MAX_FONT;
+    const minFont = Math.min(MIN_FONT, maxFont * 0.5);
+    const fontPxFor = (count: number) =>
+      minFont + (maxFont - minFont) * Math.pow(count / maxCount, 0.8);
 
-    let ringIdx = 0;
-    let slotInRing = 0;
+    const cx0 = VW / 2;
+    const cy0 = VH / 2;
+    const placed: { x: number; y: number; hw: number; hh: number }[] = [];
 
-    return aggregated.map((a, idx) => {
-      if (idx === 0) {
-        return { ...a, x: 50, y: 50, rotation: 0 };
+    return words.map((a, i) => {
+      const fontPx = fontPxFor(a.count);
+      const label = a.count > 1 ? `${a.text} ×${a.count}` : a.text;
+      const textW = measureWidth(label, fontPx);
+      const textH = fontPx * 0.92;
+      // 가장 큰 단어(첫 번째)는 정렬, 나머지는 ±17° 살짝 회전
+      const rot = i === 0 ? 0 : (((hashString(a.text) >> 20) & 0x3ff) / 0x3ff - 0.5) * 34;
+      const rad = Math.abs((rot * Math.PI) / 180);
+      // 회전한 사각형의 축정렬 바운딩박스 반폭/반높이
+      const halfW = (Math.abs(textW * Math.cos(rad)) + Math.abs(textH * Math.sin(rad))) / 2 + GAP;
+      const halfH = (Math.abs(textW * Math.sin(rad)) + Math.abs(textH * Math.cos(rad))) / 2 + GAP;
+
+      let x = cx0;
+      let y = cy0;
+      if (i > 0) {
+        // 아르키메데스 나선을 따라 충돌이 없는 첫 위치 탐색 (세로 압축 → 가로로 풍성)
+        const startAngle = ((hashString(a.text) & 0x3ff) / 0x3ff) * Math.PI * 2;
+        let angle = startAngle;
+        for (let step = 0; step < 5000; step++) {
+          const r = 3.2 * (angle - startAngle);
+          const nx = cx0 + r * Math.cos(angle);
+          const ny = cy0 + r * Math.sin(angle) * 0.62;
+          angle += 0.22;
+          x = nx;
+          y = ny;
+          if (nx - halfW < 0 || nx + halfW > VW || ny - halfH < 0 || ny + halfH > VH) continue;
+          let hit = false;
+          for (const b of placed) {
+            if (Math.abs(nx - b.x) < halfW + b.hw && Math.abs(ny - b.y) < halfH + b.hh) {
+              hit = true;
+              break;
+            }
+          }
+          if (!hit) break;
+        }
       }
+      placed.push({ x, y, hw: halfW, hh: halfH });
 
-      if (slotInRing >= ringSlotCount(ringIdx)) {
-        ringIdx += 1;
-        slotInRing = 0;
-      }
+      const ratio = a.count / maxCount;
+      const hue = HUES[hashString(a.text) % HUES.length];
+      // 빈도 높을수록 진하고 채도 높게
+      const color = `hsl(${hue} ${(58 + ratio * 18).toFixed(0)}% ${(60 - ratio * 28).toFixed(0)}%)`;
 
-      const slots = ringSlotCount(ringIdx);
-      const baseAngle = (slotInRing / slots) * Math.PI * 2;
-      const h = hashString(a.text);
-      const angleJitter = ((h & 0x3ff) / 0x3ff - 0.5) * (Math.PI / slots) * 1.2;
-      const radiusJitter = (((h >> 10) & 0x3ff) / 0x3ff - 0.5) * 8;
-      const rotationDeg = (((h >> 20) & 0x3ff) / 0x3ff - 0.5) * 22;
-
-      const angle = baseAngle + angleJitter + (ringIdx % 2 === 0 ? 0 : Math.PI / slots);
-      const radius = ringRadius(ringIdx) + radiusJitter;
-
-      const x = 50 + radius * Math.cos(angle) * 0.95;
-      const y = 50 + radius * Math.sin(angle) * 0.78;
-
-      slotInRing += 1;
-
-      return { ...a, x, y, rotation: rotationDeg };
+      return {
+        ...a,
+        x,
+        y,
+        rot,
+        fontPx,
+        color,
+        weight: ratio >= 0.5 ? 800 : 700,
+        halfTextW: textW / 2,
+        halfTextH: textH / 2,
+      };
     });
-  }, [aggregated]);
+  }, [aggregated, maxCount]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -114,20 +174,6 @@ export function WordcloudBoard({
     } finally {
       setSubmitting(false);
     }
-  }
-
-  function fontSize(count: number): string {
-    const ratio = count / maxCount;
-    const rem = MIN_FONT_REM + (MAX_FONT_REM - MIN_FONT_REM) * ratio;
-    return `${rem.toFixed(2)}rem`;
-  }
-
-  function colorClass(count: number): string {
-    const ratio = count / maxCount;
-    if (ratio >= 0.8) return 'text-indigo-700';
-    if (ratio >= 0.5) return 'text-indigo-600';
-    if (ratio >= 0.3) return 'text-indigo-500';
-    return 'text-gray-600';
   }
 
   return (
@@ -198,43 +244,69 @@ export function WordcloudBoard({
               </p>
             ) : (
               <div
-                className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50/40 via-white to-purple-50/30"
+                className="relative w-full overflow-hidden rounded-2xl bg-gradient-to-br from-indigo-50/60 via-white to-purple-50/50 ring-1 ring-indigo-100/70 shadow-inner"
                 style={{ aspectRatio: '5 / 3', minHeight: 320 }}
               >
-                {positionedWords.map((a) => (
-                  <span
-                    key={a.text}
-                    className={`group absolute whitespace-nowrap font-bold select-none ${colorClass(a.count)}`}
-                    style={{
-                      left: `${a.x}%`,
-                      top: `${a.y}%`,
-                      transform: `translate(-50%, -50%) rotate(${a.rotation}deg)`,
-                      fontSize: fontSize(a.count),
-                      zIndex: Math.round(a.count * 10),
-                      transition: 'transform 200ms ease',
-                    }}
-                    title={`${a.count}회`}
-                  >
-                    <span className="inline-flex items-baseline gap-1">
-                      {a.text}
-                      {a.count > 1 && (
-                        <span className="text-[10px] font-mono text-gray-400 align-baseline">
-                          ×{a.count}
-                        </span>
-                      )}
-                    </span>
-                    {isHost && (
-                      <button
-                        type="button"
-                        onClick={() => a.ids.forEach((entry) => removeEntry(entry.id))}
-                        aria-label={`${a.text} 모두 제거`}
-                        className="absolute -top-2 -right-3 opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-opacity bg-white rounded-full p-0.5 shadow-sm"
+                <svg
+                  viewBox={`0 0 ${VW} ${VH}`}
+                  width="100%"
+                  height="100%"
+                  preserveAspectRatio="xMidYMid meet"
+                  className="block"
+                  role="img"
+                  aria-label="워드클라우드 결과"
+                >
+                  <style>{`.wc-word{animation:wcfade .4s ease-out both}@keyframes wcfade{from{opacity:0}to{opacity:1}}`}</style>
+                  {positionedWords.map((a, idx) => {
+                    const hx = a.x + a.halfTextW + 6;
+                    const hy = a.y - a.halfTextH;
+                    return (
+                      <g
+                        key={a.text}
+                        className="group"
+                        transform={`rotate(${a.rot.toFixed(2)} ${a.x.toFixed(1)} ${a.y.toFixed(1)})`}
                       >
-                        <X size={12} />
-                      </button>
-                    )}
-                  </span>
-                ))}
+                        <text
+                          x={a.x}
+                          y={a.y}
+                          textAnchor="middle"
+                          dominantBaseline="central"
+                          fontSize={a.fontPx}
+                          fontWeight={a.weight}
+                          fill={a.color}
+                          className="wc-word select-none"
+                          style={{
+                            fontFamily: '"Pretendard Variable", Pretendard, sans-serif',
+                            animationDelay: `${Math.min(idx * 20, 600)}ms`,
+                          }}
+                        >
+                          <title>{`${a.count}회`}</title>
+                          {a.text}
+                          {a.count > 1 && (
+                            <tspan dx={a.fontPx * 0.16} fontSize={a.fontPx * 0.52} fontWeight={600} fillOpacity={0.55}>
+                              ×{a.count}
+                            </tspan>
+                          )}
+                        </text>
+                        {isHost && (
+                          <g
+                            className="cursor-pointer opacity-0 transition-opacity group-hover:opacity-100"
+                            onClick={() => a.ids.forEach((entry) => removeEntry(entry.id))}
+                          >
+                            <title>{`${a.text} 모두 제거`}</title>
+                            <circle cx={hx} cy={hy} r={15} fill="#fff" stroke="#fca5a5" strokeWidth={1.5} />
+                            <path
+                              d={`M ${hx - 5} ${hy - 5} l 10 10 M ${hx + 5} ${hy - 5} l -10 10`}
+                              stroke="#ef4444"
+                              strokeWidth={2}
+                              strokeLinecap="round"
+                            />
+                          </g>
+                        )}
+                      </g>
+                    );
+                  })}
+                </svg>
               </div>
             )}
           </div>
