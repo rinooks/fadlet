@@ -15,6 +15,7 @@ import {
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, rectSortingStrategy } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { CanvasBoard } from '@/components/board/canvas-board';
 import { ColumnBoard } from '@/components/board/column-board';
 import { ProsConsBoard } from '@/components/board/pros-cons-board';
@@ -48,7 +49,7 @@ import { usePosts } from '@/lib/hooks/use-posts';
 import { useReports } from '@/lib/hooks/use-reports';
 import { useTimer } from '@/lib/hooks/use-timer';
 import { findBannedHit } from '@/lib/hooks/use-banned-words';
-import { db } from '@/lib/firebase/client';
+import { auth, db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
@@ -102,6 +103,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [showAiInsights, setShowAiInsights] = useState(false);
   const [detailPost, setDetailPost] = useState<Post | null>(null);
   const [joined, setJoined] = useState(false);
+  const [needNickname, setNeedNickname] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState('');
+  const [joining, setJoining] = useState(false);
 
   // 저장된 채팅 너비 복원
   useEffect(() => {
@@ -165,20 +169,39 @@ export default function BoardPage({ params, searchParams }: PageProps) {
 
   // sessionStorage는 브라우저 전용이라 lazy init하면 SSR/CSR hydration mismatch가 나서
   // 의도적으로 effect에서 한 번만 동기화한다. uid 도착 + !joined 조건으로 1회 실행 보장.
+  // 소유자 자동 호스트 복구를 위해 board 로드까지 기다린다(boardLoading).
   /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
-    if (!uid || joined) return;
+    if (!uid || joined || boardLoading) return;
     const savedRole = (sessionStorage.getItem(`board-role-${boardId}`) ?? 'member') as UserRole;
     const savedNickname = sessionStorage.getItem(`board-nickname-${boardId}`) ?? '';
-    setRole(savedRole);
 
     if (savedNickname) {
+      setRole(savedRole);
       setNickname(savedNickname);
       joinBoard({ userId: uid, nickname: savedNickname, role: savedRole }).catch(() => {});
       setJoined(true);
       if (code && savedRole === 'host') setShowShare(true);
+      return;
     }
-  }, [uid, boardId, joined, joinBoard, code]);
+
+    // 닉네임이 없는데 본인이 소유한 보드면 — 세션이 끊겨도 자동으로 호스트로 복구.
+    // (Firebase Auth 로그인은 영구 저장되어 uid가 유지되므로 ownerId로 본인 확인 가능)
+    if (board && board.ownerId === uid) {
+      const hostName = auth.currentUser?.displayName?.split(' ')[0] ?? '퍼실리테이터';
+      setRole('host');
+      setNickname(hostName);
+      sessionStorage.setItem(`board-role-${boardId}`, 'host');
+      sessionStorage.setItem(`board-nickname-${boardId}`, hostName);
+      joinBoard({ userId: uid, nickname: hostName, role: 'host' }).catch(() => {});
+      setJoined(true);
+      return;
+    }
+
+    // 일반 참여자가 닉네임 없이 보드 URL로 직접 진입한 경우 — 입장 관문 노출
+    setRole(savedRole);
+    setNeedNickname(true);
+  }, [uid, boardId, joined, joinBoard, code, board, boardLoading]);
   /* eslint-enable react-hooks/set-state-in-effect */
 
   useEffect(() => {
@@ -265,6 +288,26 @@ export default function BoardPage({ params, searchParams }: PageProps) {
       });
     } catch {
       toast.error('반응 수 표시 설정 변경에 실패했습니다.');
+    }
+  }
+
+  async function handleNicknameJoin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!uid) return;
+    const nn = nicknameInput.trim();
+    if (nn.length < 2) return;
+    setJoining(true);
+    try {
+      await joinBoard({ userId: uid, nickname: nn, role });
+      sessionStorage.setItem(`board-role-${boardId}`, role);
+      sessionStorage.setItem(`board-nickname-${boardId}`, nn);
+      setNickname(nn);
+      setJoined(true);
+      setNeedNickname(false);
+    } catch {
+      toast.error('입장에 실패했습니다. 다시 시도해 주세요.');
+    } finally {
+      setJoining(false);
     }
   }
 
@@ -1052,6 +1095,35 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* 닉네임 입장 관문 — URL 직접 진입 등으로 닉네임이 없을 때 */}
+      <Dialog open={needNickname} onOpenChange={() => {}}>
+        <DialogContent className="max-w-sm" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle>닉네임 입력</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500 -mt-1">보드에서 표시될 이름을 입력하세요. (2~12자)</p>
+          <form onSubmit={handleNicknameJoin} className="flex flex-col gap-4">
+            <Input
+              placeholder="예: 박지영"
+              value={nicknameInput}
+              onChange={(e) => setNicknameInput(e.target.value)}
+              minLength={2}
+              maxLength={12}
+              required
+              autoFocus
+              className="text-base"
+            />
+            <Button
+              type="submit"
+              disabled={joining || nicknameInput.trim().length < 2}
+              className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold h-12"
+            >
+              {joining ? '입장 중...' : '보드 입장하기'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <HostOnboarding enabled={joined && role === 'host'} />
     </div>
