@@ -28,6 +28,7 @@ import { NewPostDialog } from '@/components/board/new-post-dialog';
 import { ReportsPanel } from '@/components/board/reports-panel';
 import { SortablePostCard } from '@/components/board/sortable-post-card';
 import { PostDetailModal } from '@/components/board/post-detail-modal';
+import { PostDeleteDialog } from '@/components/board/post-delete-dialog';
 import { MoveBoardDialog } from '@/components/board/move-board-dialog';
 import { StageBanner } from '@/components/board/stage-banner';
 import { ChatPanel } from '@/components/chat/chat-panel';
@@ -102,6 +103,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const [showMoveBoard, setShowMoveBoard] = useState(false);
   const [showAiInsights, setShowAiInsights] = useState(false);
   const [detailPost, setDetailPost] = useState<Post | null>(null);
+  const [pendingDelete, setPendingDelete] = useState<{ postId: string; resolve: () => void } | null>(null);
   const [joined, setJoined] = useState(false);
   const [needNickname, setNeedNickname] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
@@ -160,6 +162,27 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const openReportCount = reports.filter((r) => r.status === 'open').length;
   async function deleteMessage(messageId: string) {
     await deleteDoc(doc(db, messagesPath(boardId), messageId));
+  }
+
+  // 포스트 삭제 시 확인 다이얼로그를 띄우고, 사용자가 승인하면 실제 삭제를 수행한다.
+  // 취소하면 삭제 없이 resolve하여 호출부의 await가 그대로 종료되도록 한다.
+  function confirmDeletePost(postId: string) {
+    return new Promise<void>((resolve) => {
+      setPendingDelete({ postId, resolve });
+    });
+  }
+
+  async function handleConfirmDelete() {
+    if (!pendingDelete) return;
+    await deletePost(pendingDelete.postId);
+    pendingDelete.resolve();
+    setPendingDelete(null);
+  }
+
+  function handleCancelDelete() {
+    if (!pendingDelete) return;
+    pendingDelete.resolve();
+    setPendingDelete(null);
   }
 
   const sensors = useSensors(
@@ -781,7 +804,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                   isHost={role === 'host'}
                   showReactionCounts={board?.settings?.showPostReactionCounts !== false}
                   onUpdate={updatePost}
-                  onDelete={deletePost}
+                  onDelete={confirmDeletePost}
                   onUpdatePosition={updatePosition}
                   onOpenDetail={setDetailPost}
                 />
@@ -809,7 +832,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                     isLocked={isLocked}
                     onAddPost={handleAddPost}
                     onUpdatePost={updatePost}
-                    onDeletePost={deletePost}
+                    onDeletePost={confirmDeletePost}
                     onOpenDetail={setDetailPost}
                   />
                 )}
@@ -862,7 +885,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                               showReactionCounts={board?.settings?.showPostReactionCounts !== false}
                               canDrag={!isLocked || role === 'host'}
                               onUpdate={updatePost}
-                              onDelete={deletePost}
+                              onDelete={confirmDeletePost}
                               onOpenDetail={setDetailPost}
                             />
                           ))}
@@ -890,7 +913,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                         isLocked={isLocked}
                         onAddPost={handleAddPost}
                         onUpdatePost={updatePost}
-                        onDeletePost={deletePost}
+                        onDeletePost={confirmDeletePost}
                         onOpenDetail={setDetailPost}
                       />
                     )}
@@ -1012,9 +1035,15 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           isHost={role === 'host'}
           showReactionCounts={board?.settings?.showPostReactionCounts !== false}
           onClose={() => setDetailPost(null)}
-          onDelete={deletePost}
+          onDelete={confirmDeletePost}
         />
       )}
+
+      <PostDeleteDialog
+        open={pendingDelete !== null}
+        onCancel={handleCancelDelete}
+        onConfirm={handleConfirmDelete}
+      />
 
       {board && uid && (
         <MoveBoardDialog
