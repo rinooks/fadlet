@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import type { PostColor } from '@/lib/types';
+import { POST_MAX_LENGTH, type PostColor } from '@/lib/types';
 
 const COLORS: { value: PostColor; label: string; className: string }[] = [
   { value: 'yellow', label: '노랑', className: 'bg-yellow-100 border-yellow-300 hover:bg-yellow-200' },
@@ -98,15 +98,20 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <Textarea
-            placeholder="내용을 입력하세요..."
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            maxLength={500}
-            rows={10}
-            autoFocus
-            className="resize-none min-h-[280px]"
-          />
+          <div className="flex flex-col gap-1">
+            <Textarea
+              placeholder="내용을 입력하세요..."
+              value={content}
+              onChange={(e) => setContent(e.target.value)}
+              maxLength={POST_MAX_LENGTH}
+              rows={10}
+              autoFocus
+              className="resize-none min-h-[280px]"
+            />
+            <span className="text-xs text-gray-400 self-end tabular-nums">
+              {content.length}/{POST_MAX_LENGTH}
+            </span>
+          </div>
 
           {/* 이미지 미리보기 */}
           {imagePreview && (

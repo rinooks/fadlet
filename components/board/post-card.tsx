@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { usePostStats } from '@/lib/hooks/use-post-stats';
-import type { EmojiType, Post, PostColor } from '@/lib/types';
+import { POST_MAX_LENGTH, type EmojiType, type Post, type PostColor } from '@/lib/types';
 import { linkify } from '@/lib/utils/linkify';
 
 const COLOR_MAP: Record<PostColor, string> = {
@@ -78,7 +78,7 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
               onKeyDown={handleKeyDown}
               className="flex-1 bg-white text-sm resize-none border-0 focus-visible:ring-1"
               autoFocus
-              maxLength={500}
+              maxLength={POST_MAX_LENGTH}
             />
             <div className="flex gap-2 justify-end">
               <Button size="sm" variant="ghost" onClick={() => { setEditContent(post.content); setEditing(false); }} className="text-xs h-7">취소</Button>

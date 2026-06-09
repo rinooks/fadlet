@@ -1,5 +1,8 @@
 import { Timestamp } from 'firebase/firestore';
 
+/** 포스트 내용 최대 입력 글자 수 */
+export const POST_MAX_LENGTH = 2000;
+
 export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray';
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
