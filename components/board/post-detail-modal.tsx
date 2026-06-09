@@ -100,6 +100,9 @@ export function PostDetailModal({
         <div className={`rounded-t-2xl px-5 py-4 ${COLOR_MAP[post.color] ?? 'bg-gray-100'}`}>
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1">
+              {post.title && (
+                <h3 className="text-gray-900 text-base font-semibold break-words mb-1.5">{post.title}</h3>
+              )}
               <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{linkify(post.content)}</p>
               {post.imageUrl && (
                 <div className="mt-3 rounded-lg overflow-hidden">

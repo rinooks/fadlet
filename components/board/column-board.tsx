@@ -16,9 +16,10 @@ interface ColumnBoardProps {
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
+  titleEnabled?: boolean;
   isLocked: boolean;
-  onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string) => Promise<void>;
-  onUpdatePost: (postId: string, content: string) => Promise<void>;
+  onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string, title?: string) => Promise<void>;
+  onUpdatePost: (postId: string, content: string, title?: string) => Promise<void>;
   onDeletePost: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }
@@ -74,6 +75,7 @@ export function ColumnBoard({
   currentUid,
   isHost,
   showReactionCounts,
+  titleEnabled,
   isLocked,
   onAddPost,
   onUpdatePost,
@@ -139,6 +141,7 @@ export function ColumnBoard({
                     currentUid={currentUid}
                     isHost={isHost}
                     showReactionCounts={showReactionCounts}
+                    titleEnabled={titleEnabled}
                     canDrag={!isLocked || isHost}
                     className={stackRows ? 'w-56 flex-shrink-0' : ''}
                     onUpdate={onUpdatePost}
@@ -171,11 +174,12 @@ export function ColumnBoard({
         <NewPostDialog
           open={true}
           onClose={() => setActiveColumn(null)}
-          onSubmit={(content, color, imageFile) =>
-            onAddPost(content, color, imageFile, activeColumn)
+          onSubmit={(content, color, imageFile, title) =>
+            onAddPost(content, color, imageFile, activeColumn, title)
           }
           defaultColor={columns.find((c) => c.id === activeColumn)?.defaultColor}
           columnLabel={columns.find((c) => c.id === activeColumn)?.label}
+          titleEnabled={titleEnabled}
         />
       )}
     </>

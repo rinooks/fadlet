@@ -38,6 +38,8 @@ interface FacilitatorPanelProps {
   onKanbanColumnsChange: (columns: KanbanColumn[]) => Promise<void>;
   showReactionCounts: boolean;
   onToggleReactionCounts: (visible: boolean) => Promise<void>;
+  showPostTitle: boolean;
+  onTogglePostTitle: (enabled: boolean) => Promise<void>;
   isHostUser: boolean;
   /** 보드 소유자 또는 워크스페이스 admin인 경우에만 부모가 전달. 미전달 시 워크스페이스 이동 버튼 숨김. */
   onOpenMoveWorkspace?: () => void;
@@ -64,6 +66,8 @@ export function FacilitatorPanel({
   onKanbanColumnsChange,
   showReactionCounts,
   onToggleReactionCounts,
+  showPostTitle,
+  onTogglePostTitle,
   isHostUser,
   onOpenMoveWorkspace,
 }: FacilitatorPanelProps) {
@@ -252,6 +256,20 @@ export function FacilitatorPanel({
                 <span className="block text-sm font-medium text-gray-900">참여자에게 반응 수 표시</span>
                 <span className="block text-xs text-gray-500 mt-0.5">
                   꺼두면 참여자에게 좋아요·이모지 카운트가 숨겨집니다. 퍼실리테이터에게는 항상 표시됩니다.
+                </span>
+              </span>
+            </label>
+            <label className="mt-2 flex items-start gap-3 p-3 rounded-lg border border-gray-200 bg-gray-50 hover:bg-gray-100 transition-colors cursor-pointer">
+              <input
+                type="checkbox"
+                checked={showPostTitle}
+                onChange={(e) => { void onTogglePostTitle(e.target.checked); }}
+                className="mt-0.5 h-4 w-4 accent-indigo-600"
+              />
+              <span className="flex-1">
+                <span className="block text-sm font-medium text-gray-900">포스트 제목 영역 사용</span>
+                <span className="block text-xs text-gray-500 mt-0.5">
+                  켜두면 포스트 작성 시 제목을 따로 입력할 수 있고, 카드 상단에 제목이 표시됩니다.
                 </span>
               </span>
             </label>

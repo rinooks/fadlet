@@ -12,10 +12,11 @@ interface SortablePostCardProps {
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
+  titleEnabled?: boolean;
   canDrag: boolean;
   /** outer wrapper에 추가할 클래스 (메모지 wrap 레이아웃 등) */
   className?: string;
-  onUpdate: (postId: string, content: string) => Promise<void>;
+  onUpdate: (postId: string, content: string, title?: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }

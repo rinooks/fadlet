@@ -4,6 +4,7 @@ import {
   addDoc,
   collection,
   deleteDoc,
+  deleteField,
   doc,
   onSnapshot,
   orderBy,
@@ -40,6 +41,7 @@ export function usePosts(boardId: string) {
   async function addPost(params: {
     authorId: string;
     authorName: string;
+    title?: string;
     content: string;
     color: PostColor;
     imageUrl?: string;
@@ -59,6 +61,8 @@ export function usePosts(boardId: string) {
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     };
+    const title = params.title?.trim();
+    if (title) payload.title = title;
     if (params.imageUrl) payload.imageUrl = params.imageUrl;
     if (params.columnId) payload.columnId = params.columnId;
     if (params.stageId) payload.stageId = params.stageId;
@@ -67,12 +71,15 @@ export function usePosts(boardId: string) {
     );
   }
 
-  async function updatePost(postId: string, content: string) {
+  async function updatePost(postId: string, content: string, title?: string) {
+    const payload: Record<string, unknown> = {
+      content,
+      updatedAt: serverTimestamp(),
+    };
+    // title이 인자로 주어진 경우에만 갱신. 빈 문자열이면 제목 제거.
+    if (title !== undefined) payload.title = title.trim() ? title.trim() : deleteField();
     await runFirestore('포스트를 수정하지 못했습니다.', () =>
-      updateDoc(doc(db, postsPath(boardId), postId), {
-        content,
-        updatedAt: serverTimestamp(),
-      }),
+      updateDoc(doc(db, postsPath(boardId), postId), payload),
     );
   }
 

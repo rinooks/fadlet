@@ -3,6 +3,9 @@ import { Timestamp } from 'firebase/firestore';
 /** 포스트 내용 최대 입력 글자 수 */
 export const POST_MAX_LENGTH = 2000;
 
+/** 포스트 제목 최대 입력 글자 수 */
+export const POST_TITLE_MAX_LENGTH = 60;
+
 export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray';
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
@@ -23,6 +26,8 @@ export interface BoardSettings {
   lockedAt: Timestamp | null;
   /** 포스트 이모지 반응 수 노출 여부. 미설정 시 true(기본 노출). 운영자에게는 항상 노출. */
   showPostReactionCounts?: boolean;
+  /** 포스트 작성 시 제목 입력 영역 노출 여부. 미설정 시 false(제목 없이 본문만). */
+  showPostTitle?: boolean;
 }
 
 export interface PollConfig {
@@ -146,6 +151,7 @@ export interface Post {
   id: string;
   authorId: string;
   authorName: string;
+  title?: string;
   content: string;
   imageUrl?: string;
   color: PostColor;

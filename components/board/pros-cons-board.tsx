@@ -14,9 +14,10 @@ interface ProsConsBoardProps {
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
+  titleEnabled?: boolean;
   isLocked: boolean;
-  onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string) => Promise<void>;
-  onUpdatePost: (postId: string, content: string) => Promise<void>;
+  onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string, title?: string) => Promise<void>;
+  onUpdatePost: (postId: string, content: string, title?: string) => Promise<void>;
   onDeletePost: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }
@@ -52,6 +53,7 @@ function Panel({
   currentUid,
   isHost,
   showReactionCounts,
+  titleEnabled,
   isLocked,
   onUpdatePost,
   onDeletePost,
@@ -65,8 +67,9 @@ function Panel({
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
+  titleEnabled?: boolean;
   isLocked: boolean;
-  onUpdatePost: (id: string, content: string) => Promise<void>;
+  onUpdatePost: (id: string, content: string, title?: string) => Promise<void>;
   onDeletePost: (id: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
   onClickAdd: () => void;
@@ -98,6 +101,7 @@ function Panel({
               currentUid={currentUid}
               isHost={isHost}
               showReactionCounts={showReactionCounts}
+              titleEnabled={titleEnabled}
               canDrag={!isLocked || isHost}
               onUpdate={onUpdatePost}
               onDelete={onDeletePost}
@@ -134,6 +138,7 @@ export function ProsConsBoard({
   currentUid,
   isHost,
   showReactionCounts,
+  titleEnabled,
   isLocked,
   onAddPost,
   onUpdatePost,
@@ -168,6 +173,7 @@ export function ProsConsBoard({
             currentUid={currentUid}
             isHost={isHost}
             showReactionCounts={showReactionCounts}
+            titleEnabled={titleEnabled}
             isLocked={isLocked}
             onUpdatePost={onUpdatePost}
             onDeletePost={onDeletePost}
@@ -181,11 +187,12 @@ export function ProsConsBoard({
         <NewPostDialog
           open
           onClose={() => setActiveColumn(null)}
-          onSubmit={(content, color, imageFile) =>
-            onAddPost(content, color, imageFile, activePanel.id)
+          onSubmit={(content, color, imageFile, title) =>
+            onAddPost(content, color, imageFile, activePanel.id, title)
           }
           defaultColor={activePanel.defaultColor}
           columnLabel={`${activePanel.emoji} ${activePanel.label}`}
+          titleEnabled={titleEnabled}
         />
       )}
     </div>

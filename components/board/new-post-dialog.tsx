@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { POST_MAX_LENGTH, type PostColor } from '@/lib/types';
+import { POST_MAX_LENGTH, POST_TITLE_MAX_LENGTH, type PostColor } from '@/lib/types';
 
 const COLORS: { value: PostColor; label: string; className: string }[] = [
   { value: 'yellow', label: '노랑', className: 'bg-yellow-100 border-yellow-300 hover:bg-yellow-200' },
@@ -21,12 +21,15 @@ const COLORS: { value: PostColor; label: string; className: string }[] = [
 interface NewPostDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (content: string, color: PostColor, imageFile?: File) => Promise<void>;
+  onSubmit: (content: string, color: PostColor, imageFile?: File, title?: string) => Promise<void>;
   defaultColor?: PostColor;
   columnLabel?: string;
+  /** 제목 입력 영역 노출 여부 (보드 설정) */
+  titleEnabled?: boolean;
 }
 
-export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLabel }: NewPostDialogProps) {
+export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLabel, titleEnabled }: NewPostDialogProps) {
+  const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [color, setColor] = useState<PostColor>(defaultColor ?? 'yellow');
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -64,11 +67,14 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
     e.preventDefault();
     if (!content.trim() && !imageFile) return;
 
+    const titleValue = titleEnabled ? title.trim() : undefined;
+
     if (imageFile) {
       // 이미지 업로드는 끝까지 기다림
       setLoading(true);
       try {
-        await onSubmit(content.trim(), color, imageFile);
+        await onSubmit(content.trim(), color, imageFile, titleValue);
+        setTitle('');
         setContent('');
         setColor('yellow');
         removeImage();
@@ -82,7 +88,8 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
     }
 
     // 텍스트 전용: 낙관적 UI — 다이얼로그를 즉시 닫고 백그라운드에서 저장
-    const promise = onSubmit(content.trim(), color, undefined);
+    const promise = onSubmit(content.trim(), color, undefined, titleValue);
+    setTitle('');
     setContent('');
     setColor('yellow');
     onClose();
@@ -98,6 +105,16 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+          {titleEnabled && (
+            <input
+              type="text"
+              placeholder="제목을 입력하세요"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              maxLength={POST_TITLE_MAX_LENGTH}
+              className="w-full rounded-md border border-gray-200 px-3 py-2 text-sm font-semibold focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
+            />
+          )}
           <div className="flex flex-col gap-1">
             <Textarea
               placeholder="내용을 입력하세요..."

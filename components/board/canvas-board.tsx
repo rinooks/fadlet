@@ -18,7 +18,8 @@ interface CanvasBoardProps {
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
-  onUpdate: (postId: string, content: string) => Promise<void>;
+  titleEnabled?: boolean;
+  onUpdate: (postId: string, content: string, title?: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onUpdatePosition: (postId: string, pos: { x: number; y: number }) => Promise<void>;
   onOpenDetail: (post: Post) => void;
@@ -32,7 +33,8 @@ interface DraggablePostProps {
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
-  onUpdate: (postId: string, content: string) => Promise<void>;
+  titleEnabled?: boolean;
+  onUpdate: (postId: string, content: string, title?: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }
@@ -69,6 +71,7 @@ export function CanvasBoard({
   currentUid,
   isHost,
   showReactionCounts,
+  titleEnabled,
   onUpdate,
   onDelete,
   onUpdatePosition,
@@ -175,6 +178,7 @@ export function CanvasBoard({
               currentUid={currentUid}
               isHost={isHost}
               showReactionCounts={showReactionCounts}
+              titleEnabled={titleEnabled}
               onUpdate={onUpdate}
               onDelete={onDelete}
               onOpenDetail={onOpenDetail}

@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { usePostStats } from '@/lib/hooks/use-post-stats';
-import { POST_MAX_LENGTH, type EmojiType, type Post, type PostColor } from '@/lib/types';
+import { POST_MAX_LENGTH, POST_TITLE_MAX_LENGTH, type EmojiType, type Post, type PostColor } from '@/lib/types';
 import { linkify } from '@/lib/utils/linkify';
 
 const COLOR_MAP: Record<PostColor, string> = {
@@ -31,27 +31,37 @@ interface PostCardProps {
   currentUid: string;
   isHost: boolean;
   showReactionCounts: boolean;
-  onUpdate: (postId: string, content: string) => Promise<void>;
+  /** 제목 입력 영역 노출 여부 (보드 설정). 끄여 있어도 기존 제목이 있으면 표시·수정 가능. */
+  titleEnabled?: boolean;
+  onUpdate: (postId: string, content: string, title?: string) => Promise<void>;
   onDelete: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
 }
 
-export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts, onUpdate, onDelete, onOpenDetail }: PostCardProps) {
+export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts, titleEnabled, onUpdate, onDelete, onOpenDetail }: PostCardProps) {
   const { commentCount, reactionTotal, topReactions } = usePostStats(boardId, post.id);
   const canShowReactions = showReactionCounts || isHost;
   const [editing, setEditing] = useState(false);
+  const [editTitle, setEditTitle] = useState(post.title ?? '');
   const [editContent, setEditContent] = useState(post.content);
   const canEdit = post.authorId === currentUid || isHost;
+  const showTitleInput = titleEnabled || !!post.title;
+
+  function startEdit() {
+    setEditTitle(post.title ?? '');
+    setEditContent(post.content);
+    setEditing(true);
+  }
 
   async function handleSave() {
     if (!editContent.trim()) return;
-    await onUpdate(post.id, editContent.trim());
+    await onUpdate(post.id, editContent.trim(), showTitleInput ? editTitle.trim() : undefined);
     setEditing(false);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSave(); }
-    if (e.key === 'Escape') { setEditContent(post.content); setEditing(false); }
+    if (e.key === 'Escape') { setEditTitle(post.title ?? ''); setEditContent(post.content); setEditing(false); }
   }
 
   return (
@@ -72,6 +82,17 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
       <div className="p-3 flex flex-col flex-1">
         {editing ? (
           <div className="flex flex-col gap-2 flex-1" onClick={(e) => e.stopPropagation()}>
+            {showTitleInput && (
+              <input
+                type="text"
+                value={editTitle}
+                onChange={(e) => setEditTitle(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="제목"
+                maxLength={POST_TITLE_MAX_LENGTH}
+                className="bg-white text-sm font-semibold rounded border border-gray-200 px-2 py-1 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
+              />
+            )}
             <Textarea
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
@@ -81,12 +102,17 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
               maxLength={POST_MAX_LENGTH}
             />
             <div className="flex gap-2 justify-end">
-              <Button size="sm" variant="ghost" onClick={() => { setEditContent(post.content); setEditing(false); }} className="text-xs h-7">취소</Button>
+              <Button size="sm" variant="ghost" onClick={() => { setEditTitle(post.title ?? ''); setEditContent(post.content); setEditing(false); }} className="text-xs h-7">취소</Button>
               <Button size="sm" onClick={handleSave} className="bg-indigo-600 hover:bg-indigo-700 text-white text-xs h-7">저장</Button>
             </div>
           </div>
         ) : (
           <>
+            {post.title && (
+              <h4 className="text-sm font-semibold text-gray-900 break-words line-clamp-2 mb-1">
+                {post.title}
+              </h4>
+            )}
             {post.content && (
               <p className="text-sm text-gray-800 flex-1 whitespace-pre-wrap break-words line-clamp-4">
                 {linkify(post.content)}
@@ -121,7 +147,7 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
               {canEdit && (
                 <div className="flex gap-1">
                   {post.authorId === currentUid && (
-                    <button onClick={() => { setEditContent(post.content); setEditing(true); }} className="text-xs text-gray-400 hover:text-gray-700 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="수정">수정</button>
+                    <button onClick={startEdit} className="text-xs text-gray-400 hover:text-gray-700 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="수정">수정</button>
                   )}
                   <button onClick={() => onDelete(post.id)} className="text-xs text-red-400 hover:text-red-600 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="삭제">삭제</button>
                 </div>

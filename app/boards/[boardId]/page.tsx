@@ -314,6 +314,17 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     }
   }
 
+  async function handleTogglePostTitle(enabled: boolean) {
+    try {
+      await updateDoc(doc(db, boardsPath(), boardId), {
+        'settings.showPostTitle': enabled,
+        updatedAt: serverTimestamp(),
+      });
+    } catch {
+      toast.error('제목 영역 설정 변경에 실패했습니다.');
+    }
+  }
+
   async function handleNicknameJoin(e: React.FormEvent) {
     e.preventDefault();
     if (!uid) return;
@@ -334,13 +345,13 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     }
   }
 
-  async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string) {
+  async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string, title?: string) {
     if (!uid || !nickname) return;
-    if (checkBanned(content)) throw new Error('banned');
+    if (checkBanned(content) || (title && checkBanned(title))) throw new Error('banned');
     let imageUrl: string | undefined;
     if (imageFile) imageUrl = await uploadPostImage(imageFile, boardId);
     const stageId = isWorkshopMode ? currentStage?.id : undefined;
-    await addPost({ authorId: uid, authorName: nickname, content, color, imageUrl, columnId, stageId });
+    await addPost({ authorId: uid, authorName: nickname, title, content, color, imageUrl, columnId, stageId });
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -483,6 +494,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const displayCode = board?.boardCode ?? '';
   const isLocked = !!board?.settings?.lockedAt;
   const allowChat = board?.settings?.allowChat !== false;
+  const titleEnabled = board?.settings?.showPostTitle === true;
   const canPost = role === 'host' || !isLocked;
   const boardMode = board?.mode ?? 'single';
   const isWorkshopMode = boardMode === 'workshop';
@@ -803,6 +815,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                   currentUid={uid ?? ''}
                   isHost={role === 'host'}
                   showReactionCounts={board?.settings?.showPostReactionCounts !== false}
+                  titleEnabled={titleEnabled}
                   onUpdate={updatePost}
                   onDelete={confirmDeletePost}
                   onUpdatePosition={updatePosition}
@@ -829,6 +842,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                     currentUid={uid ?? ''}
                     isHost={role === 'host'}
                     showReactionCounts={board?.settings?.showPostReactionCounts !== false}
+                    titleEnabled={titleEnabled}
                     isLocked={isLocked}
                     onAddPost={handleAddPost}
                     onUpdatePost={updatePost}
@@ -883,6 +897,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                               currentUid={uid ?? ''}
                               isHost={role === 'host'}
                               showReactionCounts={board?.settings?.showPostReactionCounts !== false}
+                              titleEnabled={titleEnabled}
                               canDrag={!isLocked || role === 'host'}
                               onUpdate={updatePost}
                               onDelete={confirmDeletePost}
@@ -910,6 +925,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
                         currentUid={uid ?? ''}
                         isHost={role === 'host'}
                         showReactionCounts={board?.settings?.showPostReactionCounts !== false}
+                        titleEnabled={titleEnabled}
                         isLocked={isLocked}
                         onAddPost={handleAddPost}
                         onUpdatePost={updatePost}
@@ -1023,6 +1039,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           open={showNewPost}
           onClose={() => setShowNewPost(false)}
           onSubmit={handleAddPost}
+          titleEnabled={titleEnabled}
         />
       )}
 
@@ -1087,6 +1104,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
           onKanbanColumnsChange={handleKanbanColumnsChange}
           showReactionCounts={board.settings?.showPostReactionCounts !== false}
           onToggleReactionCounts={handleToggleReactionCounts}
+          showPostTitle={titleEnabled}
+          onTogglePostTitle={handleTogglePostTitle}
           isHostUser={isHostUser}
           onOpenMoveWorkspace={
             (board.ownerId === uid || isWsAdmin) && board.workspaceId !== 'default' && board.workspaceId !== 'demo'
