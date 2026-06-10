@@ -97,22 +97,11 @@ export function PostDetailModal({
         aria-label="포스트 상세"
       >
         {/* 헤더 */}
-        <div className={`rounded-t-2xl px-5 py-4 ${COLOR_MAP[post.color] ?? 'bg-gray-100'}`}>
-          <div className="flex items-start justify-between gap-3">
-            <div className="flex-1">
+        <div className={`rounded-t-2xl px-5 py-4 flex flex-col min-h-0 ${COLOR_MAP[post.color] ?? 'bg-gray-100'}`}>
+          <div className="flex items-start justify-between gap-3 flex-shrink-0">
+            <div className="flex-1 min-w-0">
               {post.title && (
-                <h3 className="text-gray-900 text-base font-semibold break-words mb-1.5">{post.title}</h3>
-              )}
-              <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{linkify(post.content)}</p>
-              {post.imageUrl && (
-                <div className="mt-3 rounded-lg overflow-hidden">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={post.imageUrl}
-                    alt="포스트 이미지"
-                    className="w-full object-cover max-h-60 rounded-lg"
-                  />
-                </div>
+                <h3 className="text-gray-900 text-base font-semibold break-words">{post.title}</h3>
               )}
             </div>
             <button
@@ -122,7 +111,20 @@ export function PostDetailModal({
               <X size={18} />
             </button>
           </div>
-          <div className="flex items-center justify-between mt-3">
+          <div className="post-content-scroll flex-1 min-h-0 max-h-[40vh] mt-2">
+            <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{linkify(post.content)}</p>
+            {post.imageUrl && (
+              <div className="mt-3 rounded-lg overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={post.imageUrl}
+                  alt="포스트 이미지"
+                  className="w-full object-cover max-h-60 rounded-lg"
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex items-center justify-between mt-3 flex-shrink-0">
             <span className="text-xs text-gray-500 font-medium">{post.authorName} · {formatTime(post.createdAt)}</span>
             <div className="flex items-center gap-2">
               {canReportPost && (
@@ -147,7 +149,7 @@ export function PostDetailModal({
         </div>
 
         {/* 이모지 반응 */}
-        <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2 flex-wrap">
+        <div className="px-5 py-3 border-b border-gray-100 flex items-center gap-2 flex-wrap flex-shrink-0">
           {EMOJIS.map(({ type, label }) => {
             const count = getCount(type);
             const isMyReaction = myEmoji(currentUid) === type;
@@ -211,7 +213,7 @@ export function PostDetailModal({
         </div>
 
         {/* 댓글 입력 */}
-        <form onSubmit={handleComment} className="px-5 pb-4 pt-2 border-t border-gray-100 flex gap-2">
+        <form onSubmit={handleComment} className="px-5 pb-4 pt-2 border-t border-gray-100 flex gap-2 flex-shrink-0">
           <Textarea
             value={commentText}
             onChange={(e) => setCommentText(e.target.value)}

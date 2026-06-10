@@ -66,7 +66,7 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
 
   return (
     <div
-      className={`skin-post-card relative rounded-md border-2 shadow-sm min-h-[120px] flex flex-col cursor-pointer hover:shadow-md transition-shadow ${COLOR_MAP[post.color]}`}
+      className={`skin-post-card relative rounded-md border-2 shadow-sm min-h-[120px] max-h-[280px] flex flex-col cursor-pointer hover:shadow-md transition-shadow ${COLOR_MAP[post.color]}`}
       onClick={() => !editing && onOpenDetail(post)}
     >
       {post.imageUrl && (
@@ -109,17 +109,19 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
         ) : (
           <>
             {post.title && (
-              <h4 className="text-sm font-semibold text-gray-900 break-words line-clamp-2 mb-1">
+              <h4 className="text-sm font-semibold text-gray-900 break-words line-clamp-2 mb-1 flex-shrink-0">
                 {post.title}
               </h4>
             )}
             {post.content && (
-              <p className="text-sm text-gray-800 flex-1 whitespace-pre-wrap break-words line-clamp-4">
-                {linkify(post.content)}
-              </p>
+              <div className="post-content-scroll flex-1 min-h-0 max-h-[180px]">
+                <p className="text-sm text-gray-800 whitespace-pre-wrap break-words">
+                  {linkify(post.content)}
+                </p>
+              </div>
             )}
             {(commentCount > 0 || (canShowReactions && reactionTotal > 0)) && (
-              <div className="flex items-center gap-1.5 mt-2 flex-wrap">
+              <div className="flex items-center gap-1.5 mt-2 flex-wrap flex-shrink-0">
                 {canShowReactions &&
                   topReactions.map(({ emoji, count }) => (
                     <span
@@ -142,7 +144,7 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
                 )}
               </div>
             )}
-            <div className="flex items-center justify-between mt-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between mt-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
               <span className="text-xs text-gray-500 font-medium">{post.authorName}</span>
               {canEdit && (
                 <div className="flex gap-1">

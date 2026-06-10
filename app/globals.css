@@ -130,6 +130,24 @@
   }
 }
 
+/* 포스트 본문 — 내용이 많을 때 프레임 안에서 세로 스크롤 */
+.post-content-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.4) transparent;
+}
+.post-content-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+.post-content-scroll::-webkit-scrollbar-thumb {
+  background: rgba(99, 102, 241, 0.4);
+  border-radius: 3px;
+}
+.post-content-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
 /* 랜딩 페이지 — 떠다니는 포스트잇 */
 .sticky-note {
   position: absolute;

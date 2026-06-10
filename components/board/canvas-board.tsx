@@ -10,6 +10,8 @@ const CANVAS_WIDTH = 3000;
 const CANVAS_HEIGHT = 2000;
 const POST_WIDTH = 220;
 const POST_HEIGHT_ESTIMATE = 140;
+/** 카드 최대 렌더 높이(post-card.tsx의 max-h-[280px])와 일치 — 드래그 경계 클램프용 */
+const POST_MAX_HEIGHT = 280;
 
 interface CanvasBoardProps {
   posts: Post[];
@@ -136,7 +138,7 @@ export function CanvasBoard({
     const item = positioned.find((p) => p.post.id === id);
     if (!item) return;
     const newX = Math.round(Math.max(0, Math.min(CANVAS_WIDTH - POST_WIDTH, item.x + delta.x)));
-    const newY = Math.round(Math.max(0, Math.min(CANVAS_HEIGHT - POST_HEIGHT_ESTIMATE, item.y + delta.y)));
+    const newY = Math.round(Math.max(0, Math.min(CANVAS_HEIGHT - POST_MAX_HEIGHT, item.y + delta.y)));
 
     // 즉시 로컬 반영 → 튀는 느낌 제거
     setLocalPositions((prev) => ({ ...prev, [id]: { x: newX, y: newY } }));
