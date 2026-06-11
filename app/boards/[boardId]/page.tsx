@@ -57,7 +57,6 @@ import { toast } from 'sonner';
 import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, KanbanColumn, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
 import { getBackground } from '@/lib/backgrounds';
 import { DEFAULT_KANBAN_COLUMNS, DEFAULT_CATEGORY_COLUMNS } from '@/lib/kanban-colors';
-import { uploadPostImage } from '@/lib/utils/upload-file';
 import { cloneBoard } from '@/lib/utils/clone-board';
 import { FREE_TIER_LIMIT_CODE, showUpgradeMessage } from '@/lib/free-tier';
 
@@ -345,11 +344,9 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     }
   }
 
-  async function handleAddPost(content: string, color: PostColor, imageFile?: File, columnId?: string, title?: string) {
+  async function handleAddPost(content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string) {
     if (!uid || !nickname) return;
     if (checkBanned(content) || (title && checkBanned(title))) throw new Error('banned');
-    let imageUrl: string | undefined;
-    if (imageFile) imageUrl = await uploadPostImage(imageFile, boardId);
     const stageId = isWorkshopMode ? currentStage?.id : undefined;
     await addPost({ authorId: uid, authorName: nickname, title, content, color, imageUrl, columnId, stageId });
   }
@@ -1039,7 +1036,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         <NewPostDialog
           open={showNewPost}
           onClose={() => setShowNewPost(false)}
-          onSubmit={handleAddPost}
+          onSubmit={(content, color, imageUrl, title) => handleAddPost(content, color, imageUrl, undefined, title)}
+          boardId={boardId}
           titleEnabled={titleEnabled}
         />
       )}

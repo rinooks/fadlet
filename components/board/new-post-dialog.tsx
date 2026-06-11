@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
+import { uploadPostImage } from '@/lib/utils/upload-file';
 import { POST_MAX_LENGTH, POST_TITLE_MAX_LENGTH, type PostColor } from '@/lib/types';
 
 const COLORS: { value: PostColor; label: string; className: string }[] = [
@@ -21,20 +22,24 @@ const COLORS: { value: PostColor; label: string; className: string }[] = [
 interface NewPostDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (content: string, color: PostColor, imageFile?: File, title?: string) => Promise<void>;
+  /** 이미지가 있으면 다이얼로그가 직접 업로드한 뒤 imageUrl을 전달한다. */
+  onSubmit: (content: string, color: PostColor, imageUrl?: string, title?: string) => Promise<void>;
+  /** 이미지 업로드 경로용 보드 ID */
+  boardId: string;
   defaultColor?: PostColor;
   columnLabel?: string;
   /** 제목 입력 영역 노출 여부 (보드 설정) */
   titleEnabled?: boolean;
 }
 
-export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLabel, titleEnabled }: NewPostDialogProps) {
+export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, columnLabel, titleEnabled }: NewPostDialogProps) {
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [color, setColor] = useState<PostColor>(defaultColor ?? 'yellow');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -70,10 +75,12 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
     const titleValue = titleEnabled ? title.trim() : undefined;
 
     if (imageFile) {
-      // 이미지 업로드는 끝까지 기다림
+      // 이미지 업로드 → 진행률 표시 → 완료 후 포스트 저장
       setLoading(true);
+      setUploadProgress(0);
       try {
-        await onSubmit(content.trim(), color, imageFile, titleValue);
+        const imageUrl = await uploadPostImage(imageFile, boardId, 'default', setUploadProgress);
+        await onSubmit(content.trim(), color, imageUrl, titleValue);
         setTitle('');
         setContent('');
         setColor('yellow');
@@ -83,6 +90,7 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
         handleError(err);
       } finally {
         setLoading(false);
+        setUploadProgress(null);
       }
       return;
     }
@@ -134,13 +142,26 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
           {imagePreview && (
             <div className="relative rounded-lg overflow-hidden bg-gray-50">
               <Image src={imagePreview} alt="미리보기" width={400} height={200} className="w-full object-contain max-h-40 rounded-lg" />
-              <button
-                type="button"
-                onClick={removeImage}
-                className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-black/70"
-              >
-                <X size={12} />
-              </button>
+              {!loading && (
+                <button
+                  type="button"
+                  onClick={removeImage}
+                  className="absolute top-1.5 right-1.5 bg-black/50 text-white rounded-full w-6 h-6 flex items-center justify-center hover:bg-black/70"
+                >
+                  <X size={12} />
+                </button>
+              )}
+              {uploadProgress !== null && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-black/45" aria-live="polite">
+                  <span className="text-white text-xs font-semibold">업로드 중… {uploadProgress}%</span>
+                  <div className="w-3/4 h-1.5 bg-white/30 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-white rounded-full transition-[width] duration-200"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
@@ -181,7 +202,7 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
             disabled={loading || (!content.trim() && !imageFile)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
           >
-            {loading ? '저장 중...' : '포스트 추가'}
+            {uploadProgress !== null ? '업로드 중...' : loading ? '저장 중...' : '포스트 추가'}
           </Button>
         </form>
       </DialogContent>

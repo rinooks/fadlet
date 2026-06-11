@@ -16,7 +16,7 @@ interface ProsConsBoardProps {
   showReactionCounts: boolean;
   titleEnabled?: boolean;
   isLocked: boolean;
-  onAddPost: (content: string, color: PostColor, imageFile?: File, columnId?: string, title?: string) => Promise<void>;
+  onAddPost: (content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string) => Promise<void>;
   onUpdatePost: (postId: string, content: string, title?: string) => Promise<void>;
   onDeletePost: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
@@ -187,9 +187,10 @@ export function ProsConsBoard({
         <NewPostDialog
           open
           onClose={() => setActiveColumn(null)}
-          onSubmit={(content, color, imageFile, title) =>
-            onAddPost(content, color, imageFile, activePanel.id, title)
+          onSubmit={(content, color, imageUrl, title) =>
+            onAddPost(content, color, imageUrl, activePanel.id, title)
           }
+          boardId={boardId}
           defaultColor={activePanel.defaultColor}
           columnLabel={`${activePanel.emoji} ${activePanel.label}`}
           titleEnabled={titleEnabled}

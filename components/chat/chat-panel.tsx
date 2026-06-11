@@ -52,6 +52,8 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
   const { typingUsers, startTyping, stopTyping } = useTyping(boardId, currentUid, currentName);
   const [attachment, setAttachment] = useState<FileAttachment | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [uploadingName, setUploadingName] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -153,8 +155,10 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
       return;
     }
     setUploading(true);
+    setUploadProgress(0);
+    setUploadingName(file.name);
     try {
-      const { url, name, size } = await uploadChatFile(file, boardId);
+      const { url, name, size } = await uploadChatFile(file, boardId, 'default', setUploadProgress);
       const isImage = file.type.startsWith('image/');
       setAttachment({ url, name, size, type: isImage ? 'image' : 'file' });
     } catch {
@@ -562,7 +566,23 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
                 </button>
               </div>
             )}
-            {attachment && (
+            {uploading && (
+              <div className="mb-2 px-2.5 py-2 bg-indigo-50 rounded-lg" aria-live="polite">
+                <div className="flex items-center justify-between text-xs text-indigo-700 mb-1.5">
+                  <span className="flex-1 min-w-0 overflow-hidden" title={uploadingName}>
+                    {uploadingName ? truncateFileName(uploadingName) : '파일'} 업로드 중…
+                  </span>
+                  <span className="flex-shrink-0 font-semibold tabular-nums">{uploadProgress}%</span>
+                </div>
+                <div className="h-1.5 bg-indigo-100 rounded-full overflow-hidden">
+                  <div
+                    className="h-full bg-indigo-600 rounded-full transition-[width] duration-200"
+                    style={{ width: `${uploadProgress}%` }}
+                  />
+                </div>
+              </div>
+            )}
+            {attachment && !uploading && (
               <div className="flex items-center gap-2 mb-2 px-2 py-1.5 bg-indigo-50 rounded-lg text-xs text-indigo-700">
                 <span className="flex-1 min-w-0 overflow-hidden" title={attachment.name}>
                   {truncateFileName(attachment.name)}
