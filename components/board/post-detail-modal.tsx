@@ -6,6 +6,7 @@ import { Flag, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { ImageViewer } from '@/components/shared/image-viewer';
 import { ReportDialog } from '@/components/shared/report-dialog';
 import { useComments } from '@/lib/hooks/use-comments';
 import { useReactions } from '@/lib/hooks/use-reactions';
@@ -57,6 +58,7 @@ export function PostDetailModal({
   const [sending, setSending] = useState(false);
   const [reportComment, setReportComment] = useState<Comment | null>(null);
   const [reportingPost, setReportingPost] = useState(false);
+  const [viewerOpen, setViewerOpen] = useState(false);
   const canReportPost = post.authorId !== currentUid && !isHost;
 
   // Esc로 닫기
@@ -114,14 +116,19 @@ export function PostDetailModal({
           <div className="post-content-scroll flex-1 min-h-0 max-h-[40vh] mt-2">
             <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">{linkify(post.content)}</p>
             {post.imageUrl && (
-              <div className="mt-3 rounded-lg overflow-hidden">
+              <button
+                type="button"
+                onClick={() => setViewerOpen(true)}
+                className="mt-3 block w-full rounded-lg overflow-hidden cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
+                aria-label="이미지 크게 보기"
+              >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={post.imageUrl}
                   alt="포스트 이미지"
-                  className="w-full object-cover max-h-60 rounded-lg"
+                  className="w-full object-contain max-h-[50vh] rounded-lg bg-gray-50"
                 />
-              </div>
+              </button>
             )}
           </div>
           <div className="flex items-center justify-between mt-3 flex-shrink-0">
@@ -259,6 +266,14 @@ export function PostDetailModal({
           targetSnapshot={reportComment.content || ''}
           reporterId={currentUid}
           reporterName={currentNickname}
+        />
+      )}
+
+      {post.imageUrl && (
+        <ImageViewer
+          src={viewerOpen ? post.imageUrl : null}
+          alt="포스트 이미지"
+          onClose={() => setViewerOpen(false)}
         />
       )}
     </div>

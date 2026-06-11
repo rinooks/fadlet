@@ -1,6 +1,8 @@
 'use client';
 
 import { FileIcon, DownloadIcon } from 'lucide-react';
+import { useState } from 'react';
+import { ImageViewer } from '@/components/shared/image-viewer';
 import type { Message } from '@/lib/types';
 import { formatFileSize } from '@/lib/utils/format-file-size';
 import { truncateFileName } from '@/lib/utils/truncate-file-name';
@@ -10,6 +12,7 @@ interface MediaGalleryProps {
 }
 
 export function MediaGallery({ messages }: MediaGalleryProps) {
+  const [viewerSrc, setViewerSrc] = useState<string | null>(null);
   const images = messages.filter((m) => m.type === 'image' && m.fileUrl);
   const files = messages.filter((m) => m.type === 'file' && m.fileUrl);
 
@@ -31,12 +34,12 @@ export function MediaGallery({ messages }: MediaGalleryProps) {
           </p>
           <div className="grid grid-cols-3 gap-1 px-2">
             {images.map((img) => (
-              <a
+              <button
                 key={img.id}
-                href={img.fileUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 hover:opacity-90 transition-opacity"
+                type="button"
+                onClick={() => setViewerSrc(img.fileUrl!)}
+                className="relative aspect-square overflow-hidden rounded-lg bg-gray-100 hover:opacity-90 transition-opacity cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500"
+                aria-label="이미지 크게 보기"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
@@ -44,7 +47,7 @@ export function MediaGallery({ messages }: MediaGalleryProps) {
                   alt={img.fileName ?? '이미지'}
                   className="absolute inset-0 w-full h-full object-cover"
                 />
-              </a>
+              </button>
             ))}
           </div>
         </section>
@@ -80,6 +83,8 @@ export function MediaGallery({ messages }: MediaGalleryProps) {
           </div>
         </section>
       )}
+
+      <ImageViewer src={viewerSrc} onClose={() => setViewerSrc(null)} />
     </div>
   );
 }

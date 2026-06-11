@@ -132,8 +132,8 @@ export function NewPostDialog({ open, onClose, onSubmit, defaultColor, columnLab
 
           {/* 이미지 미리보기 */}
           {imagePreview && (
-            <div className="relative rounded-lg overflow-hidden">
-              <Image src={imagePreview} alt="미리보기" width={400} height={200} className="w-full object-cover max-h-40 rounded-lg" />
+            <div className="relative rounded-lg overflow-hidden bg-gray-50">
+              <Image src={imagePreview} alt="미리보기" width={400} height={200} className="w-full object-contain max-h-40 rounded-lg" />
               <button
                 type="button"
                 onClick={removeImage}

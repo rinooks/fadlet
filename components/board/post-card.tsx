@@ -70,12 +70,12 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
       onClick={() => !editing && onOpenDetail(post)}
     >
       {post.imageUrl && (
-        <div className="rounded-t-md overflow-hidden">
+        <div className="rounded-t-md overflow-hidden bg-gray-50">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={post.imageUrl}
             alt="포스트 이미지"
-            className="w-full object-cover max-h-36"
+            className="w-full object-contain max-h-36"
           />
         </div>
       )}
