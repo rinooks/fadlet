@@ -42,4 +42,4 @@ jobs:
         run: npm install -g firebase-tools
 
       - name: Run security rules tests
-        run: firebase emulators:exec --only firestore "vitest run"
+        run: firebase emulators:exec --only firestore "npx vitest run"
