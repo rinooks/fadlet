@@ -6,7 +6,7 @@ import { collection, deleteDoc, doc, onSnapshot, query, serverTimestamp, updateD
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { use, useEffect, useState } from 'react';
-import { Copy, Download, LogOut, Pencil, Share2, Trash2 } from 'lucide-react';
+import { ArrowLeft, Copy, Download, FolderOpen, LogOut, Pencil, Share2, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import {
@@ -195,41 +195,15 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
-        <nav aria-label="현재 위치" className="flex items-center gap-2 min-w-0 flex-1 text-sm">
-          <Link href="/" className="text-indigo-600 font-bold text-lg hover:text-indigo-700 transition-colors flex-shrink-0">
-            Fadlet
-          </Link>
-          <span className="text-gray-300 flex-shrink-0" aria-hidden>›</span>
-          <Link
-            href="/dashboard"
-            className="text-gray-500 hover:text-indigo-600 transition-colors flex-shrink-0 hidden sm:inline"
-          >
-            내 워크스페이스
-          </Link>
-          <span className="text-gray-300 flex-shrink-0 hidden sm:inline" aria-hidden>›</span>
-          <h1 className="font-semibold text-gray-900 truncate" aria-current="page">
-            {workspace.name}
-          </h1>
-          {isOwner && (
-            <button
-              onClick={() => setRenameWsOpen(true)}
-              className="flex-shrink-0 text-gray-300 hover:text-indigo-600 hover:bg-indigo-50 p-1 rounded transition-colors"
-              aria-label="워크스페이스 이름 변경"
-              title="이름 변경"
-            >
-              <Pencil size={13} />
-            </button>
-          )}
-          <button
-            onClick={copyCode}
-            className="flex items-center gap-1 font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded hover:bg-indigo-100 flex-shrink-0"
-            aria-label="코드 복사"
-          >
-            {workspace.workspaceCode}
-            <Copy size={10} />
-          </button>
-        </nav>
+      {/* 상단 바 — 뒤로가기를 명확히 (목록 화면과 구분) */}
+      <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-2.5 flex items-center justify-between gap-2">
+        <Link
+          href="/dashboard"
+          className="flex items-center gap-1.5 text-sm text-gray-600 hover:text-indigo-600 transition-colors min-w-0"
+        >
+          <ArrowLeft size={16} className="flex-shrink-0" />
+          <span className="font-medium truncate">내 워크스페이스</span>
+        </Link>
         <div className="flex items-center gap-2 flex-shrink-0">
           <Button
             size="sm"
@@ -260,6 +234,49 @@ export default function WorkspaceDetailPage({ params }: PageProps) {
           )}
         </div>
       </header>
+
+      {/* 워크스페이스 컨텍스트 밴드 — "이 워크스페이스 안에 들어와 있다"는 신호 */}
+      <div className="bg-indigo-600 bg-gradient-to-r from-indigo-600 to-violet-600">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-5 flex items-center gap-3 sm:gap-4">
+          <div className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl bg-white/15 flex items-center justify-center flex-shrink-0">
+            <FolderOpen size={24} className="text-white" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="text-[10px] uppercase font-bold tracking-wide text-indigo-100/90">워크스페이스</span>
+              {isOwner && (
+                <span className="text-[10px] uppercase font-bold text-white bg-white/20 px-1.5 py-0.5 rounded flex-shrink-0">
+                  관리자
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 min-w-0">
+              <h1 className="text-white text-lg sm:text-2xl font-bold truncate">{workspace.name}</h1>
+              {isOwner && (
+                <button
+                  onClick={() => setRenameWsOpen(true)}
+                  className="flex-shrink-0 text-white/70 hover:text-white hover:bg-white/15 p-1 rounded transition-colors"
+                  aria-label="워크스페이스 이름 변경"
+                  title="이름 변경"
+                >
+                  <Pencil size={14} />
+                </button>
+              )}
+            </div>
+            <div className="flex items-center gap-2 mt-1.5">
+              <button
+                onClick={copyCode}
+                className="flex items-center gap-1 font-mono text-[11px] font-bold text-white bg-white/15 px-2 py-0.5 rounded hover:bg-white/25 transition-colors"
+                aria-label="코드 복사"
+              >
+                {workspace.workspaceCode}
+                <Copy size={10} />
+              </button>
+              <span className="text-xs text-indigo-100">멤버 {members.length}명</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       <main className="max-w-5xl mx-auto px-6 py-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* 보드 */}
