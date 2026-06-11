@@ -38,9 +38,15 @@ service cloud.firestore {
         && get(/databases/$(database)/documents/operators/$(request.auth.uid)).data.allowed == true;
     }
 
-    // 앱 전역 설정 (Gemini API 키 등) — super-admin이 쓰고, 승인된 퍼실리테이터가 읽음.
+    // 신규 운영자 가입 승인 절차 사용 여부. 미설정 시 false(자동 승인).
+    function operatorApprovalRequired() {
+      return exists(/databases/$(database)/documents/settings/global)
+        && get(/databases/$(database)/documents/settings/global).data.requireOperatorApproval == true;
+    }
+
+    // 앱 전역 설정 — super-admin이 쓰고, 인증된 사용자가 읽음(가입 자동승인 여부 판단에 필요).
     match /settings/{docId} {
-      allow read: if isAllowedOperator() || isSuperAdmin();
+      allow read: if isAuthenticated();
       allow write: if isSuperAdmin();
     }
 
@@ -72,13 +78,19 @@ service cloud.firestore {
     match /operators/{uid} {
       allow read: if isAuthenticated() && (request.auth.uid == uid || isSuperAdmin());
       allow list: if isSuperAdmin();
-      // 첫 로그인 시 본인이 자기 문서를 생성. 비-슈퍼는 allowed=false(승인 대기)로만 생성 가능 — 자기 승인 차단.
-      // isSuperAdmin/allowed=true는 슈퍼관리자만 설정 가능.
+      // 첫 로그인 시 본인이 자기 문서를 생성.
+      // - isSuperAdmin=true 는 슈퍼관리자만.
+      // - allowed=true 는 슈퍼관리자이거나, 승인 절차가 꺼져 있을 때(자동 승인) 본인이 설정 가능.
+      //   승인 절차가 켜져 있으면 비-슈퍼는 allowed=false(대기)로만 생성 가능 — 자기 승인 차단.
       allow create: if isAuthenticated()
         && request.auth.uid == uid
         && request.resource.data.uid == uid
         && (request.resource.data.isSuperAdmin == false || isSuperAdmin())
-        && (request.resource.data.allowed == false || isSuperAdmin());
+        && (
+          isSuperAdmin()
+          || request.resource.data.allowed == false
+          || (request.resource.data.allowed == true && !operatorApprovalRequired())
+        );
       // 본인은 메타(displayName/email/lastLoginAt)만 갱신, allowed/isSuperAdmin은 슈퍼만
       allow update: if isAuthenticated()
         && (

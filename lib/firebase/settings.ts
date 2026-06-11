@@ -76,3 +76,20 @@ export async function saveProfilePromptThreshold(params: {
     { merge: true },
   );
 }
+
+/** 신규 운영자 가입 승인 절차 on/off. off(false)면 가입 즉시 자동 승인된다. */
+export async function saveRequireOperatorApproval(params: {
+  uid: string;
+  required: boolean;
+}): Promise<void> {
+  const ref = doc(db, settingsDocPath());
+  await setDoc(
+    ref,
+    {
+      requireOperatorApproval: params.required,
+      updatedAt: serverTimestamp(),
+      updatedBy: params.uid,
+    },
+    { merge: true },
+  );
+}

@@ -257,6 +257,8 @@ export interface AppSettings {
   geminiModel?: string;
   /** N번째 보드 생성 시 프로필 완성 모달 노출. 0이면 사용 안 함, undefined면 기본값(3) 사용. */
   profilePromptThresholdBoards?: number;
+  /** 신규 운영자 가입 시 슈퍼관리자 승인 절차 사용 여부. 미설정/false면 자동 승인(바로 사용). */
+  requireOperatorApproval?: boolean;
   updatedAt?: Timestamp;
   updatedBy?: string;
 }

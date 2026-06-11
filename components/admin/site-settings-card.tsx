@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   DEFAULT_PROFILE_PROMPT_THRESHOLD,
   saveProfilePromptThreshold,
+  saveRequireOperatorApproval,
   useAppSettings,
 } from '@/lib/firebase/settings';
 
@@ -29,10 +30,30 @@ export function SiteSettingsCard({ uid }: Props) {
   const [value, setValue] = useState<number>(DEFAULT_PROFILE_PROMPT_THRESHOLD);
   const [saving, setSaving] = useState(false);
   const [dirty, setDirty] = useState(false);
+  const [savingApproval, setSavingApproval] = useState(false);
+  const approvalRequired = settings?.requireOperatorApproval === true;
+
+  async function handleToggleApproval() {
+    setSavingApproval(true);
+    try {
+      await saveRequireOperatorApproval({ uid, required: !approvalRequired });
+      toast.success(
+        !approvalRequired
+          ? '승인 절차를 켰습니다. 신규 가입은 승인 대기 상태가 됩니다.'
+          : '승인 절차를 껐습니다. 신규 가입은 즉시 사용할 수 있습니다.',
+      );
+    } catch (err) {
+      console.error('[site-settings] approval toggle failed', err);
+      toast.error('설정 변경에 실패했습니다.');
+    } finally {
+      setSavingApproval(false);
+    }
+  }
 
   useEffect(() => {
     if (loading) return;
     const next = settings?.profilePromptThresholdBoards ?? DEFAULT_PROFILE_PROMPT_THRESHOLD;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setValue(next);
     setDirty(false);
   }, [loading, settings?.profilePromptThresholdBoards]);
@@ -61,6 +82,38 @@ export function SiteSettingsCard({ uid }: Props) {
       <div className="flex items-center gap-2 mb-3">
         <Settings2 size={16} className="text-indigo-600" />
         <h2 className="text-base font-bold text-gray-900">사이트 설정</h2>
+      </div>
+
+      <div className="border-t border-gray-100 pt-4 mb-4">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-gray-700 mb-1">신규 가입 승인 절차</p>
+            <p className="text-[11px] text-gray-500 leading-relaxed">
+              켜면 신규 운영자 가입 시 슈퍼관리자 승인이 필요합니다.
+              꺼두면(기본) 가입 즉시 바로 사용할 수 있습니다.
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={approvalRequired}
+            aria-label="신규 가입 승인 절차 사용"
+            onClick={handleToggleApproval}
+            disabled={loading || savingApproval}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 disabled:opacity-50 ${
+              approvalRequired ? 'bg-indigo-600' : 'bg-gray-300'
+            }`}
+          >
+            <span
+              className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
+                approvalRequired ? 'translate-x-5' : 'translate-x-0.5'
+              }`}
+            />
+          </button>
+        </div>
+        <p className="text-[11px] text-gray-400 mt-2">
+          현재: <span className="font-semibold">{approvalRequired ? '승인 필요' : '자동 승인(기본)'}</span>
+        </p>
       </div>
 
       <div className="border-t border-gray-100 pt-4">
