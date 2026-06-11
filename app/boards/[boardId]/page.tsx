@@ -494,7 +494,8 @@ export default function BoardPage({ params, searchParams }: PageProps) {
   const displayCode = board?.boardCode ?? '';
   const isLocked = !!board?.settings?.lockedAt;
   const allowChat = board?.settings?.allowChat !== false;
-  const titleEnabled = board?.settings?.showPostTitle === true;
+  // 미설정(undefined) 시 기본 ON. 운영자가 체크 해제(false)한 경우에만 숨김.
+  const titleEnabled = board?.settings?.showPostTitle !== false;
   const canPost = role === 'host' || !isLocked;
   const boardMode = board?.mode ?? 'single';
   const isWorkshopMode = boardMode === 'workshop';

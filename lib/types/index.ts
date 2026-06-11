@@ -32,7 +32,7 @@ export interface BoardSettings {
   lockedAt: Timestamp | null;
   /** 포스트 이모지 반응 수 노출 여부. 미설정 시 true(기본 노출). 운영자에게는 항상 노출. */
   showPostReactionCounts?: boolean;
-  /** 포스트 작성 시 제목 입력 영역 노출 여부. 미설정 시 false(제목 없이 본문만). */
+  /** 포스트 작성 시 제목 입력 영역 노출 여부. 미설정 시 true(기본 노출). 체크 해제(false) 시에만 숨김. */
   showPostTitle?: boolean;
 }
 
