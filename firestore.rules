@@ -104,8 +104,10 @@ service cloud.firestore {
 
     // collectionGroup('members') 쿼리 — 본인 멤버십만 조회. 슈퍼관리자는 전체.
     // (사용처: lib/hooks/use-workspaces.ts → where('uid','==',본인uid) / app/admin/page.tsx → super only)
+    // 주의: collectionGroup list 쿼리는 정적으로 안전성이 검증되므로, 쿼리 필드(uid)와 정렬되도록
+    //       문서ID(memberUid)가 아니라 resource.data.uid 로 검사해야 비-슈퍼 사용자도 통과한다.
     match /{path=**}/members/{memberUid} {
-      allow read: if isAuthenticated() && (request.auth.uid == memberUid || isSuperAdmin());
+      allow read: if isAuthenticated() && (request.auth.uid == resource.data.uid || isSuperAdmin());
     }
 
     match /workspaces/{wsId} {

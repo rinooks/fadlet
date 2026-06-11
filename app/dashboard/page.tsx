@@ -67,6 +67,7 @@ function DashboardContent() {
     if (!isOperator) return;
     const joinParam = searchParams.get('join');
     if (!joinParam) return;
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setJoinCode(joinParam.toUpperCase().slice(0, 6));
     setJoinOpen(true);
     const url = new URL(window.location.href);
@@ -74,28 +75,45 @@ function DashboardContent() {
     window.history.replaceState({}, '', url.toString());
   }, [isOperator, searchParams]);
 
+  // 내 워크스페이스(소유 + 초대받은 것 모두)의 보드를 표시 — 소유한 보드만 세지 않는다.
+  const wsIdsKey = useMemo(
+    () => workspaces.map((w) => w.id).sort().join(','),
+    [workspaces],
+  );
+
   useEffect(() => {
     if (!user || !isOperator) return;
-    const q = query(collection(db, boardsPath()), where('ownerId', '==', user.uid));
-    const unsub = onSnapshot(
-      q,
-      (snap) => {
-        const list = snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board);
-        list.sort((a, b) => {
-          const ta = a.createdAt?.toMillis?.() ?? 0;
-          const tb = b.createdAt?.toMillis?.() ?? 0;
-          return tb - ta;
-        });
-        setBoards(list);
-        setBoardsLoading(false);
-      },
-      (err) => {
-        console.error('[dashboard] boards snapshot error', err);
-        setBoardsLoading(false);
-      },
+    const wsIds = wsIdsKey ? wsIdsKey.split(',') : [];
+    /* eslint-disable react-hooks/set-state-in-effect */
+    if (wsIds.length === 0) {
+      setBoards([]);
+      setBoardsLoading(false);
+      return;
+    }
+    setBoardsLoading(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // Firestore 'in'은 최대 30개 — 워크스페이스가 많으면 청크로 나눠 구독
+    const chunks: string[][] = [];
+    for (let i = 0; i < wsIds.length; i += 30) chunks.push(wsIds.slice(i, i + 30));
+    const byChunk = new Map<number, Board[]>();
+    const unsubs = chunks.map((chunk, idx) =>
+      onSnapshot(
+        query(collection(db, boardsPath()), where('workspaceId', 'in', chunk)),
+        (snap) => {
+          byChunk.set(idx, snap.docs.map((d) => ({ id: d.id, ...d.data() }) as Board));
+          const all = Array.from(byChunk.values()).flat();
+          all.sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0));
+          setBoards(all);
+          setBoardsLoading(false);
+        },
+        (err) => {
+          console.error('[dashboard] boards snapshot error', err);
+          setBoardsLoading(false);
+        },
+      ),
     );
-    return unsub;
-  }, [user, isOperator]);
+    return () => unsubs.forEach((u) => u());
+  }, [user, isOperator, wsIdsKey]);
 
   const ownedWorkspaceCount = useMemo(
     () => workspaces.filter((w) => w.ownerUid === user?.uid).length,
