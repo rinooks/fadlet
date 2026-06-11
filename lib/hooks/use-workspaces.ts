@@ -38,44 +38,65 @@ export function useMyWorkspaces(uid: string | null) {
     setLoading(true);
     /* eslint-enable react-hooks/set-state-in-effect */
     let cancelled = false;
-    const q = query(collectionGroup(db, 'members'), where('uid', '==', uid));
-    const unsub = onSnapshot(
-      q,
-      async (snap) => {
-        const wsIds = snap.docs
-          .map((d) => d.ref.parent.parent?.id)
-          .filter((v): v is string => !!v);
-        if (wsIds.length === 0) {
+    let unsub: (() => void) | undefined;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
+    let attempts = 0;
+
+    function subscribe() {
+      const q = query(collectionGroup(db, 'members'), where('uid', '==', uid));
+      unsub = onSnapshot(
+        q,
+        async (snap) => {
+          attempts = 0; // 성공 시 재시도 카운트 리셋
+          const wsIds = snap.docs
+            .map((d) => d.ref.parent.parent?.id)
+            .filter((v): v is string => !!v);
+          if (wsIds.length === 0) {
+            if (cancelled) return;
+            setWorkspaces([]);
+            setLoading(false);
+            return;
+          }
+          try {
+            const docs = await Promise.all(
+              wsIds.map((wsId) => getDoc(doc(db, workspaceDocPath(wsId)))),
+            );
+            if (cancelled) return; // 구독 해제/uid 변경 후 늦게 도착한 응답 무시
+            const list: Workspace[] = docs
+              .filter((d) => d.exists())
+              .map((d) => ({ id: d.id, ...d.data() }) as Workspace);
+            list.sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
+            setWorkspaces(list);
+          } catch (err) {
+            if (!cancelled) console.error('[useMyWorkspaces] 워크스페이스 문서 로드 실패', err);
+          } finally {
+            if (!cancelled) setLoading(false);
+          }
+        },
+        (err) => {
           if (cancelled) return;
-          setWorkspaces([]);
+          // 로그인 직후 인증 토큰 전파 지연으로 인한 일시적 permission-denied는 재시도.
+          // 기존 목록은 비우지 않아 화면 깜빡임을 막는다.
+          const code = (err as { code?: string }).code;
+          if ((code === 'permission-denied' || code === 'unavailable') && attempts < 5) {
+            attempts += 1;
+            unsub?.();
+            retryTimer = setTimeout(() => {
+              if (!cancelled) subscribe();
+            }, 500 * attempts);
+            return;
+          }
+          console.error('[useMyWorkspaces] members 구독 실패', err);
           setLoading(false);
-          return;
-        }
-        try {
-          const docs = await Promise.all(
-            wsIds.map((wsId) => getDoc(doc(db, workspaceDocPath(wsId)))),
-          );
-          if (cancelled) return; // 구독 해제/uid 변경 후 늦게 도착한 응답 무시
-          const list: Workspace[] = docs
-            .filter((d) => d.exists())
-            .map((d) => ({ id: d.id, ...d.data() }) as Workspace);
-          list.sort((a, b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0));
-          setWorkspaces(list);
-        } catch (err) {
-          if (!cancelled) console.error('[useMyWorkspaces] 워크스페이스 문서 로드 실패', err);
-        } finally {
-          if (!cancelled) setLoading(false);
-        }
-      },
-      (err) => {
-        if (cancelled) return;
-        console.error('[useMyWorkspaces] members 구독 실패', err);
-        setLoading(false);
-      },
-    );
+        },
+      );
+    }
+    subscribe();
+
     return () => {
       cancelled = true;
-      unsub();
+      unsub?.();
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, [uid]);
 

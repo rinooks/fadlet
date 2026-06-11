@@ -17,12 +17,17 @@ export function useOperatorAuth() {
 
   useEffect(() => {
     let opUnsub: (() => void) | undefined;
+    let retryTimer: ReturnType<typeof setTimeout> | undefined;
 
     const unsub = onAuthStateChanged(auth, async (u) => {
-      // 이전 operator 구독 해제
+      // 이전 operator 구독/재시도 해제
       if (opUnsub) {
         opUnsub();
         opUnsub = undefined;
+      }
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        retryTimer = undefined;
       }
 
       if (!u || u.isAnonymous) {
@@ -45,23 +50,41 @@ export function useOperatorAuth() {
       }
 
       setUser(u);
-      opUnsub = onSnapshot(
-        doc(db, operatorDocPath(u.uid)),
-        (snap) => {
-          setOperator(snap.exists() ? (snap.data() as Operator) : null);
-          setLoading(false);
-        },
-        (err) => {
-          console.error('[useOperatorAuth] operator snapshot error', err);
-          setOperator(null);
-          setLoading(false);
-        },
-      );
+
+      let attempts = 0;
+      const subscribeOperator = () => {
+        opUnsub = onSnapshot(
+          doc(db, operatorDocPath(u.uid)),
+          (snap) => {
+            attempts = 0; // 성공 시 재시도 카운트 리셋
+            setOperator(snap.exists() ? (snap.data() as Operator) : null);
+            setLoading(false);
+          },
+          (err) => {
+            console.error('[useOperatorAuth] operator snapshot error', err);
+            setLoading(false);
+            // 로그인 직후 토큰 전파 지연으로 인한 일시적 permission-denied는 재시도.
+            // operator를 null로 만들지 않아 isOperator 깜빡임(워크스페이스 사라짐)을 막는다.
+            const code = (err as { code?: string }).code;
+            if (code === 'permission-denied' || code === 'unavailable') {
+              if (attempts < 5) {
+                attempts += 1;
+                opUnsub?.();
+                retryTimer = setTimeout(subscribeOperator, 500 * attempts);
+              }
+              return;
+            }
+            setOperator(null);
+          },
+        );
+      };
+      subscribeOperator();
     });
 
     return () => {
       unsub();
       if (opUnsub) opUnsub();
+      if (retryTimer) clearTimeout(retryTimer);
     };
   }, []);
 
