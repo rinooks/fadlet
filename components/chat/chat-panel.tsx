@@ -12,7 +12,7 @@ import { ReportDialog } from '@/components/shared/report-dialog';
 import { useAnnouncement } from '@/lib/hooks/use-announcement';
 import { useTyping } from '@/lib/hooks/use-typing';
 import { uploadChatFile } from '@/lib/utils/upload-file';
-import type { EmojiType, Message, MessageReplyTo, PinnedAnnouncement, UserRole } from '@/lib/types';
+import { CHAT_MAX_LENGTH, type EmojiType, type Message, type MessageReplyTo, type PinnedAnnouncement, type UserRole } from '@/lib/types';
 
 type Tab = 'chat' | 'media';
 
@@ -584,10 +584,15 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
               onKeyDown={handleKeyDown}
               onPaste={handlePaste}
               placeholder="메시지 입력… (Enter 전송, 이미지 붙여넣기 가능)"
-              maxLength={500}
+              maxLength={CHAT_MAX_LENGTH}
               rows={2}
-              className="resize-none text-sm mb-2"
+              className="resize-none text-sm mb-1"
             />
+            {input.length > CHAT_MAX_LENGTH * 0.8 && (
+              <p className="text-[11px] text-gray-400 text-right mb-1 tabular-nums">
+                {input.length}/{CHAT_MAX_LENGTH}
+              </p>
+            )}
             <div className="flex gap-2">
               <button
                 type="button"

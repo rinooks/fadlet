@@ -1,6 +1,9 @@
 'use client';
 
 import { FileIcon, DownloadIcon, ExternalLinkIcon } from 'lucide-react';
+import { useState } from 'react';
+import { ImageViewer } from '@/components/shared/image-viewer';
+import { CollapsibleText } from '@/components/shared/collapsible-text';
 import type { Message } from '@/lib/types';
 import { formatFileSize } from '@/lib/utils/format-file-size';
 import { truncateFileName } from '@/lib/utils/truncate-file-name';
@@ -11,19 +14,38 @@ interface MessageAttachmentProps {
 }
 
 export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
+  const [viewerOpen, setViewerOpen] = useState(false);
+
   if (msg.type === 'image' && msg.fileUrl) {
     return (
-      <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={msg.fileUrl}
-          alt={msg.fileName ?? '이미지'}
-          className="rounded-xl object-cover max-h-40 w-full"
-        />
+      <div>
+        <button
+          type="button"
+          onClick={() => setViewerOpen(true)}
+          className="block w-full cursor-zoom-in focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 rounded-xl"
+          aria-label="이미지 크게 보기"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={msg.fileUrl}
+            alt={msg.fileName ?? '이미지'}
+            className="rounded-xl object-contain max-h-60 w-full bg-black/5"
+          />
+        </button>
         {msg.content && (
-          <p className="mt-1 text-sm break-words">{msg.content}</p>
+          <CollapsibleText
+            content={msg.content}
+            className="mt-1 text-sm break-words whitespace-pre-wrap"
+            isMine={isMine}
+            viewerTitle={msg.authorName}
+          />
         )}
-      </a>
+        <ImageViewer
+          src={viewerOpen ? msg.fileUrl : null}
+          alt={msg.fileName ?? '이미지'}
+          onClose={() => setViewerOpen(false)}
+        />
+      </div>
     );
   }
 
@@ -56,7 +78,14 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
     const p = msg.linkPreview;
     return (
       <div className="flex flex-col gap-1">
-        {msg.content && <p className="text-sm break-words">{msg.content}</p>}
+        {msg.content && (
+          <CollapsibleText
+            content={msg.content}
+            className="text-sm break-words whitespace-pre-wrap"
+            isMine={isMine}
+            viewerTitle={msg.authorName}
+          />
+        )}
         <a
           href={p.url}
           target="_blank"
@@ -92,5 +121,12 @@ export function MessageAttachment({ msg, isMine }: MessageAttachmentProps) {
     );
   }
 
-  return <p className="text-sm break-all">{msg.content}</p>;
+  return (
+    <CollapsibleText
+      content={msg.content}
+      className="text-sm break-words whitespace-pre-wrap"
+      isMine={isMine}
+      viewerTitle={msg.authorName}
+    />
+  );
 }

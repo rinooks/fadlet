@@ -6,6 +6,12 @@ export const POST_MAX_LENGTH = 2000;
 /** 포스트 제목 최대 입력 글자 수 */
 export const POST_TITLE_MAX_LENGTH = 60;
 
+/** 채팅 메시지 최대 입력 글자 수 */
+export const CHAT_MAX_LENGTH = 2000;
+
+/** 채팅 메시지 미리보기 임계값 — 이 길이를 넘으면 말줄임 + 전체 보기 버튼 노출 */
+export const CHAT_PREVIEW_THRESHOLD = 280;
+
 export type PostColor = 'yellow' | 'blue' | 'pink' | 'green' | 'purple' | 'gray';
 export type UserRole = 'host' | 'member';
 export type MessageType = 'text' | 'image' | 'file' | 'link';
