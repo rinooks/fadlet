@@ -17,6 +17,7 @@ export function useAppSettings() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    /* eslint-disable-next-line react-hooks/set-state-in-effect */
     setLoading(true);
     const unsub = onSnapshot(
       doc(db, settingsDocPath()),
@@ -25,8 +26,9 @@ export function useAppSettings() {
         setLoading(false);
       },
       (err) => {
+        // 일시적 오류 시 기존 설정을 유지(null로 비우지 않음) — 의존 UI 깜빡임 방지.
+        console.error('[useAppSettings] snapshot error', err);
         setError(err.message);
-        setSettings(null);
         setLoading(false);
       },
     );
