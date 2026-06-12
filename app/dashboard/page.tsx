@@ -194,7 +194,10 @@ function DashboardContent() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link href="/" className="text-indigo-600 font-bold text-lg sm:text-xl hover:text-indigo-700 transition-colors">Fadlet</Link>
+          <Link href="/" className="relative text-indigo-600 font-bold text-lg sm:text-xl hover:text-indigo-700 transition-colors">
+            Fadlet
+            <span className="absolute -top-1 -right-6 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
+          </Link>
           <span className="text-gray-300 hidden sm:inline">|</span>
           <span className="text-sm text-gray-600 font-medium hidden sm:inline">내 워크스페이스</span>
         </div>
