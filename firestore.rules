@@ -40,8 +40,11 @@ service cloud.firestore {
 
     // 신규 운영자 가입 승인 절차 사용 여부. 미설정 시 false(자동 승인).
     function operatorApprovalRequired() {
+      // 주의: 없는 필드에 점(.) 접근 시 규칙 평가가 에러→거부가 된다.
+      // settings 문서는 있는데 requireOperatorApproval 필드만 없는 경우(예: geminiModel만 저장)
+      // 자동 승인 create가 막히던 회귀가 있었다. 기본값 false로 안전하게 읽는다.
       return exists(/databases/$(database)/documents/settings/global)
-        && get(/databases/$(database)/documents/settings/global).data.requireOperatorApproval == true;
+        && get(/databases/$(database)/documents/settings/global).data.get('requireOperatorApproval', false) == true;
     }
 
     // 앱 전역 설정 — super-admin이 쓰고, 인증된 사용자가 읽음(가입 자동승인 여부 판단에 필요).

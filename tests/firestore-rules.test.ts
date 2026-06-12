@@ -136,6 +136,18 @@ describe('operators 생성 — 자동 승인 정책', () => {
     );
   });
 
+  it('settings 문서는 있지만 requireOperatorApproval 필드가 없으면 자동 승인된다(필드 누락 회귀)', async () => {
+    // 운영 사고 재현: 슈퍼관리자가 Gemini 모델만 저장해 settings/global 이 생기면
+    // requireOperatorApproval 필드가 없는데도 자동 승인 create 가 막히던 버그.
+    await seed(async (db) => {
+      await setDoc(doc(db, 'settings/global'), { geminiModel: 'gemini-2.5-flash' });
+    });
+    const db = asUser(USER_A, 'a@example.com');
+    await assertSucceeds(
+      setDoc(doc(db, `operators/${USER_A}`), { uid: USER_A, allowed: true, isSuperAdmin: false }),
+    );
+  });
+
   it('승인 절차가 켜져 있으면 allowed=true 자체 생성이 거부된다', async () => {
     await seed(async (db) => {
       await setDoc(doc(db, 'settings/global'), { requireOperatorApproval: true });
