@@ -5,22 +5,33 @@ import {
   BoardExportContent,
   type BoardExportType,
 } from '@/components/export/board-export-content';
+import { BoardExcelExport } from '@/components/export/board-excel-export';
 
 interface PageProps {
   params: Promise<{ boardId: string }>;
-  searchParams: Promise<{ type?: BoardExportType }>;
+  searchParams: Promise<{ type?: BoardExportType; format?: string }>;
 }
 
 export default function ExportPage({ params, searchParams }: PageProps) {
   const { boardId } = use(params);
-  const { type = 'both' } = use(searchParams);
+  const { type = 'both', format } = use(searchParams);
   const [ready, setReady] = useState(false);
+  const isExcel = format === 'xlsx';
 
   useEffect(() => {
-    if (!ready) return;
+    if (isExcel || !ready) return;
     const t = setTimeout(() => window.print(), 500);
     return () => clearTimeout(t);
-  }, [ready]);
+  }, [isExcel, ready]);
+
+  // 엑셀(.xlsx) 내보내기는 인쇄 미리보기 대신 파일 다운로드로 처리한다.
+  if (isExcel) {
+    return (
+      <div className="bg-white text-gray-900">
+        <BoardExcelExport boardId={boardId} />
+      </div>
+    );
+  }
 
   return (
     <div className="export-root bg-white text-gray-900">

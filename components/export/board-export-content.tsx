@@ -310,7 +310,7 @@ function StageReportBlock({
   );
 }
 
-function useCollectionAll<T>(path: string | null) {
+export function useCollectionAll<T>(path: string | null) {
   const [items, setItems] = useState<T[]>([]);
   const [loading, setLoading] = useState(true);
   useEffect(() => {

@@ -25,13 +25,19 @@ export function ExportMenu({ boardId, isWorkshop = false }: ExportMenuProps) {
     setOpen(false);
   }
 
+  function openExcel() {
+    const type = isWorkshop ? 'workshop' : 'both';
+    window.open(`/boards/${boardId}/export?type=${type}&format=xlsx`, '_blank', 'noopener');
+    setOpen(false);
+  }
+
   return (
     <div ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1 text-xs text-gray-600 bg-white border border-gray-200 hover:bg-gray-50 hover:border-gray-300 px-3 h-7 rounded-md transition-colors focus-visible:outline focus-visible:outline-2"
-        aria-label="PDF 내보내기"
+        aria-label="내보내기"
         aria-haspopup="menu"
         aria-expanded={open}
       >
@@ -80,6 +86,15 @@ export function ExportMenu({ boardId, isWorkshop = false }: ExportMenuProps) {
             className="w-full text-left text-xs px-3 py-2 hover:bg-gray-50"
           >
             보드 + 채팅 통합
+          </button>
+          <div className="my-1 border-t border-gray-100" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={openExcel}
+            className="w-full text-left text-xs px-3 py-2 hover:bg-emerald-50 font-semibold text-emerald-700"
+          >
+            📊 Excel (.xlsx)
           </button>
         </div>
       )}
