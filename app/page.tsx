@@ -209,7 +209,10 @@ export default function HomePage() {
 
       {/* 헤더 */}
       <header className="relative flex items-center justify-between px-6 py-4 border-b border-gray-100/80 backdrop-blur-sm bg-white/40">
-        <span className="text-indigo-600 font-bold text-xl tracking-tight">Fadlet</span>
+        <span className="relative text-indigo-600 font-bold text-xl tracking-tight">
+          Fadlet
+          <span className="absolute -top-1 -right-4 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
+        </span>
         <div className="flex items-center gap-2">
           <FeedbackButton showLabel className="inline-flex items-center gap-1.5 text-xs text-gray-500 hover:text-indigo-600 transition-colors px-2.5 h-9 border border-transparent hover:border-gray-200 rounded-full" />
           <Link

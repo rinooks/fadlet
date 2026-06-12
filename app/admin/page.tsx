@@ -312,8 +312,9 @@ export default function AdminPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-          <Link href="/" className="text-indigo-600 font-bold text-lg sm:text-xl hover:text-indigo-700 transition-colors">
+          <Link href="/" className="relative text-indigo-600 font-bold text-lg sm:text-xl hover:text-indigo-700 transition-colors">
             Fadlet
+            <span className="absolute -top-1 -right-4 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
           </Link>
           <span className="text-gray-300 hidden sm:inline">|</span>
           <span className="flex items-center gap-1 text-sm text-amber-700 font-semibold">

@@ -10,8 +10,9 @@ export default function PrivacyPage() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-4">
         <div className="mx-auto max-w-3xl flex items-center gap-3">
-          <Link href="/" className="text-indigo-600 font-bold text-xl hover:text-indigo-700 transition-colors">
+          <Link href="/" className="relative text-indigo-600 font-bold text-xl hover:text-indigo-700 transition-colors">
             Fadlet
+            <span className="absolute -top-1 -right-4 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
           </Link>
           <span className="text-gray-300">|</span>
           <span className="text-sm text-gray-600 font-medium">개인정보처리방침</span>

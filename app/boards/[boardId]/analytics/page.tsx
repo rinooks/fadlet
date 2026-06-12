@@ -168,8 +168,9 @@ export default function AnalyticsPage({ params }: PageProps) {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-100 px-6 py-3 flex items-center justify-between">
         <div className="flex items-center gap-3 min-w-0">
-          <Link href="/" className="text-indigo-600 font-bold text-base hover:text-indigo-700 transition-colors flex-shrink-0">
+          <Link href="/" className="relative text-indigo-600 font-bold text-base hover:text-indigo-700 transition-colors flex-shrink-0">
             Fadlet
+            <span className="absolute -top-1 -right-4 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
           </Link>
           <span className="text-gray-300">|</span>
           <Link href={`/boards/${boardId}`} className="text-indigo-600 hover:underline flex items-center gap-1 text-xs flex-shrink-0">

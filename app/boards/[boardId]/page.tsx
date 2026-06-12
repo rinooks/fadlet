@@ -546,10 +546,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
           <Link
             href="/"
-            className="text-indigo-600 font-bold text-lg flex-shrink-0 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 rounded transition-colors"
+            className="relative text-indigo-600 font-bold text-lg flex-shrink-0 hover:text-indigo-700 focus-visible:outline focus-visible:outline-2 rounded transition-colors"
             aria-label="홈으로 이동"
           >
             Fadlet
+            <span className="absolute -top-1 -right-4 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
           </Link>
           {isWsMember && board?.workspaceId && board.workspaceId !== 'default' && (
             <Link
@@ -964,7 +965,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             <ChatPanel
               messages={messages}
               loading={msgsLoading}
-              onlineCount={onlineCount}
               onSend={handleSendMessage}
               onToggleReaction={handleToggleReaction}
               currentUid={uid ?? ''}
@@ -1019,7 +1019,6 @@ export default function BoardPage({ params, searchParams }: PageProps) {
             <ChatPanel
               messages={messages}
               loading={msgsLoading}
-              onlineCount={onlineCount}
               onSend={handleSendMessage}
               onToggleReaction={handleToggleReaction}
               currentUid={uid ?? ''}

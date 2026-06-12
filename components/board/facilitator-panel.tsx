@@ -87,6 +87,7 @@ export function FacilitatorPanel({
   const [announcementDraft, setAnnouncementDraft] = useState(pinnedAnnouncement?.content ?? '');
   const [newWord, setNewWord] = useState('');
   const [busy, setBusy] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
 
   if (!open) return null;
 
@@ -94,17 +95,26 @@ export function FacilitatorPanel({
 
   async function handleAddStage() {
     const minutes = Number(newMinutes);
-    if (Number.isNaN(minutes) || minutes < 0) return;
+    if (Number.isNaN(minutes) || minutes < 0) {
+      setAddError('시간을 0분 이상의 숫자로 입력하세요.');
+      return;
+    }
     let activityConfig;
     if (isWorkshop && newActivity === 'poll') {
       const opts = newPollOptionsText
         .split('\n')
         .map((s) => s.trim())
         .filter(Boolean);
-      if (!newPollQuestion.trim() || opts.length < 2) return;
+      if (!newPollQuestion.trim() || opts.length < 2) {
+        setAddError('폴 질문과 선택지 2개 이상을 입력하세요.');
+        return;
+      }
       activityConfig = { poll: { question: newPollQuestion.trim(), options: opts } };
     } else if (isWorkshop && newActivity === 'wordcloud') {
-      if (!newWcPrompt.trim()) return;
+      if (!newWcPrompt.trim()) {
+        setAddError('워드클라우드 프롬프트를 입력하세요.');
+        return;
+      }
       const maxLen = Number(newWcMaxLen);
       activityConfig = {
         wordcloud: {
@@ -113,14 +123,20 @@ export function FacilitatorPanel({
         },
       };
     } else if (isWorkshop && newActivity === 'qna') {
-      if (!newQnaPrompt.trim()) return;
+      if (!newQnaPrompt.trim()) {
+        setAddError('Q&A 안내 문구를 입력하세요.');
+        return;
+      }
       activityConfig = { qna: { prompt: newQnaPrompt.trim() } };
     }
+    setAddError(null);
     setBusy(true);
     try {
+      // 워크숍 모드에서 제목을 비우면 활동 이름으로 자동 채운다.
+      const title = newTitle.trim() || (isWorkshop ? getActivity(newActivity).label : '');
       await addStage(
         stages,
-        newTitle,
+        title,
         Math.floor(minutes * 60),
         isWorkshop ? newActivity : undefined,
         activityConfig,
@@ -317,43 +333,17 @@ export function FacilitatorPanel({
               ))}
             </ul>
 
-            <div className="flex flex-col gap-2 p-3 bg-gray-50 rounded-md">
-              <div className="flex gap-2 items-end">
-                <div className="flex-1">
-                  <label className="block text-[11px] font-medium text-gray-500 mb-1">단계 제목</label>
-                  <Input
-                    value={newTitle}
-                    onChange={(e) => setNewTitle(e.target.value)}
-                    placeholder="예: 아이스브레이킹"
-                    className="text-sm h-8"
-                  />
-                </div>
-                <div className="w-20">
-                  <label className="block text-[11px] font-medium text-gray-500 mb-1">분</label>
-                  <Input
-                    type="number"
-                    min={0}
-                    value={newMinutes}
-                    onChange={(e) => setNewMinutes(e.target.value)}
-                    className="text-sm h-8"
-                  />
-                </div>
-                <Button
-                  onClick={handleAddStage}
-                  disabled={busy}
-                  size="sm"
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white h-8"
-                >
-                  <Plus size={14} />
-                </Button>
-              </div>
+            <div className="flex flex-col gap-2.5 p-3 bg-gray-50 rounded-md">
+              {/* 1. 활동 종류 (워크숍 모드에서만) */}
               {isWorkshop && (
                 <div>
-                  <label className="block text-[11px] font-medium text-gray-500 mb-1">활동 종류</label>
+                  <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                    1. 무엇을 할까요? <span className="font-normal text-gray-400">(활동 종류)</span>
+                  </label>
                   <select
                     value={newActivity}
-                    onChange={(e) => setNewActivity(e.target.value as ActivityType)}
-                    className="w-full h-8 px-2 rounded-md border border-gray-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
+                    onChange={(e) => { setNewActivity(e.target.value as ActivityType); setAddError(null); }}
+                    className="w-full h-9 px-2 rounded-md border border-gray-200 text-sm bg-white focus:outline-none focus:border-indigo-400"
                   >
                     <optgroup label="보드형">
                       {TEMPLATES.map((t) => (
@@ -370,6 +360,69 @@ export function FacilitatorPanel({
                   </select>
                 </div>
               )}
+
+              {/* 2. 단계 이름 */}
+              <div>
+                <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                  {isWorkshop ? '2. 단계 이름' : '단계 제목'} <span className="font-normal text-gray-400">(비우면 자동)</span>
+                </label>
+                <Input
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder={isWorkshop ? getActivity(newActivity).label : '예: 아이스브레이킹'}
+                  className="text-sm h-9"
+                />
+              </div>
+
+              {/* 3. 시간 */}
+              <div>
+                <label className="block text-[11px] font-medium text-gray-500 mb-1">
+                  {isWorkshop ? '3. 시간' : '시간'}
+                </label>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {['5', '10', '15', '30'].map((m) => (
+                    <button
+                      key={m}
+                      type="button"
+                      onClick={() => setNewMinutes(m)}
+                      className={`px-2.5 h-9 rounded-md border text-sm transition-colors ${
+                        newMinutes === m
+                          ? 'bg-indigo-600 text-white border-indigo-600'
+                          : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300'
+                      }`}
+                    >
+                      {m}분
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => setNewMinutes('0')}
+                    className={`px-2.5 h-9 rounded-md border text-sm transition-colors ${
+                      Number(newMinutes) === 0
+                        ? 'bg-indigo-600 text-white border-indigo-600'
+                        : 'bg-white text-gray-600 border-gray-200 hover:border-indigo-300'
+                    }`}
+                  >
+                    제한없음
+                  </button>
+                  <div className="flex items-center gap-1">
+                    <Input
+                      type="number"
+                      min={0}
+                      value={newMinutes}
+                      onChange={(e) => setNewMinutes(e.target.value)}
+                      className="text-sm h-9 w-16"
+                      aria-label="시간 직접 입력 (분)"
+                    />
+                    <span className="text-xs text-gray-400">분</span>
+                  </div>
+                </div>
+                {Number(newMinutes) === 0 && (
+                  <p className="text-[11px] text-gray-400">제한없음으로 설정하면 타이머 없이 진행됩니다.</p>
+                )}
+              </div>
+
+              {/* 4. 활동별 설정 */}
               {isWorkshop && newActivity === 'poll' && (
                 <div className="flex flex-col gap-2 pt-2 border-t border-gray-200">
                   <div>
@@ -430,6 +483,19 @@ export function FacilitatorPanel({
                   </div>
                 </div>
               )}
+
+              {/* 검증 메시지 + 추가 버튼 */}
+              {addError && (
+                <p className="text-xs text-red-600">⚠ {addError}</p>
+              )}
+              <Button
+                onClick={handleAddStage}
+                disabled={busy}
+                className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-9"
+              >
+                <Plus size={14} />
+                <span className="ml-1">단계 추가</span>
+              </Button>
             </div>
           </section>
 
@@ -742,7 +808,9 @@ function StageRow({ stage, index, total, busy, isWorkshop, onUpdate, onMove, onR
         {stageActivity && <span className="mr-1">{stageActivity.emoji}</span>}
         {stage.title}
       </button>
-      <span className="text-xs text-gray-500 flex-shrink-0">{Math.round(stage.durationSec / 60)}분</span>
+      <span className="text-xs text-gray-500 flex-shrink-0">
+        {stage.durationSec === 0 ? '제한없음' : `${Math.round(stage.durationSec / 60)}분`}
+      </span>
       <div className="flex items-center gap-0.5 flex-shrink-0">
         <button
           onClick={() => onMove(-1)}

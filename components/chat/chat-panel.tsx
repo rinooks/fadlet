@@ -34,7 +34,6 @@ const EMOJI_LIST: { key: EmojiType; emoji: string; label: string }[] = [
 interface ChatPanelProps {
   messages: Message[];
   loading: boolean;
-  onlineCount: number;
   onSend: (content: string, fileAttachment?: FileAttachment, replyTo?: MessageReplyTo) => Promise<void>;
   onToggleReaction: (messageId: string, emoji: EmojiType) => void;
   currentUid: string;
@@ -45,7 +44,7 @@ interface ChatPanelProps {
   onClose?: () => void;
 }
 
-export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReaction, currentUid, currentName, currentRole, boardId, pinnedAnnouncement, onClose }: ChatPanelProps) {
+export function ChatPanel({ messages, loading, onSend, onToggleReaction, currentUid, currentName, currentRole, boardId, pinnedAnnouncement, onClose }: ChatPanelProps) {
   const [tab, setTab] = useState<Tab>('chat');
   const [input, setInput] = useState('');
   const [sending, setSending] = useState(false);
@@ -337,10 +336,6 @@ export function ChatPanel({ messages, loading, onlineCount, onSend, onToggleReac
               <Search size={14} />
             </button>
           )}
-          <span className="flex items-center gap-1 text-xs text-gray-400">
-            <span className="w-2 h-2 rounded-full bg-green-400 inline-block" />
-            {onlineCount}명
-          </span>
           {onClose && (
             <button
               type="button"

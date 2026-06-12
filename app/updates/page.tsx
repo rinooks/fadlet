@@ -14,8 +14,9 @@ export default function UpdatesPage() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-indigo-50/30 via-white to-purple-50/30">
       <header className="px-6 py-4 border-b border-gray-100 bg-white/70 backdrop-blur-sm">
         <div className="max-w-3xl mx-auto flex items-center justify-between">
-          <Link href="/" className="text-indigo-600 font-bold text-xl tracking-tight">
+          <Link href="/" className="relative text-indigo-600 font-bold text-xl tracking-tight">
             Fadlet
+            <span className="absolute -top-1 -right-4 text-[10px] font-semibold text-indigo-400 leading-none">beta</span>
           </Link>
           <Link
             href="/"
