@@ -13,6 +13,7 @@ import {
   getDocs,
   query,
   setDoc,
+  updateDoc,
   where,
   type Firestore,
 } from 'firebase/firestore';
@@ -236,5 +237,47 @@ describe('boards 공개 읽기', () => {
   it('미인증 사용자도 보드를 읽을 수 있다(참여자 입장)', async () => {
     const db = asGuest();
     await assertSucceeds(getDoc(doc(db, 'workspaces/default/boards/b1')));
+  });
+});
+
+describe('qnaQuestions upvotes — 본인 좋아요만 변경 가능(위변조 차단)', () => {
+  const QPATH = `workspaces/${WS_A}/boards/b1/qnaQuestions/q1`;
+  async function seedQuestion(upvotes: string[]) {
+    await seed(async (db) => {
+      await setDoc(doc(db, `workspaces/${WS_A}/boards/b1`), {
+        title: 'b', boardCode: 'AB12', ownerId: USER_A, workspaceId: WS_A,
+      });
+      await setDoc(doc(db, QPATH), { authorId: USER_C, text: 'q', upvotes, answered: false });
+    });
+  }
+
+  it('참여자가 본인 uid로 좋아요를 추가할 수 있다', async () => {
+    await seedQuestion([]);
+    const db = asUser(USER_B, 'b@example.com');
+    await assertSucceeds(updateDoc(doc(db, QPATH), { upvotes: [USER_B] }));
+  });
+
+  it('본인 좋아요 취소(본인 uid 제거)도 가능', async () => {
+    await seedQuestion([USER_B]);
+    const db = asUser(USER_B, 'b@example.com');
+    await assertSucceeds(updateDoc(doc(db, QPATH), { upvotes: [] }));
+  });
+
+  it('타인 uid를 끼워 넣으면 거부', async () => {
+    await seedQuestion([]);
+    const db = asUser(USER_B, 'b@example.com');
+    await assertFails(updateDoc(doc(db, QPATH), { upvotes: [USER_B, USER_C] }));
+  });
+
+  it('본인이 아닌 타인 uid만 추가해도 거부', async () => {
+    await seedQuestion([]);
+    const db = asUser(USER_B, 'b@example.com');
+    await assertFails(updateDoc(doc(db, QPATH), { upvotes: [USER_C] }));
+  });
+
+  it('운영자(보드 소유자)는 답변/완료 처리 가능', async () => {
+    await seedQuestion([]);
+    const db = asUser(USER_A, 'a@example.com');
+    await assertSucceeds(updateDoc(doc(db, QPATH), { answered: true, answer: 'ok' }));
   });
 });
