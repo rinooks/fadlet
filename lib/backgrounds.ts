@@ -56,25 +56,26 @@ export const BACKGROUNDS: BackgroundDefinition[] = [
   {
     id: 'mint',
     label: '민트',
-    style: { backgroundColor: '#E8F5F0' },
+    // backgroundImage: 'none' — 스킨(glass/brutal 등)이 .skin-root에 칠한 배경 이미지를 덮어 단색이 보이게 한다.
+    style: { backgroundColor: '#E8F5F0', backgroundImage: 'none' },
     preview: { backgroundColor: '#E8F5F0' },
   },
   {
     id: 'lavender',
     label: '라벤더',
-    style: { backgroundColor: '#EFEAF7' },
+    style: { backgroundColor: '#EFEAF7', backgroundImage: 'none' },
     preview: { backgroundColor: '#EFEAF7' },
   },
   {
     id: 'cream',
     label: '크림',
-    style: { backgroundColor: '#FFF8EC' },
+    style: { backgroundColor: '#FFF8EC', backgroundImage: 'none' },
     preview: { backgroundColor: '#FFF8EC' },
   },
   {
     id: 'custom',
     label: '커스텀',
-    style: { backgroundColor: DEFAULT_CUSTOM_COLOR },
+    style: { backgroundColor: DEFAULT_CUSTOM_COLOR, backgroundImage: 'none' },
     preview: { backgroundColor: DEFAULT_CUSTOM_COLOR },
   },
 ];
@@ -84,7 +85,7 @@ export function getBackground(id: BoardBackground | undefined, customColor?: str
   if (def.id === 'custom' && customColor) {
     return {
       ...def,
-      style: { backgroundColor: customColor },
+      style: { backgroundColor: customColor, backgroundImage: 'none' },
       preview: { backgroundColor: customColor },
     };
   }
