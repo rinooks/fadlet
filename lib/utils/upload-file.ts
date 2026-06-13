@@ -57,6 +57,26 @@ export async function uploadPostImage(
   return getDownloadURL(storageRef);
 }
 
+/**
+ * 포스트 첨부파일(비이미지) 업로드. 압축 없이 원본을 그대로 올리고 MIME 타입을 함께 반환한다.
+ * 이미지는 uploadPostImage 를 사용한다.
+ */
+export async function uploadPostFile(
+  file: File,
+  boardId: string,
+  wsId = 'default',
+  onProgress?: UploadProgressCallback,
+): Promise<{ url: string; name: string; size: number; type: string }> {
+  onProgress?.(0);
+  const ext = fileExt(file.name, 'bin');
+  const contentType = file.type || 'application/octet-stream';
+  const path = `workspaces/${wsId}/boards/${boardId}/files/${Date.now()}.${ext}`;
+  const storageRef = ref(storage, path);
+  await uploadWithProgress(storageRef, file, contentType, onProgress);
+  const url = await getDownloadURL(storageRef);
+  return { url, name: file.name, size: file.size, type: contentType };
+}
+
 export async function uploadChatFile(
   file: File,
   boardId: string,

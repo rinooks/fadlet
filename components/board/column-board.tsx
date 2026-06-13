@@ -6,7 +6,7 @@ import { SortableContext, rectSortingStrategy, verticalListSortingStrategy } fro
 import { SortablePostCard } from './sortable-post-card';
 import { NewPostDialog } from './new-post-dialog';
 import type { TemplateDefinition } from '@/lib/templates';
-import type { Post, PostColor } from '@/lib/types';
+import type { Post, PostAttachment, PostColor } from '@/lib/types';
 
 interface ColumnBoardProps {
   template: TemplateDefinition;
@@ -18,7 +18,7 @@ interface ColumnBoardProps {
   showReactionCounts: boolean;
   titleEnabled?: boolean;
   isLocked: boolean;
-  onAddPost: (content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string) => Promise<void>;
+  onAddPost: (content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string, attachment?: PostAttachment) => Promise<void>;
   onUpdatePost: (postId: string, content: string, title?: string) => Promise<void>;
   onDeletePost: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
@@ -174,8 +174,8 @@ export function ColumnBoard({
         <NewPostDialog
           open={true}
           onClose={() => setActiveColumn(null)}
-          onSubmit={(content, color, imageUrl, title) =>
-            onAddPost(content, color, imageUrl, activeColumn, title)
+          onSubmit={(content, color, imageUrl, title, attachment) =>
+            onAddPost(content, color, imageUrl, activeColumn, title, attachment)
           }
           boardId={boardId}
           defaultColor={columns.find((c) => c.id === activeColumn)?.defaultColor}

@@ -54,7 +54,7 @@ import { auth, db } from '@/lib/firebase/client';
 import { boardsPath, messagesPath, workspaceMembersPath } from '@/lib/firebase/collections';
 import { deleteDoc, doc, getDoc, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { toast } from 'sonner';
-import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, KanbanColumn, MessageReplyTo, Post, PostColor, TimerState, UserRole } from '@/lib/types';
+import type { BoardBackground, BoardSkin, BoardTemplate, EmojiType, KanbanColumn, MessageReplyTo, Post, PostAttachment, PostColor, TimerState, UserRole } from '@/lib/types';
 import { getBackground } from '@/lib/backgrounds';
 import { DEFAULT_KANBAN_COLUMNS, DEFAULT_CATEGORY_COLUMNS } from '@/lib/kanban-colors';
 import { cloneBoard } from '@/lib/utils/clone-board';
@@ -344,11 +344,11 @@ export default function BoardPage({ params, searchParams }: PageProps) {
     }
   }
 
-  async function handleAddPost(content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string) {
+  async function handleAddPost(content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string, attachment?: PostAttachment) {
     if (!uid || !nickname) return;
     if (checkBanned(content) || (title && checkBanned(title))) throw new Error('banned');
     const stageId = isWorkshopMode ? currentStage?.id : undefined;
-    await addPost({ authorId: uid, authorName: nickname, title, content, color, imageUrl, columnId, stageId });
+    await addPost({ authorId: uid, authorName: nickname, title, content, color, imageUrl, attachment, columnId, stageId });
   }
 
   async function handleDragEnd(event: DragEndEvent) {
@@ -1035,7 +1035,7 @@ export default function BoardPage({ params, searchParams }: PageProps) {
         <NewPostDialog
           open={showNewPost}
           onClose={() => setShowNewPost(false)}
-          onSubmit={(content, color, imageUrl, title) => handleAddPost(content, color, imageUrl, undefined, title)}
+          onSubmit={(content, color, imageUrl, title, attachment) => handleAddPost(content, color, imageUrl, undefined, title, attachment)}
           boardId={boardId}
           titleEnabled={titleEnabled}
         />

@@ -134,7 +134,7 @@ export async function buildBoardWorkbook(data: BoardExcelData): Promise<Blob> {
         colLabel,
         p.authorName,
         p.title ?? '',
-        p.content ?? (p.imageUrl ? '[이미지]' : ''),
+        p.content || (p.imageUrl ? '[이미지]' : p.fileName ? `[파일] ${p.fileName}` : ''),
         fmtDate(p.createdAt),
       ]);
     }

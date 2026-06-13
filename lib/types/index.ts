@@ -153,6 +153,15 @@ export interface Board {
   updatedAt: Timestamp;
 }
 
+/** 포스트에 첨부된 비이미지 파일(PDF/PPT/문서 등) */
+export interface PostAttachment {
+  fileUrl: string;
+  fileName: string;
+  fileSize: number;
+  /** MIME 타입 — 파일 성격 분류(getFileKind)에 사용 */
+  fileType: string;
+}
+
 export interface Post {
   id: string;
   authorId: string;
@@ -160,6 +169,11 @@ export interface Post {
   title?: string;
   content: string;
   imageUrl?: string;
+  /** 비이미지 첨부파일 (있을 때만) */
+  fileUrl?: string;
+  fileName?: string;
+  fileSize?: number;
+  fileType?: string;
   color: PostColor;
   columnId?: string;
   stageId?: string;

@@ -68,6 +68,9 @@ function PostBlock({ post }: { post: Post }) {
       {post.content && (
         <p className="text-[13px] text-gray-800 whitespace-pre-wrap break-words mb-2">{post.content}</p>
       )}
+      {post.fileName && (
+        <p className="text-[11px] text-gray-600 mb-2 break-all">📎 {post.fileName}</p>
+      )}
       <div className="text-[10px] text-gray-500 flex justify-between">
         <span>{post.authorName}</span>
         <span>{formatDate(post.createdAt?.toDate?.())}</span>

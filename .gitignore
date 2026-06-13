@@ -44,3 +44,6 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+
+# 작업용 참고 스크린샷 (커밋 제외)
+/fix

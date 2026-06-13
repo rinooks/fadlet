@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { ImageViewer } from '@/components/shared/image-viewer';
 import { ReportDialog } from '@/components/shared/report-dialog';
+import { PostAttachmentChip } from '@/components/board/post-attachment';
 import { useComments } from '@/lib/hooks/use-comments';
 import { useReactions } from '@/lib/hooks/use-reactions';
 import type { Comment, EmojiType, Post } from '@/lib/types';
@@ -129,6 +130,15 @@ export function PostDetailModal({
                   className="w-full object-contain max-h-[50vh] rounded-lg bg-gray-50"
                 />
               </button>
+            )}
+            {post.fileUrl && post.fileName && (
+              <PostAttachmentChip
+                fileUrl={post.fileUrl}
+                fileName={post.fileName}
+                fileSize={post.fileSize}
+                fileType={post.fileType}
+                className="mt-3"
+              />
             )}
           </div>
           <div className="flex items-center justify-between mt-3 flex-shrink-0">

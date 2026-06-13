@@ -1,14 +1,19 @@
 'use client';
 
-import { ImageIcon, X } from 'lucide-react';
+import { Paperclip, X } from 'lucide-react';
 import Image from 'next/image';
 import { useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { uploadPostImage } from '@/lib/utils/upload-file';
-import { POST_MAX_LENGTH, POST_TITLE_MAX_LENGTH, type PostColor } from '@/lib/types';
+import { uploadPostImage, uploadPostFile } from '@/lib/utils/upload-file';
+import { getFileKind } from '@/lib/utils/file-kind';
+import { formatFileSize } from '@/lib/utils/format-file-size';
+import { POST_MAX_LENGTH, POST_TITLE_MAX_LENGTH, type PostAttachment, type PostColor } from '@/lib/types';
+
+const IMAGE_MAX = 10 * 1024 * 1024;
+const FILE_MAX = 20 * 1024 * 1024;
 
 const COLORS: { value: PostColor; label: string; className: string }[] = [
   { value: 'yellow', label: '노랑', className: 'bg-yellow-100 border-yellow-300 hover:bg-yellow-200' },
@@ -22,9 +27,13 @@ const COLORS: { value: PostColor; label: string; className: string }[] = [
 interface NewPostDialogProps {
   open: boolean;
   onClose: () => void;
-  /** 이미지가 있으면 다이얼로그가 직접 업로드한 뒤 imageUrl을 전달한다. */
-  onSubmit: (content: string, color: PostColor, imageUrl?: string, title?: string) => Promise<void>;
-  /** 이미지 업로드 경로용 보드 ID */
+  /**
+   * 이미지/파일이 있으면 다이얼로그가 직접 업로드한 뒤 결과를 전달한다.
+   * - 이미지: imageUrl
+   * - 비이미지 파일: attachment(파일 URL·이름·크기·MIME 타입)
+   */
+  onSubmit: (content: string, color: PostColor, imageUrl?: string, title?: string, attachment?: PostAttachment) => Promise<void>;
+  /** 이미지·파일 업로드 경로용 보드 ID */
   boardId: string;
   defaultColor?: PostColor;
   columnLabel?: string;
@@ -38,26 +47,73 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
   const [color, setColor] = useState<PostColor>(defaultColor ?? 'yellow');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [attachFile, setAttachFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState<number | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error('이미지는 10MB 이하만 업로드할 수 있습니다.');
-      return;
-    }
-    setImageFile(file);
-    setImagePreview(URL.createObjectURL(file));
-  }
 
   function removeImage() {
     setImageFile(null);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
     if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  function removeAttach() {
+    setAttachFile(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }
+
+  /** 선택·붙여넣기로 들어온 파일을 이미지/일반 파일로 분기해 첨부한다. (한 번에 하나) */
+  function acceptFile(file: File) {
+    if (file.type.startsWith('image/')) {
+      if (file.size > IMAGE_MAX) {
+        toast.error('이미지는 10MB 이하만 업로드할 수 있습니다.');
+        return;
+      }
+      removeAttach();
+      setImageFile(file);
+      setImagePreview(URL.createObjectURL(file));
+    } else {
+      if (file.size > FILE_MAX) {
+        toast.error('파일은 20MB 이하만 업로드할 수 있습니다.');
+        return;
+      }
+      removeImage();
+      setAttachFile(file);
+    }
+  }
+
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) acceptFile(file);
+  }
+
+  /** 드래그앤드롭으로 이미지/파일 업로드. */
+  function handleDragOver(e: React.DragEvent) {
+    if (e.dataTransfer?.types?.includes('Files')) {
+      e.preventDefault();
+      if (!dragOver) setDragOver(true);
+    }
+  }
+  function handleDragLeave(e: React.DragEvent) {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDragOver(false);
+  }
+  function handleDrop(e: React.DragEvent) {
+    e.preventDefault();
+    setDragOver(false);
+    const files = e.dataTransfer?.files;
+    if (files && files.length > 0) acceptFile(files[0]);
+  }
+
+  /** Ctrl+V 붙여넣기로 이미지/파일 업로드. 텍스트 붙여넣기는 기본 동작 유지. */
+  function handlePaste(e: React.ClipboardEvent) {
+    const files = e.clipboardData?.files;
+    if (files && files.length > 0) {
+      e.preventDefault();
+      acceptFile(files[0]);
+    }
   }
 
   function handleError(err: unknown) {
@@ -68,9 +124,17 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
     }
   }
 
+  function resetAll() {
+    setTitle('');
+    setContent('');
+    setColor('yellow');
+    removeImage();
+    removeAttach();
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!content.trim() && !imageFile) return;
+    if (!content.trim() && !imageFile && !attachFile) return;
 
     const titleValue = titleEnabled ? title.trim() : undefined;
 
@@ -81,10 +145,30 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
       try {
         const imageUrl = await uploadPostImage(imageFile, boardId, 'default', setUploadProgress);
         await onSubmit(content.trim(), color, imageUrl, titleValue);
-        setTitle('');
-        setContent('');
-        setColor('yellow');
-        removeImage();
+        resetAll();
+        onClose();
+      } catch (err) {
+        handleError(err);
+      } finally {
+        setLoading(false);
+        setUploadProgress(null);
+      }
+      return;
+    }
+
+    if (attachFile) {
+      // 파일 업로드 → 진행률 표시 → 완료 후 포스트 저장
+      setLoading(true);
+      setUploadProgress(0);
+      try {
+        const up = await uploadPostFile(attachFile, boardId, 'default', setUploadProgress);
+        await onSubmit(content.trim(), color, undefined, titleValue, {
+          fileUrl: up.url,
+          fileName: up.name,
+          fileSize: up.size,
+          fileType: up.type,
+        });
+        resetAll();
         onClose();
       } catch (err) {
         handleError(err);
@@ -97,9 +181,7 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
 
     // 텍스트 전용: 낙관적 UI — 다이얼로그를 즉시 닫고 백그라운드에서 저장
     const promise = onSubmit(content.trim(), color, undefined, titleValue);
-    setTitle('');
-    setContent('');
-    setColor('yellow');
+    resetAll();
     onClose();
     promise.catch(handleError);
   }
@@ -112,7 +194,19 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
             {columnLabel ? `${columnLabel} — 포스트 작성` : '새 포스트 작성'}
           </DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form
+          onSubmit={handleSubmit}
+          onPaste={handlePaste}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          className="relative flex min-w-0 flex-col gap-4"
+        >
+          {dragOver && (
+            <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center rounded-xl border-2 border-dashed border-indigo-400 bg-indigo-50/85">
+              <span className="text-sm font-semibold text-indigo-700">여기에 놓아 업로드</span>
+            </div>
+          )}
           {titleEnabled && (
             <input
               type="text"
@@ -165,6 +259,34 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
             </div>
           )}
 
+          {/* 파일(비이미지) 미리보기 */}
+          {attachFile && (
+            <div className="relative flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2">
+              <span className="rounded bg-indigo-100 px-1.5 py-0.5 text-[10px] font-bold text-indigo-700">
+                {getFileKind(attachFile.type, attachFile.name).label}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span className="block truncate text-xs font-medium text-gray-800">{attachFile.name}</span>
+                <span className="text-[10px] text-gray-400">{formatFileSize(attachFile.size)}</span>
+              </span>
+              {!loading && (
+                <button
+                  type="button"
+                  onClick={removeAttach}
+                  className="flex-shrink-0 text-gray-400 hover:text-gray-700"
+                  aria-label="첨부 제거"
+                >
+                  <X size={14} />
+                </button>
+              )}
+              {uploadProgress !== null && (
+                <div className="absolute inset-0 flex items-center justify-center gap-2 rounded-lg bg-black/45" aria-live="polite">
+                  <span className="text-xs font-semibold text-white">업로드 중… {uploadProgress}%</span>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
               {COLORS.map((c) => (
@@ -184,22 +306,22 @@ export function NewPostDialog({ open, onClose, onSubmit, boardId, defaultColor, 
               type="button"
               onClick={() => fileInputRef.current?.click()}
               className="text-gray-400 hover:text-gray-600 focus-visible:outline focus-visible:outline-2 rounded p-1"
-              aria-label="이미지 첨부"
+              aria-label="이미지·파일 첨부"
+              title="이미지·파일 첨부 (붙여넣기도 가능)"
             >
-              <ImageIcon size={18} />
+              <Paperclip size={18} />
             </button>
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
               className="hidden"
-              onChange={handleImageSelect}
+              onChange={handleFileSelect}
             />
           </div>
 
           <Button
             type="submit"
-            disabled={loading || (!content.trim() && !imageFile)}
+            disabled={loading || (!content.trim() && !imageFile && !attachFile)}
             className="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold"
           >
             {uploadProgress !== null ? '업로드 중...' : loading ? '저장 중...' : '포스트 추가'}

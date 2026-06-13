@@ -1,9 +1,11 @@
 'use client';
 
-import { MessageCircle } from 'lucide-react';
+import { MessageCircle, Copy, Check } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { PostAttachmentChip } from '@/components/board/post-attachment';
 import { usePostStats } from '@/lib/hooks/use-post-stats';
 import { POST_MAX_LENGTH, POST_TITLE_MAX_LENGTH, type EmojiType, type Post, type PostColor } from '@/lib/types';
 import { linkify } from '@/lib/utils/linkify';
@@ -46,6 +48,21 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
   const [editContent, setEditContent] = useState(post.content);
   const canEdit = post.authorId === currentUid || isHost;
   const showTitleInput = titleEnabled || !!post.title;
+  const [copied, setCopied] = useState(false);
+  const copyText = [post.title, post.content].filter(Boolean).join('\n');
+
+  async function handleCopy(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!copyText) return;
+    try {
+      await navigator.clipboard.writeText(copyText);
+      setCopied(true);
+      toast.success('내용을 복사했습니다.');
+      setTimeout(() => setCopied(false), 1500);
+    } catch {
+      toast.error('복사에 실패했습니다.');
+    }
+  }
 
   function startEdit() {
     setEditTitle(post.title ?? '');
@@ -120,6 +137,15 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
                 </p>
               </div>
             )}
+            {post.fileUrl && post.fileName && (
+              <PostAttachmentChip
+                fileUrl={post.fileUrl}
+                fileName={post.fileName}
+                fileSize={post.fileSize}
+                fileType={post.fileType}
+                className="mt-2 flex-shrink-0"
+              />
+            )}
             {(commentCount > 0 || (canShowReactions && reactionTotal > 0)) && (
               <div className="flex items-center gap-1.5 mt-2 flex-wrap flex-shrink-0">
                 {canShowReactions &&
@@ -146,14 +172,26 @@ export function PostCard({ post, boardId, currentUid, isHost, showReactionCounts
             )}
             <div className="flex items-center justify-between mt-2 flex-shrink-0" onClick={(e) => e.stopPropagation()}>
               <span className="text-xs text-gray-500 font-medium">{post.authorName}</span>
-              {canEdit && (
-                <div className="flex gap-1">
-                  {post.authorId === currentUid && (
-                    <button onClick={startEdit} className="text-xs text-gray-400 hover:text-gray-700 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="수정">수정</button>
-                  )}
-                  <button onClick={() => onDelete(post.id)} className="text-xs text-red-400 hover:text-red-600 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="삭제">삭제</button>
-                </div>
-              )}
+              <div className="flex gap-1 items-center">
+                {copyText && (
+                  <button
+                    onClick={handleCopy}
+                    className="inline-flex items-center gap-0.5 text-xs text-gray-400 hover:text-indigo-600 px-1 focus-visible:outline focus-visible:outline-2 rounded"
+                    aria-label="내용 복사"
+                    title="내용 복사"
+                  >
+                    {copied ? <Check size={12} className="text-green-600" /> : <Copy size={12} />}
+                  </button>
+                )}
+                {canEdit && (
+                  <>
+                    {post.authorId === currentUid && (
+                      <button onClick={startEdit} className="text-xs text-gray-400 hover:text-gray-700 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="수정">수정</button>
+                    )}
+                    <button onClick={() => onDelete(post.id)} className="text-xs text-red-400 hover:text-red-600 px-1 focus-visible:outline focus-visible:outline-2 rounded" aria-label="삭제">삭제</button>
+                  </>
+                )}
+              </div>
             </div>
           </>
         )}

@@ -5,7 +5,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { SortableContext, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { SortablePostCard } from './sortable-post-card';
 import { NewPostDialog } from './new-post-dialog';
-import type { Post, PostColor } from '@/lib/types';
+import type { Post, PostAttachment, PostColor } from '@/lib/types';
 
 interface ProsConsBoardProps {
   posts: Post[];
@@ -16,7 +16,7 @@ interface ProsConsBoardProps {
   showReactionCounts: boolean;
   titleEnabled?: boolean;
   isLocked: boolean;
-  onAddPost: (content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string) => Promise<void>;
+  onAddPost: (content: string, color: PostColor, imageUrl?: string, columnId?: string, title?: string, attachment?: PostAttachment) => Promise<void>;
   onUpdatePost: (postId: string, content: string, title?: string) => Promise<void>;
   onDeletePost: (postId: string) => Promise<void>;
   onOpenDetail: (post: Post) => void;
@@ -187,8 +187,8 @@ export function ProsConsBoard({
         <NewPostDialog
           open
           onClose={() => setActiveColumn(null)}
-          onSubmit={(content, color, imageUrl, title) =>
-            onAddPost(content, color, imageUrl, activePanel.id, title)
+          onSubmit={(content, color, imageUrl, title, attachment) =>
+            onAddPost(content, color, imageUrl, activePanel.id, title, attachment)
           }
           boardId={boardId}
           defaultColor={activePanel.defaultColor}

@@ -16,7 +16,7 @@ import {
 import { useEffect, useState } from 'react';
 import { db } from '@/lib/firebase/client';
 import { postsPath } from '@/lib/firebase/collections';
-import type { Post, PostColor } from '@/lib/types';
+import type { Post, PostAttachment, PostColor } from '@/lib/types';
 import { runFirestore } from '@/lib/utils/firestore-action';
 
 export function usePosts(boardId: string) {
@@ -45,6 +45,7 @@ export function usePosts(boardId: string) {
     content: string;
     color: PostColor;
     imageUrl?: string;
+    attachment?: PostAttachment;
     columnId?: string;
     stageId?: string;
     position?: { x: number; y: number };
@@ -64,6 +65,12 @@ export function usePosts(boardId: string) {
     const title = params.title?.trim();
     if (title) payload.title = title;
     if (params.imageUrl) payload.imageUrl = params.imageUrl;
+    if (params.attachment) {
+      payload.fileUrl = params.attachment.fileUrl;
+      payload.fileName = params.attachment.fileName;
+      payload.fileSize = params.attachment.fileSize;
+      payload.fileType = params.attachment.fileType;
+    }
     if (params.columnId) payload.columnId = params.columnId;
     if (params.stageId) payload.stageId = params.stageId;
     await runFirestore('포스트를 추가하지 못했습니다.', () =>
