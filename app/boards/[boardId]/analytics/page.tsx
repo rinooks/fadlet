@@ -9,7 +9,7 @@ import { useMessages } from '@/lib/hooks/use-messages';
 import { useOperatorAuth } from '@/lib/hooks/use-operator-auth';
 import { useParticipants } from '@/lib/hooks/use-participants';
 import { usePosts } from '@/lib/hooks/use-posts';
-import { getTemplate } from '@/lib/templates';
+import { getTemplate, isColumnEditableTemplate } from '@/lib/templates';
 import type { Message, Post } from '@/lib/types';
 
 interface PageProps {
@@ -98,6 +98,20 @@ export default function AnalyticsPage({ params }: PageProps) {
 
   const template = useMemo(() => getTemplate(board?.template ?? 'free'), [board?.template]);
 
+  // 카테고리·칸반은 운영자가 컬럼을 직접 정의(board.kanbanColumns)하므로 템플릿 기본 컬럼 대신 그걸 사용한다.
+  // (기본 템플릿 컬럼만 쓰면 추가한 카테고리가 분석에서 누락된다)
+  const effectiveColumns = useMemo(() => {
+    if (
+      board &&
+      isColumnEditableTemplate(board.template) &&
+      board.kanbanColumns &&
+      board.kanbanColumns.length > 0
+    ) {
+      return board.kanbanColumns.map((c) => ({ id: c.id, label: c.label }));
+    }
+    return (template.columns ?? []).map((c) => ({ id: c.id, label: c.label }));
+  }, [board, template.columns]);
+
   const stats = useMemo(() => {
     const onlineCount = participants.filter((p) => p.isOnline).length;
     const totalParticipants = participants.length;
@@ -114,7 +128,7 @@ export default function AnalyticsPage({ params }: PageProps) {
     const topPostAuthors = topByAuthor(posts, 5);
     const topMsgAuthors = topByAuthor(messages, 5);
 
-    const postsByColumn = (template.columns ?? []).map((c) => ({
+    const postsByColumn = effectiveColumns.map((c) => ({
       label: c.label,
       count: posts.filter((p) => p.columnId === c.id).length,
     }));
@@ -138,7 +152,7 @@ export default function AnalyticsPage({ params }: PageProps) {
       msgHours,
       totalCombined,
     };
-  }, [participants, posts, messages, template.columns]);
+  }, [participants, posts, messages, effectiveColumns]);
 
   if (authLoading || boardLoading) {
     return (
@@ -218,9 +232,11 @@ export default function AnalyticsPage({ params }: PageProps) {
           />
         </section>
 
-        {template.columns && (
+        {effectiveColumns.length > 0 && (
           <section className="bg-white border border-gray-200 rounded-xl p-5">
-            <h3 className="text-sm font-bold text-gray-900 mb-3">컬럼별 포스트 분포</h3>
+            <h3 className="text-sm font-bold text-gray-900 mb-3">
+              {board && board.template === 'categories' ? '카테고리별 포스트 분포' : '컬럼별 포스트 분포'}
+            </h3>
             <div className="space-y-2">
               {stats.postsByColumn.map((c) => (
                 <BarRow key={c.label} label={c.label} count={c.count} max={maxColCount} />

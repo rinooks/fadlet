@@ -93,7 +93,9 @@ function buildContext(input: Omit<InsightInput, 'apiKey' | 'model'>): string {
         });
       } else if (stagePosts.length) {
         stagePosts.slice(0, 30).forEach((p) => {
-          if (p.content) lines.push(`- ${p.content}`);
+          const extra = p.fileName ? ` [첨부: ${p.fileName}]` : p.imageUrl ? ' [이미지]' : '';
+          const body = `${p.content ?? ''}${extra}`.trim();
+          if (body) lines.push(`- ${body}`);
         });
       } else {
         lines.push('(응답 없음)');

@@ -12,10 +12,11 @@ import {
   wordcloudEntriesPath,
 } from '@/lib/firebase/collections';
 import { getActivity, isLiveActivity } from '@/lib/activities';
-import { getTemplate } from '@/lib/templates';
+import { getTemplate, isColumnEditableTemplate } from '@/lib/templates';
 import type {
   ActivityType,
   BoardTemplate,
+  KanbanColumn,
   Message,
   PollResponse,
   Post,
@@ -101,7 +102,15 @@ function MessageBlock({ msg }: { msg: Message }) {
   );
 }
 
-function PostsForStage({ posts, activityType }: { posts: Post[]; activityType?: ActivityType }) {
+function PostsForStage({
+  posts,
+  activityType,
+  kanbanColumns,
+}: {
+  posts: Post[];
+  activityType?: ActivityType;
+  kanbanColumns?: KanbanColumn[];
+}) {
   if (posts.length === 0) {
     return <p className="text-[11px] text-gray-400 italic">결과 없음</p>;
   }
@@ -116,9 +125,14 @@ function PostsForStage({ posts, activityType }: { posts: Post[]; activityType?: 
       </div>
     );
   }
+  // 칸반·카테고리 단계는 운영자가 정의한 컬럼(board.kanbanColumns)을 우선 사용 — 추가 컬럼 누락 방지.
+  const cols =
+    activityType && isColumnEditableTemplate(activityType as BoardTemplate) && kanbanColumns && kanbanColumns.length > 0
+      ? kanbanColumns.map((c) => ({ id: c.id, label: c.label }))
+      : (tmpl.columns ?? []).map((c) => ({ id: c.id, label: c.label }));
   return (
     <div className="space-y-3">
-      {(tmpl.columns ?? []).map((col) => {
+      {cols.map((col) => {
         const colPosts = posts.filter((p) => p.columnId === col.id);
         return (
           <div key={col.id} className="break-inside-avoid">
@@ -269,6 +283,7 @@ function StageReportBlock({
   pollResponses,
   wordcloudEntries,
   qnaQuestions,
+  kanbanColumns,
 }: {
   stage: Stage;
   index: number;
@@ -276,6 +291,7 @@ function StageReportBlock({
   pollResponses: PollResponse[];
   wordcloudEntries: WordcloudEntry[];
   qnaQuestions: QnaQuestion[];
+  kanbanColumns?: KanbanColumn[];
 }) {
   const def = stage.activityType ? getActivity(stage.activityType) : null;
   const minutes = Math.round(stage.durationSec / 60);
@@ -304,6 +320,7 @@ function StageReportBlock({
         <PostsForStage
           posts={posts.filter((p) => p.stageId === stage.id)}
           activityType={stage.activityType}
+          kanbanColumns={kanbanColumns}
         />
       )}
       {!def && (
@@ -420,6 +437,11 @@ export function BoardExportContent({
     effectiveType === 'chat' || effectiveType === 'both' || effectiveType === 'workshop';
   const isFree = template.columns === null;
   const isSection = variant === 'section';
+  // 카테고리·칸반은 운영자가 정의한 컬럼(board.kanbanColumns)을 사용 — 기본 템플릿 컬럼만 쓰면 추가 카테고리가 누락된다.
+  const boardColumns =
+    isColumnEditableTemplate(board.template) && board.kanbanColumns && board.kanbanColumns.length > 0
+      ? board.kanbanColumns.map((c) => ({ id: c.id, label: c.label }))
+      : (template.columns ?? []).map((c) => ({ id: c.id, label: c.label }));
 
   return (
     <div className={pageBreakBefore ? 'page-break pt-6' : ''}>
@@ -470,6 +492,7 @@ export function BoardExportContent({
                 pollResponses={pollResponses}
                 wordcloudEntries={wordcloudEntries}
                 qnaQuestions={qnaQuestions}
+                kanbanColumns={board.kanbanColumns}
               />
             ))
           )}
@@ -489,7 +512,7 @@ export function BoardExportContent({
             </div>
           ) : (
             <div className="space-y-4">
-              {(template.columns ?? []).map((col) => {
+              {boardColumns.map((col) => {
                 const colPosts = posts.filter((p) => p.columnId === col.id);
                 return (
                   <div key={col.id} className="break-inside-avoid">

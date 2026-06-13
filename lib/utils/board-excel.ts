@@ -124,7 +124,7 @@ export async function buildBoardWorkbook(data: BoardExcelData): Promise<Blob> {
       const def = activityType ? getActivity(activityType) : null;
       const colLabel =
         isWorkshop && stage?.activityType && !isLiveActivity(stage.activityType)
-          ? makeColumnLabeler(stage.activityType as BoardTemplate)(p.columnId)
+          ? makeColumnLabeler(stage.activityType as BoardTemplate, board.kanbanColumns)(p.columnId)
           : !isWorkshop
             ? makeColumnLabeler(board.template, board.kanbanColumns)(p.columnId)
             : '';

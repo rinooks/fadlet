@@ -55,11 +55,12 @@ export default function HelpPage() {
         </Section>
 
         <Section emoji="📋" title="템플릿 — 워크숍 흐름에 맞춰 선택">
-          <p>보드형 7가지 + 라이브형 3가지가 준비되어 있습니다 (워크숍 모드에서 단계별로 조합).</p>
+          <p>보드형 8가지 + 라이브형 3가지가 준비되어 있습니다 (워크숍 모드에서 단계별로 조합).</p>
           <ul className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 list-disc list-inside">
             <li><strong>브레인스토밍</strong> — 제약 없는 그리드</li>
             <li><strong>캔버스</strong> — 자유 위치 배치 (도트 그리드)</li>
             <li><strong>찬성 / 반대</strong> — 의견 양분 토론</li>
+            <li><strong>카테고리</strong> — 운영자가 섹션 단위로 정의</li>
             <li><strong>칸반</strong> — 할 일 · 진행 중 · 완료</li>
             <li><strong>KPT 회고</strong> — Keep · Problem · Try</li>
             <li><strong>4F 회고</strong> — 관찰 → 감정 → 발견 → 액션 흐름</li>

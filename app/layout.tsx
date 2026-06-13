@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { PageTransition } from '@/components/shared/page-transition';
 
 const SITE_TITLE = 'Fadlet — 워크숍 OS · 한 화면에서 운영하는 협업 보드';
-const SITE_DESCRIPTION = '보드형 7종 + 라이브 3종 + 단계 시퀀스 + 통합 리포트. 워크숍의 처음부터 끝까지, Fadlet 하나로.';
+const SITE_DESCRIPTION = '보드형 8종 + 라이브 3종 + 단계 시퀀스 + 통합 리포트. 워크숍의 처음부터 끝까지, Fadlet 하나로.';
 
 export const metadata: Metadata = {
   title: SITE_TITLE,

@@ -31,8 +31,8 @@ const FEATURES: Array<{
   {
     Preview: BoardLivePreview,
     icon: '🗺️',
-    title: '보드형 7종 + 라이브 3종',
-    desc: '브레인스토밍·캔버스·찬반·칸반·KPT·4F·9칸 + 폴/워드클라우드/Q&A.',
+    title: '보드형 8종 + 라이브 3종',
+    desc: '브레인스토밍·캔버스·찬반·카테고리·칸반·KPT·4F·9칸 + 폴/워드클라우드/Q&A.',
   },
   {
     Preview: SequencePreview,
@@ -76,7 +76,7 @@ const TOOLS_UNIFIED: Array<{
     Preview: BoardSuitePreview,
     tool: 'Padlet',
     role: '보드 · 포스트잇 · 캔버스',
-    fadlet: '보드형 7종 + 퍼실리테이터 도구(잠금 · 신고 · 8가지 스킨)까지 함께.',
+    fadlet: '보드형 8종 + 퍼실리테이터 도구(잠금 · 신고 · 8가지 스킨)까지 함께.',
   },
   {
     Preview: ChatSuitePreview,
@@ -97,7 +97,7 @@ const DIFFERENTIATORS = [
   },
   {
     title: '템플릿이 아니라, 워크숍 흐름',
-    body: '보드형 7종 + 라이브 3종을 단계 시퀀스로 엮습니다. 단일 템플릿 도구가 아니라, 처음부터 끝까지 한 줄로 연결되는 OS.',
+    body: '보드형 8종 + 라이브 3종을 단계 시퀀스로 엮습니다. 단일 템플릿 도구가 아니라, 처음부터 끝까지 한 줄로 연결되는 OS.',
   },
 ];
 
@@ -138,6 +138,7 @@ const TEMPLATES = [
   { emoji: '💡', label: '브레인스토밍', desc: '제약 없이 아이디어를 자유롭게 쏟아냅니다.' },
   { emoji: '🗺️', label: '캔버스', desc: '포스트를 원하는 위치에 자유롭게 배치합니다.' },
   { emoji: '⚖️', label: '찬반', desc: '주제에 대한 찬성과 반대 의견을 나눕니다.' },
+  { emoji: '🏷️', label: '카테고리', desc: '운영자가 섹션 단위로 카테고리를 자유롭게 정의합니다.' },
   { emoji: '🗂️', label: '칸반', desc: '할 일·진행 중·완료로 작업 흐름을 시각화합니다.' },
   { emoji: '🔄', label: 'KPT', desc: 'Keep · Problem · Try 세 가지로 팀을 돌아봅니다.' },
   { emoji: '📋', label: '4F', desc: '관찰 → 감정 → 발견 → 액션의 시간 흐름.' },
@@ -237,7 +238,7 @@ export default function HomePage() {
           <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent">Fadlet 하나로.</span>
         </h1>
         <p className="text-gray-600 text-base sm:text-xl mb-10 max-w-2xl leading-relaxed">
-          보드형 <strong className="text-gray-900 font-semibold">7종</strong> · 라이브 <strong className="text-gray-900 font-semibold">3종</strong> · 단계 시퀀스 · 통합 리포트.<br className="hidden sm:inline" />
+          보드형 <strong className="text-gray-900 font-semibold">8종</strong> · 라이브 <strong className="text-gray-900 font-semibold">3종</strong> · 단계 시퀀스 · 통합 리포트.<br className="hidden sm:inline" />
           기획부터 운영, 결과 정리까지 한 화면에서.
         </p>
 

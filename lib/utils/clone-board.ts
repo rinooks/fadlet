@@ -58,6 +58,9 @@ export async function cloneBoard(params: CloneBoardParams): Promise<{ id: string
       ...(source.settings?.showPostReactionCounts !== undefined
         ? { showPostReactionCounts: source.settings.showPostReactionCounts }
         : {}),
+      ...(source.settings?.showPostTitle !== undefined
+        ? { showPostTitle: source.settings.showPostTitle }
+        : {}),
     },
     ...(stages.length ? { stages } : {}),
     ...(source.bannedWords?.length ? { bannedWords: source.bannedWords } : {}),

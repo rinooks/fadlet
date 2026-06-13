@@ -45,10 +45,12 @@ interface PostAttachmentChipProps {
 export function PostAttachmentChip({ fileUrl, fileName, fileSize, fileType, className }: PostAttachmentChipProps) {
   const { kind, label } = getFileKind(fileType, fileName);
   const { Icon, badge } = KIND_STYLE[kind];
+  // 방어적: 우리 업로드는 https Storage URL만 생성한다. javascript:/data: 등 비정상 스킴은 링크하지 않는다.
+  const safeUrl = /^https?:\/\//i.test(fileUrl) ? fileUrl : undefined;
 
   return (
     <a
-      href={fileUrl}
+      href={safeUrl}
       target="_blank"
       rel="noopener noreferrer"
       download={fileName}
