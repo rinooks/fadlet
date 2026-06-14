@@ -177,6 +177,10 @@ export async function renameWorkspace(wsId: string, name: string): Promise<void>
   await updateDoc(doc(db, workspaceDocPath(wsId)), { name: next });
 }
 
+export async function updateWorkspaceTheme(wsId: string, themeId: string): Promise<void> {
+  await updateDoc(doc(db, workspaceDocPath(wsId)), { themeColor: themeId });
+}
+
 export async function joinWorkspaceByCode(params: {
   code: string;
   uid: string;

@@ -242,6 +242,8 @@ export interface Workspace {
   workspaceCode: string;
   ownerUid: string;
   createdAt: Timestamp;
+  /** 컨텍스트 밴드(색깔 띠) 테마 키. lib/workspace-themes.ts 참조. 없으면 기본값(indigo). */
+  themeColor?: string;
 }
 
 export interface WorkspaceMember {
